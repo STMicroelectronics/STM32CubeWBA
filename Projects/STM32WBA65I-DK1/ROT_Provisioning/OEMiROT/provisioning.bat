@@ -21,6 +21,7 @@ set oem2_password="./Keys/oem2_password.txt"
 :: Log files
 set ob_flash_log="ob_flash_programming.log"
 set provisioning_log="provisioning.log"
+set command_log="command.log"
 
 :: Remove all log files (*.log)
 if exist *.log del /f /q *.log
@@ -38,7 +39,7 @@ set s_data_init_xml="%projectdir%Images\OEMiROT_S_Data_Init_Image.xml"
 set ns_data_init_xml="%projectdir%Images\OEMiROT_NS_Data_Init_Image.xml"
 
 set boot_cfg_h="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\boot_hal_cfg.h"
-set flash_layout="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\flash_layout.h
+set flash_layout="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\flash_layout.h"
 
 :: Initial configuration
 set connect_no_reset=-c port=SWD mode=HotPlug
@@ -148,7 +149,18 @@ set "command=%python%%applicfg% setdefine -a comment -n OEMUROT_ENABLE -v 1 %fla
 %command%
 IF !errorlevel! NEQ 0 goto :step_error
 
-::Steps to generate OEMiRoT_Keys.bin file
+:: Clean TFM_OEMiROT configuration
+set "action=Update tfm_enabled in %img_config%"
+set "command=%python%%applicfg% definevalue --name=tfm_enabled  --value=0 --decimal %img_config%"
+%command%
+IF !errorlevel! NEQ 0 goto :step_error
+
+set "action=Comment TFM_COMPATIBILITY in %flash_layout%"
+set "command=%python%%applicfg% setdefine -a comment -n TFM_COMPATIBILITY -v 1 %flash_layout%"
+%command%
+IF !errorlevel! NEQ 0 goto :step_error
+
+:: ================================================ Step to generate OEMiRoT_Keys.bin file =================================================
 echo    * OEMiROT keys configuration
 echo        From TrustedPackageCreator (OBkey tab in Security panel)
 echo        Select OEMiRoT_Config.xml(Default path is /ROT_Provisioning/OEMiROT/Config/OEMiRoT_Config.xml)
@@ -227,7 +239,7 @@ if [%1] neq [AUTO] pause >nul
 set /p oem2_key=<"%oem2_password%"
 
 set "action=Programming oem2 password"
-%stm32programmercli% %connect_reset% -hardRst -lockRDP2 %oem2_key% >> %provisioning_log% 2>>&1
+call :log_and_run %stm32programmercli% %connect_reset% -hardRst -lockRDP2 %oem2_key% >> %provisioning_log% 2>>&1
 IF !errorlevel! NEQ 0 goto :step_error
 echo    * Provisioning of OEM2 key Done
 echo.
@@ -251,7 +263,7 @@ echo.
 set "action=Setting RDP level %RDP_level%"
 set current_log_file=%provisioning_log%
 echo    * %action%
-%stm32programmercli% %connect_no_reset% -ob RDP=%rdp_value% >> %provisioning_log% 2>>&1
+call :log_and_run %stm32programmercli% %connect_no_reset% -ob RDP=%rdp_value% >> %provisioning_log% 2>>&1
 echo.
 if "%rdp_value%" == "0xAA" ( goto final_execution )
 echo    * Please unplug USB cable and plug it again to recover SWD Connection.
@@ -278,3 +290,13 @@ echo ===== See %current_log_file% for details. Then try again.
 echo =====
 cmd /k
 exit 1
+
+:: Command to log (batch compatible)
+:log_and_run
+:: Usage: call :log_and_run <command>
+:: Log the command as a single string
+echo %* >> %command_log%
+echo %* >> %provisioning_log%
+:: Run the command and append output to provisioning.log
+call %* >> %provisioning_log%
+goto :eof

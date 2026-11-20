@@ -6,7 +6,7 @@
 
 <body style="font-size: 10pt; font-family: Verdana;">
 
-<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.10.0 / 03-June-2026</h3>
+<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.11.0 / 28-October-2026</h3>
 
 <div style="margin-left: 18pt;">
 <p>
@@ -20,13 +20,13 @@
 <b>Security</b>
 </p>
 <p>
-- Update  MbedTLS V3.6.6
+- Update MCUboot V1.7.2.41
 </p>
 <p>
-- Update MCUboot  V1.7.2.40
+- Update AppliCfg V1.1.7
 </p>
 <p>
-- Add support of XiP & OTFDEC for WBA25
+- Keys of OEMuRoT can be updated
 </p>
 <p>
 <b>Connectivity</b>
@@ -36,43 +36,87 @@
 <b>- LinkLayer</b>
 </p>
 <p>
-- Adopts the new unified Link Layer naming convention LinkLayer_&lt;Techno&gt;_&lt;HW_IP_version&gt;.a.
+- Improve the footprint by dynamically allocating the link layer data RAM.
+</p>
+<p>
+- The Link Layer RAM is now sized by the application according to the link layer configuration : maximum number of concurrent state machines and BLE features supported.
+</p>
+<p>
+- The libraries with the static 20 link allocations are removed (i.e. LinkLayer_BLE_Basic_20_links_V3_0.a, LinkLayer_BLE_Basic_20_links_V3_0p.a and LinkLayer_BLE_Basic_Plus_20_links_V3_0.a)
+</p>
+<p>
+- Library split: LinkLayer_802_15_4_Vx.a → Mac15_4.a + LinkLayer_802_15_4_Vx.a; concurrent lib split into Mac15_4_Concurrent_BLE_xxx.a + LinkLayer_BLE_xxx_802_15_4_Vx.a; new porting layers mac_radio_port.c (Zigbee) and thread_radio_port.c (Thread). Customers linking these libs must update.
 </p>
 <p>
 <b>- BLE</b>
 </p>
 <p>
-- Reduces the number of BLE Host stack libraries.
+- Support of the Randomized Resolvable Private Address feature on all STM32WBAx devices.
+</p>
+<p>
+- Support of the LL Extended Feature Set and Monitoring Advertisers features on STM32WBA5x and STM32WBA6x devices.
+</p>
+<p>
+- Update of the BLE stack in alignement with the Bluetooth Core Specification v6.3 and the Bluetooth TCRL pkg104.
+</p>
+<p>
+<b>- BLE Audio</b>
+</p>
+<p>
+- Update of the BLE Audio Framework in alignement with Bluetooth TCRL pkg104
 </p>
 <p>
 <b>- Thread</b>
 </p>
 <p>
-- Upgrades OpenThread stack to SHA-1 : b81da07ace250b7d3800928848feaa1fb126fa43 (Feb 2026)
+- Integrate Platform Security Architecture (PSA) APIs into the OpenThread stack for improved security.
+</p>
+<p>
+<b>- Zigbee</b>
+</p>
+<p>
+- New callbacks functions available at application side to track the joining state of a device.
+</p>
+<p>
+- Include several fixes at the stack and link layers, enabling long-term tests to complete without memory exhaustion errors.
+</p>
+<p>
+- Adding new applications : Zigbee_OccupSensing_Server_SED_WithTempCalib,Zigbee_PressMeas_Server_SED_Persist,Zigbee_TempMeas_Server_SED_LSI2.
+</p>
+<p>
+- Removal of some previous applications not heavily used : Zigbee_Basic_xx ,Zigbee_Diagnostic_xx,Zigbee_MeterId_xx,Zigbee_PowerConfig_xx,Zigbee_PressMeas_xx.
+</p>
+<p>
+<b>- BLE Zigbee</b>
+</p>
+<p>
+- Refactor Zigbee Direct BLE services to align with the specification, simplify porting, and improve flexibility and maintainability while preserving CubeMX compatibility
 </p>
 <p>
 <b>Drivers</b>
 </p>
 <p>
-- CMSIS Device Drivers supporting STM32WBA20xx, STM32WBA23xx, STM32WBA25xx, STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA55xx, STM32WBA5Mxx, STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx  devices
+- Support of STM32WBA20xx, STM32WBA23xx, STM32WBA25xx, STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA55xx, STM32WBA5Mxx, STM32WBA62xx, STM32WBA63xx, STM32WBA64xx, STM32WBA65xx and STM32WBA6Mxx devices</p>
+<p>
+<p>
+- Update CMSIS devices to include latest corrections
 </p>
 <p>
 - HAL/LL Drivers available for all peripherals
 </p>
-<p>
-- HAL: HAL: ADC, COMP, CORTEX, CRC, CRYP, DMA, EXTI, FLASH, GPIO, GTZC, HASH, HCD, HSEM, I2C, ICACHE, IRDA, IWDG, LPTIM, OTFDEC, PCD, PKA, PWR, RAMCFG, RCC, RNG, RTC, SAI, SMARTCARD, SMBUS, SPI, TIM, TSC, UART, USB, USART, WWDG, XSPI
+- HAL: ADC, COMP, CORTEX, CRC, CRYP, DMA, EXTI, FLASH, GPIO, GTZC, HASH, HCD, HSEM, I2C, ICACHE, IRDA, IWDG, LPTIM, OTFDEC, PCD, PKA, PWR, RAMCFG, RCC, RNG, RTC, SAI, SMARTCARD, SMBUS, SPI, TIM, TSC, UART, USB, USART, WWDG, XSPI
 </p>
 <p>
-- LL : ADC, BUS, COMP, CORTEX, CRC, DLYB, DMA, EXTI, GPIO, HSEM, I2C, ICACHE, IWDG, LPTIM, LPUART, PKA, PWR, RCC, RNG, RTC, SPI, SYSTEM, TIM, USART, USB, UTILS, WWDG
+- LL: ADC, BUS, COMP, CORTEX, CRC, DLYB, DMA, EXTI, GPIO, HSEM, I2C, ICACHE, IWDG, LPTIM, LPUART, PKA, PWR, RCC, RNG, RTC, SPI, SYSTEM, TIM, USART, USB, UTILS, WWDG
 </p>
 <p>
-- Update HAL/LL drivers to include latest corrections and to support of STM32WBA2xx devices
+- Update HAL/LL drivers to include latest corrections
 </p>
 <p>
-- HAL CRYP : SA0076 fixed
+- HAL CRYP : SA0076 fully fixed
 </p>
 <p>
-- BSP Drivers : Update STM32WBAxx_Nucleo to include latest corrections and to support of STM32WBA2xx devices
+- BSP Drivers : Update STM32WBA55G-DK1 and STM32WBA65I-DK1 to include latest corrections
 </p>
 <p>
 

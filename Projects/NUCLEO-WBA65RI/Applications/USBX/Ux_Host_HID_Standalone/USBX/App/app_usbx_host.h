@@ -30,10 +30,11 @@ extern "C" {
 #include "main.h"
 #include "ux_host_mouse.h"
 #include "ux_host_keyboard.h"
+#include "ux_hcd_stm32.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ux_hcd_stm32.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

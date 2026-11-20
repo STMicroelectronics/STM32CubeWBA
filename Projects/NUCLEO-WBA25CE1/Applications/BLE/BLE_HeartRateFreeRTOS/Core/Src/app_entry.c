@@ -96,9 +96,14 @@ extern void vPortSetupTimerInterrupt(void);
 #if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
 
-static uint8_t rtos_tick_less_IDLE_state = 1U;
+static uint8_t rtos_tick_less_IDLE_state = RTOS_TICK_LESS_ACTIVE;
 static uint8_t rtos_tick_less_IDLE_flag = 0U;
 #endif /* ( CFG_LPM_LEVEL != 0) */
+
+#if (HAL_TICK_RTC == 1)
+/* Timer for HAL tick declaration */
+static UTIL_TIMER_Object_t TimerHalTick_Id;
+#endif /* HAL_TICK_RTC */
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration
@@ -169,10 +174,6 @@ static const osSemaphoreAttr_t FlashSemaphore_attributes = {
 
 /* Timer for OS tick declaration */
 static UTIL_TIMER_Object_t TimerOsTick_Id;
-#if (HAL_TICK_RTC == 1)
-/* Timer for HAL tick declaration */
-static UTIL_TIMER_Object_t TimerHalTick_Id;
-#endif /* HAL_TICK_RTC */
 
 #if ( CFG_LPM_LEVEL != 0)
 /* Holds maximum number of FreeRTOS tick periods that can be suppressed */
@@ -250,14 +251,14 @@ int PKACTRL_ReleaseSemEndOfOperation(void);
 
 static void Wpan_Task_Entry(void* argument);
 static void TimerOsTickCb(void *arg);
-#if (HAL_TICK_RTC == 1)
-static void TimerHalTickCb(void *arg);
-static void HAL_StartTick(void);
-#endif /* HAL_TICK_RTC */
 #if ( CFG_LPM_LEVEL != 0)
 static void TimerOSwakeupCB(void *arg);
 static uint32_t getCurrentTime(void);
 #endif /* CFG_LPM_LEVEL */
+#if (HAL_TICK_RTC == 1)
+static void TimerHalTickCb(void *arg);
+static void HAL_StartTick(void);
+#endif /* HAL_TICK_RTC */
 
 /* USER CODE BEGIN PFP */
 
@@ -334,12 +335,7 @@ uint32_t MX_APPE_Init(void *p_param)
     Error_Handler();
   }
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
-  APP_BSP_LedInit();
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_BUTTON_SUPPORTED == 1)
-  APP_BSP_ButtonInit();
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+  APP_BSP_Init();
 
   /* USER CODE END APPE_Init_1 */
 
@@ -372,9 +368,6 @@ uint32_t MX_APPE_Init(void *p_param)
   }
 
   APP_BLE_Init();
-
-  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
 #if ( CFG_LPM_LEVEL != 0)
   /* create a SW timer to wakeup system from low power */
@@ -506,15 +499,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_5) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -567,6 +553,7 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
+
   /* USER CODE END SystemPower_Config */
 }
 
@@ -689,6 +676,25 @@ static void TimerOsTickCb(void *arg)
   return;
 }
 
+#if ( CFG_LPM_LEVEL != 0)
+/* OS wakeup callback */
+static void TimerOSwakeupCB(void *arg)
+{
+  /* USER CODE BEGIN TimerOSwakeupCB */
+
+  /* USER CODE END TimerOSwakeupCB */
+  return;
+}
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
+#if ( CFG_LPM_LEVEL != 0)
+/* return current time since boot, continue to count in standby low power mode */
+static uint32_t getCurrentTime(void)
+{
+  return TIMER_IF_GetTimerValue();
+}
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
 #if (HAL_TICK_RTC == 1)
 /* Timer HAL tick callback */
 static void TimerHalTickCb(void *arg)
@@ -700,23 +706,6 @@ static void TimerHalTickCb(void *arg)
   return;
 }
 #endif /* HAL_TICK_RTC */
-
-#if ( CFG_LPM_LEVEL != 0)
-/* OS wakeup callback */
-static void TimerOSwakeupCB(void *arg)
-{
-  /* USER CODE BEGIN TimerOSwakeupCB */
-
-  /* USER CODE END TimerOSwakeupCB */
-  return;
-}
-
-/* return current time since boot, continue to count in standby low power mode */
-static uint32_t getCurrentTime(void)
-{
-  return TIMER_IF_GetTimerValue();
-}
-#endif /* ( CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
@@ -789,7 +778,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -801,7 +789,6 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -838,7 +825,7 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
 
-  /* Simulate button press from UART commands. */
+  /* Threat USART Command to simulate button press for instance. */
   (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
 
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
@@ -872,7 +859,7 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
   }
 
   rtos_tick_less_IDLE_flag = 0U;
-  if(rtos_tick_less_IDLE_state != 0)
+  if(rtos_tick_less_IDLE_state != RTOS_TICK_LESS_INACTIVE)
   {
     rtos_tick_less_IDLE_flag = 1U;
     /* Stop the timer that is generating the OS tick interrupt. */
@@ -1009,7 +996,6 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
       }
 
       /* USER CODE BEGIN vPortSuppressTicksAndSleep */
-
       /* USER CODE END vPortSuppressTicksAndSleep */
     }
   }

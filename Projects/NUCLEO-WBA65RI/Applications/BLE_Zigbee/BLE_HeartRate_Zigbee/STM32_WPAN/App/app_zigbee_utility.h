@@ -54,6 +54,9 @@ bool      AppZbUtil_RequestMyBind               ( struct ZbZclClusterT * pstClus
 uint16_t  AppZbUtil_SearchServersOnBindingTable ( struct ZbZclClusterT * pstCluster, struct ZbApsAddrT * pstServerList, uint16_t iNbServerMax );
 
 bool      AppZbUtil_AddDeviceWithInstallCode    ( struct ZigBeeT * pstZigbee, uint64_t dlExtendedAddress, uint8_t * szInstallCode );
+bool      AppZbUtil_AddDeviceWithLinkKey        ( struct ZigBeeT * pstZigbee, uint64_t dlExtendedAddress, const uint8_t * pszLinkKey );
+
+uint8_t   AppZbUtil_GetDeviceType               ( struct ZigBeeT * pstZigbee );
 
 #ifdef __cplusplus
 } /* extern "C" */

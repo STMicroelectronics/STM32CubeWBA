@@ -39,7 +39,7 @@ ENTRY(Reset_Handler)
 _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 _sstack = _estack - _Min_Stack_Size;
 
-_Min_Heap_Size = 0x1000; /* required amount of heap */
+_Min_Heap_Size = 0x3A00; /* required amount of heap */
 _Min_Stack_Size = 0x2000; /* required amount of stack */
 
 /* Memories definition */
@@ -47,9 +47,13 @@ MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 448K
   RAM2   (xrw)    : ORIGIN = 0x20070000,   LENGTH = 64K
-  FLASH  (rx)     : ORIGIN = 0x08000000,   LENGTH = 2048K
+  ITS    (r)      : ORIGIN = 0x081FC000,   LENGTH = 16K
+  NVM    (r)      : ORIGIN = 0x081F8000,   LENGTH = 16K
+  FLASH  (rx)     : ORIGIN = 0x08000000,   LENGTH = (2048K - 16K - 16K)
 }
-
+  /* Export ITS region symbols */
+  __its_start__ = ORIGIN(ITS);
+  
 /* Sections */
 SECTIONS
 {
@@ -86,7 +90,15 @@ SECTIONS
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
   } >FLASH
-
+  
+  /* ITS storage region - reserved area */
+  ITS_RESERVED (READONLY):
+  {
+    . = ALIGN(4);
+    KEEP(*(ITS_RESERVED))
+    . = ALIGN(4);
+  } >ITS AT >FLASH
+  
   .ARM.extab (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);

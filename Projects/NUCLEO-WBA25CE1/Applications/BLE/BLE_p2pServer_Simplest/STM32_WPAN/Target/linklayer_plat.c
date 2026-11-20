@@ -22,8 +22,10 @@
 #include "stm32wbaxx_hal_conf.h"
 #include "stm32wbaxx_ll_rcc.h"
 
+#include "app_entry.h"
 #include "app_common.h"
 #include "app_conf.h"
+#include "ll_intf_cmn.h"
 #include "linklayer_plat.h"
 #include "stm32wbaxx_ll_rng.h"
 #include "stm32wbaxx_ll_bus.h"
@@ -75,64 +77,6 @@ void LINKLAYER_PLAT_ClockInit()
 
   /* Enable AHB5ENR peripheral clock (bus CLK) */
   __HAL_RCC_RADIO_CLK_ENABLE();
-}
-
-/**
-  * @brief  Link Layer active waiting loop.
-  * @param  delay: delay in us
-  * @retval None
-  */
-void LINKLAYER_PLAT_DelayUs(uint32_t delay)
-{
-  static uint8_t lock = 0;
-  uint32_t t0;
-  uint32_t primask_bit;
-
-  /* Enter critical section */
-  primask_bit= __get_PRIMASK();
-  __disable_irq();
-
-  if (lock == 0U)
-  {
-    /* Initialize counter */
-    /* Reset cycle counter to prevent overflow
-       As a us counter, it is assumed than even with re-entrancy,
-       overflow will never happen before re-initializing this counter */
-    DWT->CYCCNT = 0U;
-    /* Enable DWT by safety but should be useless (as already set) */
-    SET_BIT(DCB->DEMCR, DCB_DEMCR_TRCENA_Msk);
-    /* Enable counter */
-    SET_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
-  }
-  /* Increment 're-entrance' counter */
-  lock++;
-  /* Get starting time stamp */
-  t0 = DWT->CYCCNT;
-  /* Exit critical section */
- __set_PRIMASK(primask_bit);
-
-  /* Turn us into cycles */
-  delay = delay * (SystemCoreClock / 1000000U);
-  delay += t0;
-
-  /* Busy waiting loop */
-  while (DWT->CYCCNT < delay)
-  {
-  };
-
-  /* Enter critical section */
-  primask_bit= __get_PRIMASK();
-  __disable_irq();
-  if (lock == 1U)
-  {
-    /* Disable counter */
-    CLEAR_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
-  }
-  /* Decrement 're-entrance' counter */
-  lock--;
-  /* Exit critical section */
- __set_PRIMASK(primask_bit);
-
 }
 
 /**
@@ -465,9 +409,6 @@ void LINKLAYER_PLAT_StartRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_ENABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_HIGH);
-#if (CFG_SCM_SUPPORTED == 1)
-  scm_notifyradiostate(SCM_RADIO_ACTIVE);
-#endif /* CFG_SCM_SUPPORTED */
 }
 
 /**
@@ -479,9 +420,6 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_DISABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW);
-#if (CFG_SCM_SUPPORTED == 1)
-  scm_notifyradiostate(SCM_RADIO_NOT_ACTIVE);
-#endif /* CFG_SCM_SUPPORTED */
 }
 
 /**
@@ -494,10 +432,6 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
 #if (CFG_LPM_LEVEL != 0)
   UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_IDLE_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
-#if (CFG_SCM_SUPPORTED == 1)
-  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
-  while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**
@@ -510,9 +444,6 @@ void LINKLAYER_PLAT_RCOStopClbr(void)
 #if (CFG_LPM_LEVEL != 0)
   UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
-#if (CFG_SCM_SUPPORTED == 1)
-  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
-#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**

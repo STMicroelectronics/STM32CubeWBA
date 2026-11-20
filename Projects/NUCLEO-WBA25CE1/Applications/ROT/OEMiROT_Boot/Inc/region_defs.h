@@ -90,7 +90,11 @@
 #endif /* (FLASH_AREA_LOADER_OFFSET  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0  */
 
 /* define used for checking possible overlap */
+#if defined(OEMIROT_OTFDEC_EXTERNAL_FLASH_ENABLE)
+#define LOADER_MAX_CODE_SIZE                 (FLASH_TOTAL_SIZE - FLASH_AREA_0_OFFSET - FLASH_AREA_0_SIZE)
+#else
 #define LOADER_MAX_CODE_SIZE                 (FLASH_TOTAL_SIZE - FLASH_AREA_1_OFFSET - FLASH_AREA_1_SIZE)
+#endif
 
 #if defined(OEMIROT_OTFDEC_EXTERNAL_FLASH_ENABLE) && (LOADER_CODE_SIZE > LOADER_MAX_CODE_SIZE)
 #error "Loader mapping overlapping slot %LOADER_CODE_SIZE %LOADER_MAX_CODE_SIZE"

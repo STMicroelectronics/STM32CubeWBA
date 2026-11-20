@@ -45,9 +45,7 @@ typedef enum {
 /******************************************************************************
  * Timer Interface configuration
  ******************************************************************************/
-#define RTC_N_PREDIV_S      (10U)
-#define RTC_PREDIV_S        ( ( 1U << RTC_N_PREDIV_S ) - 1U )
-#define RTC_PREDIV_A        ( ( 1U << ( 15U - RTC_N_PREDIV_S ) ) - 1U )
+#define TIMER_IF_RTCCLK_FREQ_HZ      (LSE_VALUE)
 
 #ifdef TIF_DEBUG
 #define TIMER_IF_DBG_PRINTF(...) do{ {UTIL_ADV_TRACE_COND_FSend(VLEVEL_ALWAYS, T_REG_OFF, TS_OFF, __VA_ARGS__);} }while(0);

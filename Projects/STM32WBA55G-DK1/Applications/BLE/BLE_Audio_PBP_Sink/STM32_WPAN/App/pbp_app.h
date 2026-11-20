@@ -41,8 +41,9 @@ typedef uint8_t PBPAPP_PASyncState_t;
 
 typedef uint8_t PBPAPP_BIGSyncState_t;
 #define PBPAPP_BIG_SYNC_STATE_IDLE          (0x00)
-#define PBPAPP_BIG_SYNC_STATE_SYNCHRONIZING (0x01)
-#define PBPAPP_BIG_SYNC_STATE_SYNCHRONIZED  (0x02)
+#define PBPAPP_BIG_SYNC_STATE_BASE_READY    (0x01)
+#define PBPAPP_BIG_SYNC_STATE_SYNCHRONIZING (0x02)
+#define PBPAPP_BIG_SYNC_STATE_SYNCHRONIZED  (0x03)
 
 typedef uint8_t PBPAPP_ScanState_t;
 #define PBPAPP_SCAN_STATE_IDLE              (0x00)
@@ -123,4 +124,3 @@ char* PBPAPP_GetBrdSourceName(void);
 #endif
 
 #endif /*__PBP_APP_H */
-

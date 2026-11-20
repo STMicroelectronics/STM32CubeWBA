@@ -34,7 +34,7 @@
 /* External functions --------------------------------------------------------*/
 extern void (*radio_callback)(void);
 extern void (*low_isr_callback)(void);
-extern uint32_t llhwc_cmn_get_aligned_us_now(uint32_t*  multiplier ,   uint32_t *divider);
+
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 
@@ -154,7 +154,7 @@ void UsageFault_Handler(void)
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
+  * @brief This function handles System service call via SVC instruction.
   */
 void SVC_Handler(void)
 {
@@ -240,18 +240,14 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-#if (CFG_SCM_SUPPORTED == 1)
     /* SCM HSE BEGIN */
     SCM_HSE_StartStabilizationTimer();
     /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    #if (CFG_SCM_SUPPORTED == 1)
-      scm_pllrdy_isr();
-    #endif /* CFG_SCM_SUPPORTED */
+    scm_pllrdy_isr();
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -314,37 +310,14 @@ void TIM16_IRQHandler(void)
     /* Clear the update interrupt flag */
     LL_TIM_ClearFlag_UPDATE(TIM16);
 
-#if (CFG_SCM_SUPPORTED == 1)
     /* SCM HSE BEGIN */
     /* Update interrupt processing */
     SCM_HSE_SW_HSERDY_isr();
     /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
   /* USER CODE END TIM16_IRQn 1 */
-}
-
-/**
-  * @brief This function handles PKA global interrupt.
-  */
-void PKA_IRQHandler(void)
-{
-  /* USER CODE BEGIN PKA_IRQn 0 */
-  /* Check incoming interrupt */
-  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
-  {
-    /* Clear the interrupt flag */
-    LL_PKA_ClearFlag_PROCEND (PKA);
-
-    /* Call the PKACTRL Callback */
-    PKACTRL_EndOfProcessCb();
-  }
-  /* USER CODE END PKA_IRQn 0 */
-  /* USER CODE BEGIN PKA_IRQn 1 */
-
-  /* USER CODE END PKA_IRQn 1 */
 }
 
 /**
@@ -353,9 +326,8 @@ void PKA_IRQHandler(void)
 void RADIO_IRQHandler(void)
 {
   /* USER CODE BEGIN RADIO_IRQn 0 */
-  uint32_t mul,div;
-  llhwc_cmn_get_aligned_us_now(&mul, &div);
-/* USER CODE END RADIO_IRQn 0 */
+
+  /* USER CODE END RADIO_IRQn 0 */
 
   if(NULL != radio_callback)
   {
@@ -368,6 +340,20 @@ void RADIO_IRQHandler(void)
   /* USER CODE BEGIN RADIO_IRQn 1 */
 
   /* USER CODE END RADIO_IRQn 1 */
+}
+
+/**
+  * @brief This function handles PWR global WKUP pin interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
 }
 
 /**
@@ -401,28 +387,5 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-/**
-  * @brief This function handles EXTI Line6 interrupt.
-  */
-void EXTI6_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B2);
-}
-
-/**
-  * @brief This function handles EXTI Line7 interrupt.
-  */
-void EXTI7_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B3);
-}
-
-/**
-  * @brief This function handles EXTI Line13 interrupt.
-  */
-void EXTI13_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B1);
-}
 
 /* USER CODE END 1 */

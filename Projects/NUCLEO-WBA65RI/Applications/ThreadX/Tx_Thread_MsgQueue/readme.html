@@ -38,6 +38,7 @@ at this stage, the application creates 3 threads with different
 priorities and 2 message queues :</p>
 <ul>
 <li>tx_app_thread (Priority : 5; Preemption Threshold : 5)</li>
+<li>MsgSenderThreadOne (Priority : 5; Preemption Threshold : 5)</li>
 <li>MsgSenderThreadTwo (Priority : 5; Preemption Threshold : 5)</li>
 <li>MsgReceiverThread (Priority : 10; Preemption Threshold : 10)</li>
 <li>MsgQueueOne (shared by tx_app_thread and MsgReceiverThread)</li>
@@ -55,8 +56,13 @@ LED</i> is Toggled once.</li>
 LED</i> is Toggled once.</li>
 </ul>
 <h4 id="expected-success-behavior"><b>Expected success behavior</b></h4>
+
 <p><i>GREEN_LED</i> toggles every 200ms and <i>BLUE_LED</i> toggles every
 500ms if the application is running successfully.</p>
+<p>Messages on HyperTerminal :</p>
+<p>** Message is available on MsgQueueOne: TOGGLE_GREEN_LED**</p>
+<p>** Message is available on MsgQueueTwo: TOGGLE_BLUE_LED**</p>
+
 <h4 id="error-behaviors"><b>Error behaviors</b></h4>
 <p>On failure, an error message is printed to the serial port while the <i>BLUE_LED</i> and <i>GREEN_LED</i> are turned off, and <i>LED_RED</i> toggles every 1 second.</p>
 <h4 id="assumptions-if-any"><b>Assumptions if any</b></h4>
@@ -124,6 +130,17 @@ environment</b></h3>
 <li>This application runs on STM32WBA65xx devices</li>
 <li>This application has been tested with STMicroelectronics NUCLEO-WBA65RI revision boards (MB1801-USB-D01 and MB2130-WBA65RI-A01) and can be easily tailored to any
 other supported device and development board.</li>
+<li>A virtual COM port appears in the HyperTerminal:
+<ul>
+<li>Hyperterminal configuration:
+<ul>
+<li>Data Length = 8 Bits</li>
+<li>One Stop Bit</li>
+<li>No parity</li>
+<li>BaudRate = 115200 Baud</li>
+<li>Flow control: None</li>
+</ul></li>
+</ul></li>
 </ul>
 <h3 id="how-to-use-it"><b>How to use it ?</b></h3>
 <p>In order to make the program work, you must do the following:</p>

@@ -33,6 +33,7 @@
 /* USER CODE BEGIN Includes */
 #include "stm32_timer.h"
 #include "host_stack_if.h"
+#include "RTDebug.h"
 
 /* USER CODE END Includes */
 
@@ -65,8 +66,6 @@ typedef struct
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
-#define HRS_APP_RR_INTERVAL_NBR      (1)     /* Number of RR interval, shall be lower than HRS_MAX_NBR_RR_INTERVAL_VALUES*/
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -85,7 +84,6 @@ static HRS_APP_Context_t HRS_APP_Context;
 uint8_t a_HRS_UpdateCharData[247];
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -190,7 +188,6 @@ void HRS_APP_Init(void)
 
   /* USER CODE BEGIN Service1_APP_Init */
   HRS_Data_t msg_conf;
-
   /**
    * Set Flags for measurement value
    */
@@ -271,13 +268,14 @@ __USED void HRS_Hrme_SendNotification(void) /* Property Notification */
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-
 static void HRS_APP_Measurements(void)
 {
   uint32_t measurement;
   tBleStatus ret;
   HRS_Data_t msg_conf;
   uint8_t hrm_char_length;
+
+  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_MEAS);
 
   HW_RNG_Get(1, &measurement);
   measurement = (measurement % 15) + 60;
@@ -416,6 +414,8 @@ static void HRS_APP_Measurements(void)
   {
     LOG_INFO_APP("HRS_UpdateValue fails\n");
   }
+
+  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_MEAS);
 
   return;
 }

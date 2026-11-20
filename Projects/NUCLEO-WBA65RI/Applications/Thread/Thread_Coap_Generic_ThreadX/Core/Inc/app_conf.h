@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -86,9 +86,7 @@ typedef enum
   CFG_LPM_LL_DEEPSLEEP,
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
-  CFG_LPM_PKA,
   CFG_LPM_THREAD_RX_ACK,
-  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -166,7 +164,6 @@ extern UART_HandleTypeDef           huart1;
 typedef enum
 {
   CFG_RTOS_FLAG_RNG = 0,
-  CFG_RTOS_FLAG_PKA,
   CFG_RTOS_FLAG_FlashManager,
   CFG_RTOS_FLAG_LinkLayer,
   CFG_RTOS_FLAG_OT_Tasklet,
@@ -199,19 +196,6 @@ typedef enum
 
 #define CFG_RT_DEBUG_GPIO_MODULE            (0)
 #define CFG_RT_DEBUG_DTB                    (0)
-
-/******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -253,6 +237,7 @@ typedef enum
 /* USER CODE END HW_RNG_Configuration */
 
 /* USER CODE BEGIN Defines */
+
 #define CFG_BSP_ON_THREADX                      (1)
 #define CFG_BSP_ON_NUCLEO                       (1)
 
@@ -272,16 +257,6 @@ typedef enum
 //  #undef  CFG_LED_SUPPORTED
 //  #define CFG_LED_SUPPORTED         (0)
 #endif /* CFG_FULL_LOW_POWER */
-
-#if ( CFG_LED_SUPPORTED == 1 )
-#define APP_LED_ON( LED )           BSP_LED_On( LED )
-#define APP_LED_OFF( LED )          BSP_LED_Off( LED )
-#define APP_LED_TOGGLE( LED )       BSP_LED_Toggle( LED )
-#else /* ( CFG_LED_SUPPORTED == 1 ) */
-#define APP_LED_ON( LED )
-#define APP_LED_OFF( LED )
-#define APP_LED_TOGGLE( LED )
-#endif  /* ( CFG_LED_SUPPORTED == 1 ) */
 
 /* USER CODE END Defines */
 

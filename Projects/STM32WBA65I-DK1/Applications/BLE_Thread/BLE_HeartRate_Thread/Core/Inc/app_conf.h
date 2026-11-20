@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -46,7 +46,7 @@
  * Definition of public BD Address,
  * when CFG_BD_ADDRESS = 0x000000000000 the BD address is generated based on Unique Device Number.
  */
-#define CFG_BD_ADDRESS                    (0x0008E12A1234)
+#define CFG_BD_ADDRESS                    (0x000000000000)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -112,7 +112,6 @@
 
 /* USER CODE BEGIN Generic_Parameters */
 
-
 /* USER CODE END Generic_Parameters */
 
 /**< specific parameters */
@@ -136,46 +135,33 @@
                                      0 | \
                                      0 | \
                                      0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
                                      0)
 
 /**
- * Maximum number of simultaneous connections and advertising that the device will support.
+ * Maximum number of simultaneous connections that the device will support.
  * This setting should not exceed the number of BLE connection supported by BLE host stack.
  */
 #define CFG_BLE_NUM_LINK            (2)
 
 /**
- * Maximum number of Services that can be stored in the GATT database.
- * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
+ * Maximum number of simultaneous state machine supported by the LinkLayer, requirements are:
+ * - one per Extended Advertising Set
+ * - one for Periodic Advertising Sync
+ * - one per ACL connection
+ * - one per Broadcast Isochronous Group
+ * - one per Connected Isochronous Stream
  */
-#define CFG_BLE_NUM_GATT_SERVICES   (8)
-
-/**
- * Maximum number of Attributes
- * (i.e. the number of characteristic + the number of characteristic values + the number of descriptors, excluding the services)
- * that can be stored in the GATT database.
- * Note that certain characteristics and relative descriptors are added automatically during device initialization
- * so this parameters should be 9 plus the number of user Attributes
- */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES (68)
+#define CFG_BLE_NUM_STATE_MACHINES  (4)
 
 /**
  * Maximum supported ATT_MTU size
  * This setting should be aligned with ATT_MTU value configured in the ble host
  */
 #define CFG_BLE_ATT_MTU_MAX         (251)
-
-/**
- * Size of the storage area for Attribute values
- *  This value depends on the number of attributes used by application. In particular the sum of the following quantities (in octets) should be made for each attribute:
- *  - attribute value length
- *  - 5, if UUID is 16 bit; 19, if UUID is 128 bit
- *  - 2, if server configuration descriptor is used
- *  - 2*DTM_NUM_LINK, if client configuration descriptor is used
- *  - 2, if extended properties is used
- *  The total amount of memory needed is the sum of the above quantities for each attribute.
- */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (1344)
 
 /**
  * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
@@ -195,7 +181,8 @@
  * Number of allocated memory blocks used to transmit and receive data packets
  */
 #define CFG_BLE_MBLOCK_COUNT          (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                       CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
+                                       MAX(MAX(CFG_BLE_ATT_MTU_MAX, CFG_BLE_COC_MPS_MAX), SM_MTU),\
+                                       CFG_BLE_NUM_LINK) \
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
@@ -222,7 +209,7 @@
  * Connection Oriented Channel parameters
  */
 #define CFG_BLE_COC_NBR_MAX           (64)
-#define CFG_BLE_COC_MPS_MAX           (248)
+#define CFG_BLE_COC_MPS_MAX           (23)
 #define CFG_BLE_COC_INITIATOR_NBR_MAX (32)
 
 /**
@@ -271,9 +258,7 @@ typedef enum
   CFG_LPM_LL_DEEPSLEEP,
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
-  CFG_LPM_PKA,
   CFG_LPM_THREAD_RX_ACK,
-  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -338,7 +323,7 @@ extern UART_HandleTypeDef           huart1;
  *   the value assigned to the define is :
  *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
-#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_DEBUG
+#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
 #define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
@@ -366,7 +351,7 @@ typedef enum
   CFG_TASK_HCI_ASYNCH_EVT_ID,
   CFG_TASK_BLE_HOST,
   CFG_TASK_AMM,
-  CFG_TASK_PKACTRL,
+  CFG_TASK_PKA_NOTIF,
   CFG_TASK_BLE_TIMER_BCKGND,
   CFG_TASK_FLASH_MANAGER,
   CFG_TASK_OT_UART,
@@ -375,8 +360,8 @@ typedef enum
   CFG_TASK_OT_TASKLETS,
   CFG_TASK_OT_RCP_SPINEL_RX,
   CFG_TASK_SET_THREAD_MODE,
-  CFG_TASK_PKA,
   /* USER CODE BEGIN CFG_Task_Id_t */
+
   CFG_TASK_BSP_JOY_UP,
   CFG_TASK_BSP_JOY_RIGHT,
   CFG_TASK_BSP_JOY_DOWN,
@@ -417,12 +402,12 @@ typedef enum
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
 #define TASK_FLASH_MNGR                     ( 1u << CFG_TASK_FLASH_MANAGER )
 /* USER CODE BEGIN TASK_ID_Define */
+
 #define TASK_BSP_JOY_RIGHT                  ( 1u << CFG_TASK_BSP_JOY_RIGHT )
 #define TASK_BSP_JOY_LEFT                   ( 1u << CFG_TASK_BSP_JOY_LEFT )
 #define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BUTTON_B3 )
 
 #define TASK_COAP_MSG_RATE                  ( 1u << CFG_TASK_COAP_MSG_RATE )
-
 /* USER CODE END TASK_ID_Define */
 
 /**
@@ -431,13 +416,9 @@ typedef enum
  */
 typedef enum
 {
-  CFG_EVENT_PKA_COMPLETED,
-  CFG_PKA_MUTEX,
-  CFG_PKA_END_OF_PROCESS,
   CFG_FLASH_MUTEX,
   CFG_EVENT_PROC_GAP_COMPLETE,
   /* USER CODE BEGIN CFG_Event_Id_t */
-
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -450,10 +431,9 @@ typedef enum
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
-
-/* NVM area is placed at the end of the flash memory */
-#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED)
-
+/* NVM area is placed at the end of the flash memory, after PSA storage */
+#define PSA_STORAGE_SECTOR_NEEDED     2
+#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED - PSA_STORAGE_SECTOR_NEEDED)
   /**
    * This is the max size of data the THREAD Stack needs to write in NVM
    * This is different to the size allocated in the EEPROM emulator
@@ -485,19 +465,6 @@ typedef enum
 #define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
-
-/******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
@@ -527,10 +494,10 @@ typedef enum
  ******************************************************************************/
 
 /* Number of 32-bit random numbers stored in internal pool */
-#define CFG_HW_RNG_POOL_SIZE                (32)
+#define CFG_HW_RNG_POOL_SIZE                (192)
 
 /* Threshold of random numbers available before triggering pool refill */
-#define CFG_HW_RNG_POOL_THRESHOLD           (16)
+#define CFG_HW_RNG_POOL_THRESHOLD           (96)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 
@@ -540,7 +507,7 @@ typedef enum
  * PKA configuration
  ******************************************************************************/
 /* PKA IRQ priority of the PKA end of process */
-#define PKA_INTR_PRIO_PROCEND               (7)
+#define PKA_INTR_PRIO_PROCEND               (0)
 
 /******************************************************************************
  * MEMORY MANAGER
@@ -602,7 +569,6 @@ typedef enum
     #define CFG_LCD_SUPPORTED      (0)
   #endif /* CFG_LCD_SUPPORTED */
 #endif /* CFG_LPM_LEVEL */
-
 /* USER CODE END Defines */
 
 /**
@@ -645,6 +611,7 @@ typedef enum
  #endif
 
 /* USER CODE BEGIN Defines_2 */
+
 /**
  * Switch to enable/disable BLE radio activity shown on green LED
  * 0 : disable / 1 : enable
@@ -654,7 +621,7 @@ typedef enum
 #if (CFG_LED_SUPPORTED == 0)
 #undef BLE_RADIO_ACTIVITY_ON_LED_SUPPORT
 #define BLE_RADIO_ACTIVITY_ON_LED_SUPPORT               (0)
-#endif 
+#endif
 /* USER CODE END Defines_2 */
 
 #endif /*APP_CONF_H */

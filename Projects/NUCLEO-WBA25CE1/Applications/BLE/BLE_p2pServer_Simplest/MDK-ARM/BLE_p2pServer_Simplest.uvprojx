@@ -335,9 +335,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_FULL_LL_DRIVER,BLE_LL,BLE_STACK_PERIPHERAL_ONLY,PHY_40nm_6_00_a,USE_HAL_DRIVER,STM32WBA25xx</Define>
+              <Define>USE_FULL_LL_DRIVER,BLE_LL,BLE_STACK_PERIPHERAL_ONLY,USE_HAL_DRIVER,STM32WBA25xx</Define>
               <Undefine />
-              <IncludePath>../Core/Inc;../System/Modules;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_peripheral_only;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include</IncludePath>
+              <IncludePath>../Core/Inc;../System/Modules;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_peripheral_only;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -468,6 +468,11 @@
           <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
           <Files>
             <File>
+              <FileName>stm32wbaxx_ll_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32wbaxx_ll_exti.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
@@ -595,8 +600,13 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>::CMSIS</GroupName>
+        </Group>
+        <Group>
           <GroupName>Middlewares/STM32_WPAN/LinkLayer</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>ll_sys_cs.c</FileName>
               <FileType>1</FileType>
@@ -628,6 +638,8 @@
           <GroupName>Middlewares/STM32_WPAN/BLE</GroupName>
           <Files>
             <File>
+            </File>
+            <File>
               <FileName>stm32wba_ble_stack_full.a</FileName>
               <FileType>4</FileType>
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_full.a</FilePath>
@@ -638,9 +650,6 @@
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</FilePath>
             </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>

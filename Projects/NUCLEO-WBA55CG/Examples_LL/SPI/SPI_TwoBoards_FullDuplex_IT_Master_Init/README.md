@@ -29,6 +29,8 @@ On MASTER side, Clock will be generated on SCK line, Transmission(MOSI Line) and
 will be done at the same time.
 SLAVE SPI will received  the Clock (SCK Line), so Transmission(MISO Line) and reception (MOSI Line) will be done also.
 
+Master should be first started and then the slave shall be reset before pressing the button.
+
 LD2 is On on both boards if data is well received.
 
 In case of errors, LD2 is blinking Slowly (1s).

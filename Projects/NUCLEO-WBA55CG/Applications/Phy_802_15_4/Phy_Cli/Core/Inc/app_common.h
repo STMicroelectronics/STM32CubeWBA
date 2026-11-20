@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -30,10 +30,12 @@ extern "C"{
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <inttypes.h>
 
 #include "app_conf.h"
 #include "hw.h"
 #include "ll_sys.h"
+#include "wpan_utils.h"
 
 /* -------------------------------- *
  *  Basic definitions               *

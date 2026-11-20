@@ -92,7 +92,6 @@ uint8_t GATT_CLIENT_APP_Get_State(uint8_t index);
 tBleStatus GATT_CLIENT_APP_ReadCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t *data_length_p, uint8_t **data_p, uint8_t use_read_long);
 tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t data_length, uint8_t *data);
 /* USER CODE BEGIN EFP */
-
 void GATT_CLIENT_APP_ForwardWrite(void);
 
 /* USER CODE END EFP */

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -26,6 +26,7 @@
 #include "serial_cmd_interpreter.h"
 #include "log_module.h"
 #endif /* CFG_LOG_SUPPORTED */
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,13 +73,13 @@ DMA_HandleTypeDef handle_LPDMA1_Channel1;
  */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void SystemPower_Config(void);
-static void MX_LPDMA1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -130,7 +131,6 @@ int main(void)
   MX_RTC_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
-
 #if (CFG_LOG_SUPPORTED == 0)
   MX_USART1_UART_Init();
 
@@ -140,7 +140,7 @@ int main(void)
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
-  
+
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
@@ -150,11 +150,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -254,6 +256,7 @@ static void SystemPower_Config(void)
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(WKUP_IRQn);
 /* USER CODE BEGIN PWR */
+
 /* USER CODE END PWR */
 }
 
@@ -380,7 +383,7 @@ void MX_ICACHE_Init(void)
   * @param None
   * @retval None
   */
-static void MX_LPDMA1_Init(void)
+void MX_LPDMA1_Init(void)
 {
 
   /* USER CODE BEGIN LPDMA1_Init 0 */

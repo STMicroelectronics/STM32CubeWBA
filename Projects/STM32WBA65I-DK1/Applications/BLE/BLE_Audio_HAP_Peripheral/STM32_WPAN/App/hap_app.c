@@ -43,6 +43,14 @@
 /*BAP mandatory supported delay definition*/
 #define BAP_MANDATORY_PRESENTATION_DELAY        (40000u)
 
+/*Advertising Settings*/
+#define FAST_ADV_INTERVAL_MIN                   (0x0080)
+#define FAST_ADV_INTERVAL_MAX                   (0x00A0)
+#define SLOW_ADV_INTERVAL_MIN                   (0x0640)
+#define SLOW_ADV_INTERVAL_MAX                   (0x0FA0)
+#define ADV_TYPE                                ADV_IND
+#define ADV_FILTER                              NO_WHITE_LIST_USE
+
 /*Delay of Timer used to relaunch a CAP Linkup procedure*/
 #define LINKUP_RETRY_TIMEOUT                    (4000u)
 
@@ -139,81 +147,95 @@
 #define VOLUME_STEP                             10
 #define BASE_VOLUME                             128
 
+#define ACTIVATE_FAKE_STEREO                    1
+
 /* Private macros ------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
 /* Codec Specific Capabilities defined in Basic Audio Profile Specification*/
-const APP_CodecCap_t APP_CodecSpecificCap[NUM_LC3_CODEC_CAP] =    \
-                  {{SUPPORTED_SAMPLE_FREQ_8000_HZ,SUPPORTED_FRAME_DURATION_7_5_MS,26,26}, \
-                  {SUPPORTED_SAMPLE_FREQ_8000_HZ,SUPPORTED_FRAME_DURATION_10_MS,30,30}, \
-                  {SUPPORTED_SAMPLE_FREQ_16000_HZ,SUPPORTED_FRAME_DURATION_7_5_MS,30,30}, \
-                  {SUPPORTED_SAMPLE_FREQ_16000_HZ,SUPPORTED_FRAME_DURATION_10_MS,40,40}, \
-                  {SUPPORTED_SAMPLE_FREQ_24000_HZ,SUPPORTED_FRAME_DURATION_7_5_MS,45,45}, \
-                  {SUPPORTED_SAMPLE_FREQ_24000_HZ,SUPPORTED_FRAME_DURATION_10_MS,60,60}, \
-                  {SUPPORTED_SAMPLE_FREQ_32000_HZ,SUPPORTED_FRAME_DURATION_7_5_MS,60,60}, \
-                  {SUPPORTED_SAMPLE_FREQ_32000_HZ,SUPPORTED_FRAME_DURATION_10_MS,80,80}, \
-                  {SUPPORTED_SAMPLE_FREQ_44100_HZ,SUPPORTED_FRAME_DURATION_7_5_MS,97,97}, \
-                  {SUPPORTED_SAMPLE_FREQ_44100_HZ,SUPPORTED_FRAME_DURATION_10_MS,130,130}, \
-                  {SUPPORTED_SAMPLE_FREQ_48000_HZ,SUPPORTED_FRAME_DURATION_7_5_MS,75,75}, \
-                  {SUPPORTED_SAMPLE_FREQ_48000_HZ,SUPPORTED_FRAME_DURATION_10_MS,100,100}, \
-                  {SUPPORTED_SAMPLE_FREQ_48000_HZ,SUPPORTED_FRAME_DURATION_7_5_MS,90,90}, \
-                  {SUPPORTED_SAMPLE_FREQ_48000_HZ,SUPPORTED_FRAME_DURATION_10_MS,120,120}, \
-                  {SUPPORTED_SAMPLE_FREQ_48000_HZ,SUPPORTED_FRAME_DURATION_7_5_MS,117,117}, \
-                  {SUPPORTED_SAMPLE_FREQ_48000_HZ,SUPPORTED_FRAME_DURATION_10_MS,155,155}};
+const APP_CodecCap_t APP_CodecSpecificCap[NUM_LC3_CODEC_CAP] = {
+  {SUPPORTED_SAMPLE_FREQ_8000_HZ,  SUPPORTED_FRAME_DURATION_7_5_MS,  26u,  26u},
+  {SUPPORTED_SAMPLE_FREQ_8000_HZ,  SUPPORTED_FRAME_DURATION_10_MS,   30u,  30u},
+  {SUPPORTED_SAMPLE_FREQ_16000_HZ, SUPPORTED_FRAME_DURATION_7_5_MS,  30u,  30u},
+  {SUPPORTED_SAMPLE_FREQ_16000_HZ, SUPPORTED_FRAME_DURATION_10_MS,   40u,  40u},
+  {SUPPORTED_SAMPLE_FREQ_24000_HZ, SUPPORTED_FRAME_DURATION_7_5_MS,  45u,  45u},
+  {SUPPORTED_SAMPLE_FREQ_24000_HZ, SUPPORTED_FRAME_DURATION_10_MS,   60u,  60u},
+  {SUPPORTED_SAMPLE_FREQ_32000_HZ, SUPPORTED_FRAME_DURATION_7_5_MS,  60u,  60u},
+  {SUPPORTED_SAMPLE_FREQ_32000_HZ, SUPPORTED_FRAME_DURATION_10_MS,   80u,  80u},
+  {SUPPORTED_SAMPLE_FREQ_44100_HZ, SUPPORTED_FRAME_DURATION_7_5_MS,  97u,  97u},
+  {SUPPORTED_SAMPLE_FREQ_44100_HZ, SUPPORTED_FRAME_DURATION_10_MS,  130u, 130u},
+  {SUPPORTED_SAMPLE_FREQ_48000_HZ, SUPPORTED_FRAME_DURATION_7_5_MS,  75u,  75u},
+  {SUPPORTED_SAMPLE_FREQ_48000_HZ, SUPPORTED_FRAME_DURATION_10_MS,  100u, 100u},
+  {SUPPORTED_SAMPLE_FREQ_48000_HZ, SUPPORTED_FRAME_DURATION_7_5_MS,  90u,  90u},
+  {SUPPORTED_SAMPLE_FREQ_48000_HZ, SUPPORTED_FRAME_DURATION_10_MS,  120u, 120u},
+  {SUPPORTED_SAMPLE_FREQ_48000_HZ, SUPPORTED_FRAME_DURATION_7_5_MS, 117u, 117u},
+  {SUPPORTED_SAMPLE_FREQ_48000_HZ, SUPPORTED_FRAME_DURATION_10_MS,  155u, 155u}
+};
 
 /* QoS Configuration settings defined in Basic Audio Profile Specification for low latency and for high-reliability audio data*/
-const APP_QoSConf_t APP_QoSConf[NUM_LC3_QoSConf] =    \
-                  {{SAMPLE_FREQ_8000_HZ,7500,BAP_FRAMING_UNFRAMED,26,2,8,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,10000,BAP_FRAMING_UNFRAMED,30,2,10,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,2,8,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,2,10,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,2,8,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,2,10,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,2,8,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,2,10,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,5,24,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,10884,BAP_FRAMING_FRAMED,130,5,31,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,5,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,5,20,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,5,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,5,20,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,5,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,5,20,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,7500,BAP_FRAMING_UNFRAMED,26,13,75,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,10000,BAP_FRAMING_UNFRAMED,30,13,95,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,13,75,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,13,95,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,13,75,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,13,95,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,13,75,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,13,95,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,13,80,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,10884,BAP_FRAMING_FRAMED,130,13,85,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,13,75,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,13,95,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,13,75,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,13,100,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,13,75,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,13,100,40000}};
+const APP_QoSConf_t APP_UnicastQoSConf[NUM_LC3_UNICAST_QOSCONF] = {
+  /* Low Latency BAP Unicast Configs */
+  {SAMPLE_FREQ_8000_HZ,   7500, BAP_FRAMING_UNFRAMED,  26,  2,   8, 40000},
+  {SAMPLE_FREQ_8000_HZ,  10000, BAP_FRAMING_UNFRAMED,  30,  2,  10, 40000},
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  2,   8, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  2,  10, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45,  2,   8, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60,  2,  10, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  2,   8, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  2,  10, 40000},
+  {SAMPLE_FREQ_44100_HZ,  8163, BAP_FRAMING_FRAMED,    97,  5,  24, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED,   130,  5,  31, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  5,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  5,  20, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90,  5,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120,  5,  20, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED, 117,  5,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155,  5,  20, 40000},
+  /* High Reliability BAP Unicast Configs */
+  {SAMPLE_FREQ_8000_HZ,   7500, BAP_FRAMING_UNFRAMED,  26, 13,  75, 40000},
+  {SAMPLE_FREQ_8000_HZ,  10000, BAP_FRAMING_UNFRAMED,  30, 13,  95, 40000},
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30, 13,  75, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40, 13,  95, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45, 13,  75, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60, 13,  95, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60, 13,  75, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80, 13,  95, 40000},
+  {SAMPLE_FREQ_44100_HZ,  8163, BAP_FRAMING_FRAMED,    97, 13,  80, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED,   130, 13,  85, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75, 13,  75, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100, 13,  95, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90, 13,  75, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120, 13, 100, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED, 117, 13,  75, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155, 13, 100, 40000},
+  /* Balanced BAP Unicast Configs */
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  3,  15, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  3,  20, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45,  3,  15, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60,  3,  20, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  3,  15, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  3,  20, 40000}
+};
 
 /* Unicast Audio Configuration defined in Basic Audio Profile Specification */
-const APP_UnicastAudioConf_t APP_UnicastAudioConf[NUM_USR_AUDIO_CONF] =    \
-                  {{1,0,SUPPORTED_AUDIO_CHNL_COUNT_1,0,0,0,1,1}, \
-                  {0,1,0,0,SUPPORTED_AUDIO_CHNL_COUNT_1,0,1,1}, \
-                  {1,1,SUPPORTED_AUDIO_CHNL_COUNT_1,0,SUPPORTED_AUDIO_CHNL_COUNT_1,0,1,2}, \
-                  {1,0,SUPPORTED_AUDIO_CHNL_COUNT_2,2,0,0,1,1}, \
-                  {1,1,SUPPORTED_AUDIO_CHNL_COUNT_2,2,SUPPORTED_AUDIO_CHNL_COUNT_1,0,1,2}, \
-                  {2,0,SUPPORTED_AUDIO_CHNL_COUNT_1,2,0,0,2,2}, \
-                  {1,0,SUPPORTED_AUDIO_CHNL_COUNT_1,1,0,0,1,1}, \
-                  {1,1,SUPPORTED_AUDIO_CHNL_COUNT_1,0,SUPPORTED_AUDIO_CHNL_COUNT_1,0,2,2}, \
-                  {1,0,SUPPORTED_AUDIO_CHNL_COUNT_1,0,0,0,1,1}, \
-                  {2,1,SUPPORTED_AUDIO_CHNL_COUNT_1,2,SUPPORTED_AUDIO_CHNL_COUNT_1,0,2,3}, \
-                  {1,1,SUPPORTED_AUDIO_CHNL_COUNT_1,1,SUPPORTED_AUDIO_CHNL_COUNT_1,1,1,2}, \
-                  {0,2,0,0,SUPPORTED_AUDIO_CHNL_COUNT_1,2,2,2}, \
-                  {0,1,0,0,SUPPORTED_AUDIO_CHNL_COUNT_1,1,1,1}, \
-                  {0,1,0,0,SUPPORTED_AUDIO_CHNL_COUNT_2,2,1,1}, \
-                  {2,2,SUPPORTED_AUDIO_CHNL_COUNT_1,2,SUPPORTED_AUDIO_CHNL_COUNT_1,2,2,4}, \
-                  {1,1,SUPPORTED_AUDIO_CHNL_COUNT_1,1,SUPPORTED_AUDIO_CHNL_COUNT_1,1,1,2}};
+const APP_UnicastAudioConf_t APP_UnicastAudioConf[NUM_USR_AUDIO_CONF] = {
+  {1, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 0,                            0, 0, 1, 1},
+  {0, 1,                            0, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 0, 1, 1},
+  {1, 1, SUPPORTED_AUDIO_CHNL_COUNT_1, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 0, 1, 2},
+  {1, 0, SUPPORTED_AUDIO_CHNL_COUNT_2, 2,                            0, 0, 1, 1},
+  {1, 1, SUPPORTED_AUDIO_CHNL_COUNT_2, 2, SUPPORTED_AUDIO_CHNL_COUNT_1, 0, 1, 2},
+  {2, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 2,                            0, 0, 2, 2},
+  {1, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 1,                            0, 0, 1, 1},
+  {1, 1, SUPPORTED_AUDIO_CHNL_COUNT_1, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 0, 2, 2},
+  {1, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 0,                            0, 0, 1, 1},
+  {2, 1, SUPPORTED_AUDIO_CHNL_COUNT_1, 2, SUPPORTED_AUDIO_CHNL_COUNT_1, 0, 2, 3},
+  {1, 1, SUPPORTED_AUDIO_CHNL_COUNT_1, 1, SUPPORTED_AUDIO_CHNL_COUNT_1, 1, 1, 2},
+  {0, 2,                            0, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 2, 2, 2},
+  {0, 1,                            0, 0, SUPPORTED_AUDIO_CHNL_COUNT_1, 1, 1, 1},
+  {0, 1,                            0, 0, SUPPORTED_AUDIO_CHNL_COUNT_2, 2, 1, 1},
+  {2, 2, SUPPORTED_AUDIO_CHNL_COUNT_1, 2, SUPPORTED_AUDIO_CHNL_COUNT_1, 2, 2, 4},
+  {1, 1, SUPPORTED_AUDIO_CHNL_COUNT_1, 1, SUPPORTED_AUDIO_CHNL_COUNT_1, 1, 1, 2}
+};
 
 /* Application context*/
 HAPAPP_Context_t HAPAPP_Context = {0};
@@ -271,8 +293,10 @@ static uint16_t aSnkBuff[SAI_SNK_MAX_BUFF_SIZE] __attribute__((aligned));
 static uint16_t *aSnkBuff = NULL;
 #endif /*(SAI_SNK_MAX_BUFF_SIZE != 0)*/
 
-static uint16_t* pPrevData = NULL;
+#if (ACTIVATE_FAKE_STEREO == 1u)
+static int16_t* pPrevData = NULL;
 static uint8_t Nb_Active_Ch = 0;
+#endif /* (ACTIVATE_FAKE_STEREO == 1u) */
 
 static HAPAPP_Preset_t aPresetRecord[APP_HAP_NUM_PRESETS] = {{0, 0x03, "Normal"},
                                                              {0, 0x03, "Noise Reduction"},
@@ -353,14 +377,22 @@ tBleStatus APP_AUDIO_STACK_Init(void)
   tBleStatus status;
 
   /* First register the APP BLE Audio buffer */
-  status = SNVMA_Register(APP_AUDIO_SNVMA_BufferId_1_2,
-                         (uint32_t *)audio_buffer_nvm,
-                         (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
-
-  if (status != SNVMA_ERROR_OK)
+  static uint8_t audio_nvm_init = 0;
+  if (audio_nvm_init == 0)
   {
-    LOG_ERROR_APP( "SNVMA registration for BLE Audio failed with status: %d", status);
-    Error_Handler();
+    status = SNVMA_Register(APP_AUDIO_SNVMA_BufferId_1_2,
+                          (uint32_t *)audio_buffer_nvm,
+                          (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+    if (status != SNVMA_ERROR_OK)
+    {
+      LOG_ERROR_APP( "SNVMA registration for BLE Audio failed with status: %d", status);
+      Error_Handler();
+    }
+    else
+    {
+      audio_nvm_init = 1;
+    }
   }
 
   /* Realize a restore */
@@ -633,12 +665,18 @@ uint8_t HAPAPP_StartAdvertising(CAP_Announcement_t AnnouncementType,uint8_t Enab
   uint8_t Adv_TX_Power = 0x00;
   uint8_t Scan_Req_Notification_Enable = 0x00;
   uint8_t Secondary_Adv_Max_Skip = 0x00;
-  const uint8_t Peer_Address[BD_ADDR_SIZE_LOCAL] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   uint8_t Pb_Addr_Len;
   uint8_t Pb_Addr[6] = {0x00};
+  uint32_t Primary_Adv_Interval_Min;
+  uint32_t Primary_Adv_Interval_Max;
+
   uint8_t Adv_Data[ADV_LEN] = {(ADV_AD_FLAGS_LEN-1), AD_TYPE_FLAGS, (FLAG_BIT_LE_GENERAL_DISCOVERABLE_MODE|FLAG_BIT_BR_EDR_NOT_SUPPORTED),
                                (ADV_LOCAL_NAME_LEN-1), AD_TYPE_COMPLETE_LOCAL_NAME,
                                  'S','T','M', '3', '2', 'W','B','A', '_', '0', '0', '0', '0'};
+  List_Entry_t List_Device[1];
+  List_Device[0].Address_Type = 0x00;
+  MEMSET(List_Device[0].Address, 0x00, 6);
+
 #if (CFG_TEST_VALIDATION == 1u)
   Adv_Data[5] = 'H';
   Adv_Data[6] = 'A';
@@ -654,26 +692,35 @@ uint8_t HAPAPP_StartAdvertising(CAP_Announcement_t AnnouncementType,uint8_t Enab
 
   Menu_SetIdentifier((char *)&Adv_Data[ADV_AD_FLAGS_LEN+ADV_LOCAL_NAME_LEN-4]);
 
-  /* Start Fast or Low Power Advertising.
-   * Set Primary_Adv_Interval_Min and Primary_Adv_Interval_Max not a value multiple to possible audio
-   * Frame duration
-   */
-  status = aci_gap_adv_set_configuration(ADV_IND,
+  /* Start Fast or Low Power Advertising.*/
+  if (HAPAPP_Context.NumConn == 0u)
+  {
+    Primary_Adv_Interval_Min = FAST_ADV_INTERVAL_MIN;
+    Primary_Adv_Interval_Max = FAST_ADV_INTERVAL_MAX;
+    LOG_INFO_APP("Start Fast Advertising\n");
+  }
+  else
+  {
+    Primary_Adv_Interval_Min = SLOW_ADV_INTERVAL_MIN;
+    Primary_Adv_Interval_Max = SLOW_ADV_INTERVAL_MAX;
+    LOG_INFO_APP("Start Slow Advertising\n");
+  }
+  status = aci_gap_adv_set_configuration(ADV_TYPE,
                                          0,
                                          HCI_ADV_EVENT_PROP_CONNECTABLE,
-                                         0x0088,
-                                         0x0088,
+                                         Primary_Adv_Interval_Min,
+                                         Primary_Adv_Interval_Max,
                                          Primary_Adv_Channel_Map,
-                                         GAP_PUBLIC_ADDR,
-                                         GAP_PUBLIC_ADDR,
-                                         Peer_Address,
-                                         NO_WHITE_LIST_USE,
+                                         CFG_BD_ADDRESS_TYPE,
+                                         List_Device[0].Address_Type,
+                                         List_Device[0].Address,
+                                         ADV_FILTER,
                                          Adv_TX_Power,
                                          Secondary_Adv_Max_Skip,
                                          0x01,
                                          0,
                                          Scan_Req_Notification_Enable);
-  LOG_INFO_APP("hci_le_set_extended_advertising_data() returns status 0x%02X\n",status);
+  LOG_INFO_APP("aci_gap_adv_set_configuration() returns status 0x%02X\n",status);
   if (status != BLE_STATUS_SUCCESS)
   {
     return status;
@@ -716,7 +763,9 @@ uint8_t HAPAPP_StopAdvertising(void)
   adv_set.Duration = 0;
   adv_set.Max_Extended_Advertising_Events = 0;
 
+  LOG_INFO_APP("Stop Advertising()\n");
   status = hci_le_set_extended_advertising_enable(0, 1, &adv_set);
+  LOG_INFO_APP("hci_le_set_extended_advertising_enable() for Stop Advertising returns status 0x%02X\n",status);
 
   return status;
 }
@@ -1004,27 +1053,29 @@ void APP_NotifyTxAudioHalfCplt(void)
   }
 }
 
+#if (ACTIVATE_FAKE_STEREO == 1u)
 void CODEC_NotifyDataReady(uint16_t conn_handle, void* decoded_data, uint8_t channel_idx, uint8_t channel_nb)
 {
-  /* When only one channel is active, duplicate it for fake stereo on SAI */
   uint32_t i;
-  uint16_t *pData = (uint16_t *)(decoded_data);   /* 16 bits samples */
+  int16_t *pData = (int16_t *)(decoded_data);   /* 16 bits samples */
 
-  if(pData == (pPrevData + 1)){
+  if (pData == (pPrevData + 1)){
     /* we start receiving two channels */
     Nb_Active_Ch = 2;
   }
   pPrevData = pData;
 
+  /* When only one channel is active, duplicate it for fake stereo on SAI */
   if (Nb_Active_Ch < 2)
   {
     for (i = 0; i < Sink_frame_size/2; i+=2)
     {
-      /* decoded_data is organized with a decimation equal to 2, so we duplicate each sample */
+      /* Copy mono (left) data to right channel */
       pData[i+1] = pData[i];
     }
   }
 }
+#endif /* (ACTIVATE_FAKE_STEREO == 1u) */
 
 void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize)
 {
@@ -1399,13 +1450,13 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
     if (Reason != HCI_CONNECTION_TERMINATED_BY_LOCAL_HOST_ERR_CODE)
     {
 
-	    HAPAPP_StopAdvertising();
-	    /* Start Advertising */
-	    status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
-	    LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
+      HAPAPP_StopAdvertising();
+      /* Start Advertising */
+      status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
+      LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
 
-	    Menu_SetWaitConnPage();
-	 }
+      Menu_SetWaitConnPage();
+    }
     else
     {
       HAPAPP_StopAdvertising();
@@ -2780,7 +2831,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           {
             uint8_t streaming_ongoing = 0u;
             if ((HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) \
-            	&& (&HAPAPP_Context.ACL_Conn[conn] != p_conn))
+                && (&HAPAPP_Context.ACL_Conn[conn] != p_conn))
             {
               p_other_conn = &HAPAPP_Context.ACL_Conn[conn];
 #if (APP_NUM_SNK_ASE > 0u)
@@ -2879,213 +2930,223 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 
     case CAP_UNICAST_PREFERRED_QOS_REQ_EVT:
     {
-        BAP_PrefQoSConfReq_t *info = (BAP_PrefQoSConfReq_t *)pNotification->pInfo;
-        Sampling_Freq_t frequency;
-        Frame_Duration_t frame_duration;
-        uint8_t blocksPerSDU;
-        uint16_t sduInterval;
-        uint16_t octetsPerFrame;
-        uint8_t i;
-        uint8_t offset = 0;
-        uint32_t controller_delay_min;
-        uint8_t num_snk_ases = HAPAPP_Context.NumSnkASEs;
-        uint8_t num_src_ases = HAPAPP_Context.NumSrcASEs;
+      BAP_PrefQoSConfReq_t *info = (BAP_PrefQoSConfReq_t *)pNotification->pInfo;
+      Sampling_Freq_t frequency;
+      Frame_Duration_t frame_duration;
+      uint8_t blocksPerSDU;
+      uint16_t sduInterval;
+      uint16_t octetsPerFrame;
+      uint8_t i;
+      uint8_t offset = 0;
+      uint8_t max_offset = 16;
+      uint32_t controller_delay_min;
+      uint8_t num_snk_ases = HAPAPP_Context.NumSnkASEs;
+      uint8_t num_src_ases = HAPAPP_Context.NumSrcASEs;
 
-        LOG_INFO_APP("Preferred Server QoS Settings is requested for ASE ID %d (Type 0x%02X)\n",info->ASE_ID,info->Type);
-        LOG_INFO_APP("  Target Latency : %d\n", info->TargetLatency);
-        LOG_INFO_APP("  Target Phy %d to achieve the Target Latency\n",info->TargetPhy);
-        LOG_INFO_APP("  Codec ID\n");
-        LOG_INFO_APP("    Coding format : 0x%02X\n",info->CodecConf.CodecID.CodingFormat);
-        LOG_INFO_APP("    Company id : 0x%04X\n",info->CodecConf.CodecID.CompanyID);
-        LOG_INFO_APP("    VS codec id : 0x%04X\n",info->CodecConf.CodecID.VsCodecID);
-        frequency = LTV_GetConfiguredSamplingFrequency(info->CodecConf.pSpecificConf,info->CodecConf.SpecificConfLength);
-        LOG_INFO_APP("    Frequency : %d\n", frequency);
-        frame_duration = LTV_GetConfiguredFrameDuration(info->CodecConf.pSpecificConf,info->CodecConf.SpecificConfLength);
-        LOG_INFO_APP("    Frame Duration : %d\n", frame_duration);
-        octetsPerFrame = LTV_GetConfiguredOctetsPerCodecFrame(info->CodecConf.pSpecificConf,info->CodecConf.SpecificConfLength);
-        LOG_INFO_APP("    Octets Per Codec Frame : %d\n", octetsPerFrame);
-        blocksPerSDU = LTV_GetConfiguredFramesBlockPerSdu(info->CodecConf.pSpecificConf,info->CodecConf.SpecificConfLength);
-        if (blocksPerSDU == 0)
+      LOG_INFO_APP("Preferred Server QoS Settings is requested for ASE ID %d (Type 0x%02X)\n",info->ASE_ID,info->Type);
+      LOG_INFO_APP("  Target Latency : %d\n", info->TargetLatency);
+      LOG_INFO_APP("  Target Phy %d to achieve the Target Latency\n",info->TargetPhy);
+      LOG_INFO_APP("  Codec ID\n");
+      LOG_INFO_APP("    Coding format : 0x%02X\n",info->CodecConf.CodecID.CodingFormat);
+      LOG_INFO_APP("    Company id : 0x%04X\n",info->CodecConf.CodecID.CompanyID);
+      LOG_INFO_APP("    VS codec id : 0x%04X\n",info->CodecConf.CodecID.VsCodecID);
+      frequency = LTV_GetConfiguredSamplingFrequency(info->CodecConf.pSpecificConf,info->CodecConf.SpecificConfLength);
+      LOG_INFO_APP("    Frequency : %d\n", frequency);
+      frame_duration = LTV_GetConfiguredFrameDuration(info->CodecConf.pSpecificConf,info->CodecConf.SpecificConfLength);
+      LOG_INFO_APP("    Frame Duration : %d\n", frame_duration);
+      octetsPerFrame = LTV_GetConfiguredOctetsPerCodecFrame(info->CodecConf.pSpecificConf,info->CodecConf.SpecificConfLength);
+      LOG_INFO_APP("    Octets Per Codec Frame : %d\n", octetsPerFrame);
+      blocksPerSDU = LTV_GetConfiguredFramesBlockPerSdu(info->CodecConf.pSpecificConf,info->CodecConf.SpecificConfLength);
+      if (blocksPerSDU == 0)
+      {
+        blocksPerSDU = 1; /* default value */
+      }
+      LOG_INFO_APP("    Codec Frame Blocks Per SDU : %d\n",blocksPerSDU);
+      if (frame_duration == FRAME_DURATION_7_5_MS)
+      {
+        if (frequency == SAMPLE_FREQ_44100_HZ)
         {
-          blocksPerSDU = 1; /* default value */
-        }
-        LOG_INFO_APP("    Codec Frame Blocks Per SDU : %d\n",blocksPerSDU);
-        if (frame_duration == FRAME_DURATION_7_5_MS)
-        {
-          if (frequency == SAMPLE_FREQ_44100_HZ)
-          {
-            sduInterval = 8163*blocksPerSDU;
-          }
-          else
-          {
-            sduInterval = 7500*blocksPerSDU;
-          }
-        }
-        else if (frame_duration == FRAME_DURATION_10_MS)
-        {
-          if (frequency == SAMPLE_FREQ_44100_HZ)
-          {
-            sduInterval = 10884*blocksPerSDU;
-          }
-          else
-          {
-            sduInterval = 10000*blocksPerSDU;
-          }
+          sduInterval = 8163*blocksPerSDU;
         }
         else
         {
-          LOG_INFO_APP("Unsupported frame duration\n",frame_duration);
-          *(info->pResp) = ASE_OP_RESP_UNSUPPORTED_CONF_PARAM;
-          *(info->pReason) = ASE_OP_RESP_REASON_CODEC_SPEC_CONF;
-          return;
+          sduInterval = 7500*blocksPerSDU;
         }
-        LOG_INFO_APP("  Min Controller Delay in Source role %d us\n",info->SrcControllerDelayMin);
-        LOG_INFO_APP("  Max Controller Delay in Source role %d us\n",info->SrcControllerDelayMax);
-        LOG_INFO_APP("  Min Controller Delay in Sink role %d us\n",info->SnkControllerDelayMin);
-        LOG_INFO_APP("  Max Controller Delay in Sink role %d us\n",info->SnkControllerDelayMax);
+      }
+      else if (frame_duration == FRAME_DURATION_10_MS)
+      {
+        if (frequency == SAMPLE_FREQ_44100_HZ)
+        {
+          sduInterval = 10884*blocksPerSDU;
+        }
+        else
+        {
+          sduInterval = 10000*blocksPerSDU;
+        }
+      }
+      else
+      {
+        LOG_INFO_APP("Unsupported frame duration\n",frame_duration);
+        *(info->pResp) = ASE_OP_RESP_UNSUPPORTED_CONF_PARAM;
+        *(info->pReason) = ASE_OP_RESP_REASON_CODEC_SPEC_CONF;
+        return;
+      }
+      LOG_INFO_APP("  Min Controller Delay in Source role %d us\n",info->SrcControllerDelayMin);
+      LOG_INFO_APP("  Max Controller Delay in Source role %d us\n",info->SrcControllerDelayMax);
+      LOG_INFO_APP("  Min Controller Delay in Sink role %d us\n",info->SnkControllerDelayMin);
+      LOG_INFO_APP("  Max Controller Delay in Sink role %d us\n",info->SnkControllerDelayMax);
 
-        LOG_INFO_APP("Calculated SDU Interval : %d us\n",sduInterval);
+      LOG_INFO_APP("Calculated SDU Interval : %d us\n",sduInterval);
 
-        *(info->pResp) = ASE_OP_RESP_SUCCESS;
-        *(info->pReason) = ASE_OP_RESP_NO_REASON;
-        info->pPrefQoSConfRsp->Framing = APP_DEFAULT_BAP_FRAMING;
-        info->pPrefQoSConfRsp->PrefPHY = APP_DEFAULT_BAP_PREF_PHY;
-        info->pPrefQoSConfRsp->PrefRetransmissionNumber = APP_DEFAULT_BAP_PREF_RETRANSMISSIONS;
-        info->pPrefQoSConfRsp->MaxTransportLatency = APP_DEFAULT_BAP_MAX_TRANSPORT_LATENCY;
+      *(info->pResp) = ASE_OP_RESP_SUCCESS;
+      *(info->pReason) = ASE_OP_RESP_NO_REASON;
+      info->pPrefQoSConfRsp->Framing = APP_DEFAULT_BAP_FRAMING;
+      info->pPrefQoSConfRsp->PrefPHY = APP_DEFAULT_BAP_PREF_PHY;
+      info->pPrefQoSConfRsp->PrefRetransmissionNumber = APP_DEFAULT_BAP_PREF_RETRANSMISSIONS;
+      info->pPrefQoSConfRsp->MaxTransportLatency = APP_DEFAULT_BAP_MAX_TRANSPORT_LATENCY;
 #if (ENABLE_AUDIO_HIGH_RELIABILITY == 1u)
-        if(info->TargetLatency > TARGET_LATENCY_BALANCED_RELIABILITY)
-        {
-          offset = 16;
-        }
+      if(info->TargetLatency == TARGET_LATENCY_HIGH_RELIABILITY)
+      {
+        offset = 16;
+        max_offset = 32;
+      }
 #endif /* (ENABLE_AUDIO_HIGH_RELIABILITY == 1u) */
-        for(i = 0;i<15;i++)
+      if ((info->TargetLatency == TARGET_LATENCY_BALANCED_RELIABILITY) && \
+          (frequency == SAMPLE_FREQ_16000_HZ || frequency == SAMPLE_FREQ_24000_HZ || frequency == SAMPLE_FREQ_32000_HZ))
+      {
+        offset = 32;
+        max_offset = 38;
+      }
+      for(i = offset; i < max_offset; i++)
+      {
+        if((frequency == APP_UnicastQoSConf[i].freq) \
+            && (sduInterval == APP_UnicastQoSConf[i].sdu_interval) \
+            && (octetsPerFrame == APP_UnicastQoSConf[i].max_sdu))
         {
-          if((frequency == APP_QoSConf[i+offset].freq) \
-              && (sduInterval == APP_QoSConf[i+offset].sdu_interval) \
-              && (octetsPerFrame == APP_QoSConf[i+offset].max_sdu))
-          {
-            info->pPrefQoSConfRsp->PrefRetransmissionNumber = APP_QoSConf[i+offset].rtx_num;
-            info->pPrefQoSConfRsp->MaxTransportLatency = APP_QoSConf[i+offset].max_tp_latency;
-          }
+          info->pPrefQoSConfRsp->PrefRetransmissionNumber = APP_UnicastQoSConf[i].rtx_num;
+          info->pPrefQoSConfRsp->MaxTransportLatency = APP_UnicastQoSConf[i].max_tp_latency;
         }
-        /*maximum simulateous Sink ASEs in streaming is 2 sink ASEs*/
-        if (num_snk_ases > 2u)
-        {
-          num_snk_ases = 2u;
-        }
-        /*maximum simulateous Source ASEs in streaming is 2 source ASEs*/
-        if (num_src_ases > 2u)
-        {
-          num_src_ases = 2u;
-        }
+      }
+      LOG_INFO_APP("Selected Preferred Retransmission Number : %d\n", info->pPrefQoSConfRsp->PrefRetransmissionNumber);
+      LOG_INFO_APP("Selected Maximum Transport Latency : %d us\n", info->pPrefQoSConfRsp->MaxTransportLatency);
+      /*maximum simulateous Sink ASEs in streaming is 2 sink ASEs*/
+      if (num_snk_ases > 2u)
+      {
+        num_snk_ases = 2u;
+      }
+      /*maximum simulateous Source ASEs in streaming is 2 source ASEs*/
+      if (num_src_ases > 2u)
+      {
+        num_src_ases = 2u;
+      }
 
-        /* Adjust the minimum controller delay according to the fact that other ASEs could be in streaming in the
-         * same time that the specified ASE
-         */
-        controller_delay_min = (num_snk_ases * info->SnkControllerDelayMin) + (num_src_ases * info->SrcControllerDelayMin);
+      /* Adjust the minimum controller delay according to the fact that other ASEs could be in streaming in the
+        * same time that the specified ASE
+        */
+      controller_delay_min = (num_snk_ases * info->SnkControllerDelayMin) + (num_src_ases * info->SrcControllerDelayMin);
 
-        /* Remove extra margins added by the codec manager since they could be considered only one time but not for each ASE */
-        if ((num_snk_ases + num_src_ases) > 1)
-        {
-          uint32_t controller_delay_margin_src = 0;
-          uint32_t controller_delay_margin_snk = 0;
-          uint32_t max_controller_delay;
-          uint8_t a_codec_id[5] = {0x00,0x00,0x00,0x00,0x00};
-          a_codec_id[0] = AUDIO_CODING_FORMAT_LC3;
+      /* Remove extra margins added by the codec manager since they could be considered only one time but not for each ASE */
+      if ((num_snk_ases + num_src_ases) > 1)
+      {
+        uint32_t controller_delay_margin_src = 0;
+        uint32_t controller_delay_margin_snk = 0;
+        uint32_t max_controller_delay;
+        uint8_t a_codec_id[5] = {0x00,0x00,0x00,0x00,0x00};
+        a_codec_id[0] = AUDIO_CODING_FORMAT_LC3;
+
+        hci_read_local_supported_controller_delay((const uint8_t*)&a_codec_id,
+                                                    0x02,
+                                                    DATA_PATH_OUTPUT,
+                                                    0,
+                                                    NULL,
+                                                    (uint8_t*)&controller_delay_margin_snk,
+                                                    (uint8_t*)&max_controller_delay);
 
           hci_read_local_supported_controller_delay((const uint8_t*)&a_codec_id,
-                                                     0x02,
-                                                     DATA_PATH_OUTPUT,
-                                                     0,
-                                                     NULL,
-                                                     (uint8_t*)&controller_delay_margin_snk,
-                                                     (uint8_t*)&max_controller_delay);
+                                                    0x02,
+                                                    DATA_PATH_INPUT,
+                                                    0,
+                                                    NULL,
+                                                    (uint8_t*)&controller_delay_margin_src,
+                                                    (uint8_t*)&max_controller_delay);
 
-           hci_read_local_supported_controller_delay((const uint8_t*)&a_codec_id,
-                                                      0x02,
-                                                      DATA_PATH_INPUT,
-                                                      0,
-                                                      NULL,
-                                                      (uint8_t*)&controller_delay_margin_src,
-                                                      (uint8_t*)&max_controller_delay);
-
-          if (num_src_ases > 0)
-          {
-            if (num_src_ases > 1)
-            {
-              controller_delay_min = controller_delay_min - (controller_delay_margin_src * (num_src_ases - 1));
-            }
-            /* if a source is present, processing margin are already included for that frame duration */
-            controller_delay_min = controller_delay_min - (controller_delay_margin_snk * num_snk_ases);
-          }
-          else
-          {
-            if( num_snk_ases > 0)
-            {
-              controller_delay_min = controller_delay_min - (controller_delay_margin_snk * (num_snk_ases - 1));
-            }
-          }
-        }
-
-        LOG_INFO_APP("Computed Min Controller Delay with %d Snk ASEs and %d Src ASEs : %d us\n",
-            num_snk_ases,
-            num_src_ases,
-            controller_delay_min);
-
-        /*check if computed minimum controller delay is compliant with the frame */
-        if (frame_duration == FRAME_DURATION_7_5_MS)
+        if (num_src_ases > 0)
         {
-          if(controller_delay_min > sduInterval)
+          if (num_src_ases > 1)
           {
-            LOG_INFO_APP("WARNING : Computed Controller Delay Min ( %d us) could be higher than the frame duration (7.5 ms)\n",
-                        controller_delay_min);
-            controller_delay_min = sduInterval;
+            controller_delay_min = controller_delay_min - (controller_delay_margin_src * (num_src_ases - 1));
           }
+          /* if a source is present, processing margin are already included for that frame duration */
+          controller_delay_min = controller_delay_min - (controller_delay_margin_snk * num_snk_ases);
         }
-        else if (frame_duration == FRAME_DURATION_10_MS)
+        else
         {
-          if(controller_delay_min > sduInterval)
+          if( num_snk_ases > 0)
           {
-            LOG_INFO_APP("WARNING : Controller Delay Min ( %d us) could be higher than the frame duration (10 ms)\n",
-                        controller_delay_min);
-            controller_delay_min = sduInterval;
+            controller_delay_min = controller_delay_min - (controller_delay_margin_snk * (num_snk_ases - 1));
           }
         }
+      }
 
-        /*Calculate presentation delay to submitt to remote unicat client*/
-        if (*(info->pResp) == ASE_OP_RESP_SUCCESS)
+      LOG_INFO_APP("Computed Min Controller Delay with %d Snk ASEs and %d Src ASEs : %d us\n",
+          num_snk_ases,
+          num_src_ases,
+          controller_delay_min);
+
+      /*check if computed minimum controller delay is compliant with the frame */
+      if (frame_duration == FRAME_DURATION_7_5_MS)
+      {
+        if(controller_delay_min > sduInterval)
         {
-          if (info->Type ==  ASE_SINK)
-          {
-            /* For the Unicast Server, the supported Presentation_Delay range in the Codec Configured state shall
-             * include BAP_MANDATORY_PRESENTATION_DELAY when the ASE is a Sink ASE
-             */
-            if (((APP_DELAY_SNK_MIN+controller_delay_min) > BAP_MANDATORY_PRESENTATION_DELAY) \
-                || ((APP_DELAY_SNK_MAX+info->SnkControllerDelayMax) < BAP_MANDATORY_PRESENTATION_DELAY))
-            {
-              LOG_INFO_APP("ERROR : Mandatory presentation %d us is not included in supported Presentation Delay range [%d - %d]\n",
-                          BAP_MANDATORY_PRESENTATION_DELAY,
-                          APP_DELAY_SNK_MIN+controller_delay_min,
-                          APP_DELAY_SNK_MAX+info->SnkControllerDelayMax);
-              *(info->pResp) = ASE_OP_RESP_UNSUPPORTED_CONF_PARAM;
-              *(info->pReason) = ASE_OP_RESP_REASON_PRES_DELAY;
-            }
-            info->pPrefQoSConfRsp->PresentationDelayMin = (APP_DELAY_SNK_MIN+controller_delay_min);
-            info->pPrefQoSConfRsp->PresentationDelayMax = (APP_DELAY_SNK_MAX+info->SnkControllerDelayMax);
-            info->pPrefQoSConfRsp->PrefPresentationDelayMin = (APP_DELAY_SNK_MIN+controller_delay_min);
-            info->pPrefQoSConfRsp->PrefPresentationDelayMax = (APP_DELAY_SNK_MAX+info->SnkControllerDelayMax);
-          }
-          else if (info->Type ==  ASE_SOURCE)
-          {
-            info->pPrefQoSConfRsp->PresentationDelayMin = (APP_DELAY_SRC_MIN+controller_delay_min);
-            info->pPrefQoSConfRsp->PresentationDelayMax = (APP_DELAY_SRC_MAX+info->SrcControllerDelayMax);
-            info->pPrefQoSConfRsp->PrefPresentationDelayMin = (APP_DELAY_SRC_MIN+controller_delay_min);
-            info->pPrefQoSConfRsp->PrefPresentationDelayMax = (APP_DELAY_SRC_MAX+info->SrcControllerDelayMax);
-          }
-          LOG_INFO_APP("Submitted Min Presentation Delay %d us\n",info->pPrefQoSConfRsp->PresentationDelayMin);
-          LOG_INFO_APP("Submitted Max Presentation Delay %d us\n",info->pPrefQoSConfRsp->PresentationDelayMax);
+          LOG_INFO_APP("WARNING : Computed Controller Delay Min ( %d us) could be higher than the frame duration (7.5 ms)\n",
+                      controller_delay_min);
+          controller_delay_min = sduInterval;
         }
-        break;
+      }
+      else if (frame_duration == FRAME_DURATION_10_MS)
+      {
+        if(controller_delay_min > sduInterval)
+        {
+          LOG_INFO_APP("WARNING : Controller Delay Min ( %d us) could be higher than the frame duration (10 ms)\n",
+                      controller_delay_min);
+          controller_delay_min = sduInterval;
+        }
+      }
+
+      /*Calculate presentation delay to submitt to remote unicat client*/
+      if (*(info->pResp) == ASE_OP_RESP_SUCCESS)
+      {
+        if (info->Type ==  ASE_SINK)
+        {
+          /* For the Unicast Server, the supported Presentation_Delay range in the Codec Configured state shall
+            * include BAP_MANDATORY_PRESENTATION_DELAY when the ASE is a Sink ASE
+            */
+          if (((APP_DELAY_SNK_MIN+controller_delay_min) > BAP_MANDATORY_PRESENTATION_DELAY) \
+              || ((APP_DELAY_SNK_MAX+info->SnkControllerDelayMax) < BAP_MANDATORY_PRESENTATION_DELAY))
+          {
+            LOG_INFO_APP("ERROR : Mandatory presentation %d us is not included in supported Presentation Delay range [%d - %d]\n",
+                        BAP_MANDATORY_PRESENTATION_DELAY,
+                        APP_DELAY_SNK_MIN+controller_delay_min,
+                        APP_DELAY_SNK_MAX+info->SnkControllerDelayMax);
+            *(info->pResp) = ASE_OP_RESP_UNSUPPORTED_CONF_PARAM;
+            *(info->pReason) = ASE_OP_RESP_REASON_PRES_DELAY;
+          }
+          info->pPrefQoSConfRsp->PresentationDelayMin = (APP_DELAY_SNK_MIN+controller_delay_min);
+          info->pPrefQoSConfRsp->PresentationDelayMax = (APP_DELAY_SNK_MAX+info->SnkControllerDelayMax);
+          info->pPrefQoSConfRsp->PrefPresentationDelayMin = (APP_DELAY_SNK_MIN+controller_delay_min);
+          info->pPrefQoSConfRsp->PrefPresentationDelayMax = (APP_DELAY_SNK_MAX+info->SnkControllerDelayMax);
+        }
+        else if (info->Type ==  ASE_SOURCE)
+        {
+          info->pPrefQoSConfRsp->PresentationDelayMin = (APP_DELAY_SRC_MIN+controller_delay_min);
+          info->pPrefQoSConfRsp->PresentationDelayMax = (APP_DELAY_SRC_MAX+info->SrcControllerDelayMax);
+          info->pPrefQoSConfRsp->PrefPresentationDelayMin = (APP_DELAY_SRC_MIN+controller_delay_min);
+          info->pPrefQoSConfRsp->PrefPresentationDelayMax = (APP_DELAY_SRC_MAX+info->SrcControllerDelayMax);
+        }
+        LOG_INFO_APP("Submitted Min Presentation Delay %d us\n",info->pPrefQoSConfRsp->PresentationDelayMin);
+        LOG_INFO_APP("Submitted Max Presentation Delay %d us\n",info->pPrefQoSConfRsp->PresentationDelayMax);
+      }
+      break;
     }
 
     case CAP_UNICAST_AUDIO_DATA_PATH_SETUP_REQ_EVT:
@@ -3996,8 +4057,10 @@ static int32_t start_audio_source(void)
 /*Audio Sink */
 static int32_t start_audio_sink(void)
 {
+#if (ACTIVATE_FAKE_STEREO == 1u)
   /* reset numbers of active channels */
   Nb_Active_Ch = 0;
+#endif /* (ACTIVATE_FAKE_STEREO == 1u) */
 
   return Start_TxAudio();
 }

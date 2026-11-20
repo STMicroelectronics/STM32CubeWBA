@@ -1,10 +1,11 @@
+
 /**
   ******************************************************************************
   * @file    stm32wbaxx_nucleo_conf.h
   * @author  MCD Application Team
-  * @brief   STM32WBAXX nucleo board configuration file.
+  * @brief   STM32WBAxx_Nucleo board configuration file.
   *          This file should be copied to the application folder and renamed
-  *          to stm32wbaxx_nucleo_conf.h .
+  *          to stm32wbaxx_nucleo_conf.h
   ******************************************************************************
   * @attention
   *
@@ -29,17 +30,48 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32wbaxx_hal.h"
 
-/* Usage of nucleo board */
-#define USE_NUCLEO_64      1U
+/** @addtogroup BSP
+  * @{
+  */
 
-/* Usage of COM feature */
-#define USE_BSP_COM_FEATURE 1U
-#define USE_COM_LOG         0U
+/** @addtogroup STM32WBAXX_NUCLEO
+  * @{
+  */
 
-/* Button interrupt priorities */
-#define BSP_B1_IT_PRIORITY 0x0FUL  /* Default is lowest priority level */
-#define BSP_B2_IT_PRIORITY 0x0FUL  /* Default is lowest priority level */
-#define BSP_B3_IT_PRIORITY 0x0FUL  /* Default is lowest priority level */
+/** @defgroup STM32WBAXX_NUCLEO_CONFIG Config
+  * @{
+  */
+
+/** @defgroup STM32C0XX_NUCLEO_CONFIG_Exported_Constants Exported Constants
+  * @{
+  */
+/* Nucleo pin and part number defines */
+#define USE_STM32WBAXX_NUCLEO
+
+/* COM define */
+#define USE_COM_LOG                         0U
+#define USE_BSP_COM_FEATURE                 0U
+
+/* IRQ priorities */
+#define BSP_B1_IT_PRIORITY         15U
+#define BSP_B2_IT_PRIORITY         15U
+#define BSP_B3_IT_PRIORITY         15U
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 #ifdef __cplusplus
 }

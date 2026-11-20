@@ -22,9 +22,9 @@ In order to make the program work:
  - Rebuild all files and load your image into target memory.
  - Run the example.
 
-To test the BLE Transparent Mode application, use the STM32CubeWise - Bluetooth LE Explorer tool:
+To test the BLE Transparent Mode USB application, use the STM32CubeWise - Bluetooth LE Explorer tool:
 
- - Make the connection between STM32CubeWise - Bluetooth LE Explorer tool and BLE_TransparentMode application using the COM port enumerated after the USB_USER has been plugged and the application has been loaded.
+ - Make the connection between STM32CubeWise - Bluetooth LE Explorer tool and BLE_TransparentMode_USB application using the COM port enumerated after the USB_USER has been plugged and the application has been loaded.
  - Send some ACI commands from STM32CubeWise - Bluetooth LE Explorer tool as HCI_RESET, HCI_LE_RECEIVER_TEST, HCI_LE_TRANSMITTER_TEST, ...
  - the application must acknowledge the command with a "HCI_COMMAND_COMPLETE_EVENT" answer.
 

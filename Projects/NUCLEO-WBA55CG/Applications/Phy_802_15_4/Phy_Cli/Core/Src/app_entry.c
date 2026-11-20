@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -20,11 +20,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "log_module.h"
 #include "app_conf.h"
 #include "main.h"
 #include "app_entry.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 #if (CFG_LPM_LEVEL != 0)
+#include "app_sys.h"
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
@@ -32,19 +34,19 @@
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
-#include "app_phy_cli.h"
-#include "ll_sys_if.h"
-#include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
-#include "ll_sys.h"
-#include "app_debug.h"
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-#include "adc_ctrl.h"
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
+#include "stm32wbaxx_ll_rcc.h"
+#include "stm32_lpm_if.h"
+
 /* Private includes -----------------------------------------------------------*/
+extern void ll_sys_mac_cntrl_init( void );
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
+extern void APP_PHY_CLI_Init(void);
 
 /* USER CODE END Includes */
 
@@ -87,19 +89,26 @@ static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
-/* Log configuration */
-static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
+/* Log configuration
+ * .verbose_level can be any value of the Log_Verbose_Level_t enum.
+ * .region_mask can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
+ */
+static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
-
-static uint8_t PkaMut = 0u;
-static uint8_t EndOfProcSem = 0u;
 
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
-/* Button management */
+
 static ButtonDesc_t buttonDesc[BUTTON_NB_MAX];
 #endif
-
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -108,14 +117,10 @@ static ButtonDesc_t buttonDesc[BUTTON_NB_MAX];
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-static void Config_HSE(void);
-static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
-int PKACTRL_MutexTake(void);
-int PKACTRL_MutexRelease(void);
-int PKACTRL_TakeSemEndOfOperation(void);
-int PKACTRL_ReleaseSemEndOfOperation(void);
+static void Config_HSE(void);
+static void APPE_RNG_Init( void );
 
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
@@ -125,6 +130,7 @@ static void Led_Init(void);
 static void Button_Init(void);
 static void Button_TriggerActions(void *arg);
 #endif
+
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -135,7 +141,7 @@ static void Button_TriggerActions(void *arg);
 
 /* Functions Definition ------------------------------------------------------*/
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network configuration.
  */
 void MX_APPE_Config(void)
 {
@@ -144,7 +150,17 @@ void MX_APPE_Config(void)
 }
 
 /**
- * @brief   System Initialisation.
+ * @brief   LinkLayer & MAC Initialisation.
+ */
+void MX_APPE_LinkLayerInit(void)
+{
+  /* Initialization of the low level : link layer and MAC */
+  ll_sys_mac_cntrl_init();
+
+}
+
+/**
+ * @brief   Wireless Private Area Network initialisation.
  */
 uint32_t MX_APPE_Init(void *p_param)
 {
@@ -158,26 +174,35 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
+  /* Initialize the Random Number Generator module */
+  APPE_RNG_Init();
+
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
-  Led_Init();
-#endif
-#if (CFG_BUTTON_SUPPORTED == 1)
-  Button_Init();
-#endif
 
-  /* Linker script is configured to use only SRAM1, so we can disable SRAM2 retention */
-  LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
+  /* USER CODE END APPE_Init_1 */
 
-  RNG_Init();
-
-  APP_PHY_CLI_Init();
+  /* Initialization of the low level : link layer and MAC */
+  MX_APPE_LinkLayerInit();
 
   /* USER CODE BEGIN APPE_Init_2 */
+  APP_PHY_CLI_Init();
 
   /* USER CODE END APPE_Init_2 */
+
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+
   return WPAN_SUCCESS;
+}
+
+void MX_APPE_Process(void)
+{
+  /* USER CODE BEGIN MX_APPE_Process_1 */
+
+  /* USER CODE END MX_APPE_Process_1 */
+  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
+  /* USER CODE BEGIN MX_APPE_Process_2 */
+
+  /* USER CODE END MX_APPE_Process_2 */
 }
 
 /* USER CODE BEGIN FD */
@@ -268,26 +293,40 @@ static void System_Init( void )
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
+  /* Initialize the Timer Server */
   UTIL_TIMER_Init();
+
+  /* USER CODE BEGIN System_Init_1 */
+
+  /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the UART used for logs */
+  MX_USART1_UART_Init();
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
+  Log_Module_Set_Region( LOG_REGION_APP );
 
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
 
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  adc_ctrl_init();
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-
+#if(CFG_RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* CFG_RT_DEBUG_DTB */
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
+  /* RT DEBUG GPIO_Init */
+  RT_DEBUG_GPIO_Init();
+#endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
+  UNUSED(system_startup_done);
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
   return;
@@ -303,56 +342,73 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
-  /* Pins used by SerialWire Debug are now analog input */
-  //GPIO_InitTypeDef DbgIOsInit = {0};
-  //DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  //DbgIOsInit.Pull = GPIO_NOPULL;
-  //DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  //HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
+  if(__HAL_RCC_GPIOA_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+    __HAL_RCC_GPIOA_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+  }
 
-  //DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  //DbgIOsInit.Pull = GPIO_NOPULL;
-  //DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  //HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  if(__HAL_RCC_GPIOB_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+    __HAL_RCC_GPIOB_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+  }
 #endif /* CFG_DEBUGGER_LEVEL */
 
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( 0U ) != HAL_OK ) //CFG_CORE_SUPPLY
-  {
-    Error_Handler();
-  }
+#if (CFG_DEBUGGER_LEVEL > 1)
+  LL_DBGMCU_EnableDBGStandbyMode();
+  LL_DBGMCU_EnableDBGStopMode();
+#endif /* CFG_DEBUGGER_LEVEL */
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED == 1) */
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
+
+  /* Disable LowPower during Init */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
 /**
  * @brief Initialize Random Number Generator module
  */
-static void RNG_Init(void)
+static void APPE_RNG_Init(void)
 {
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Init();
   HW_RNG_Start();
-
+  /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
 
@@ -435,27 +491,15 @@ static void Button_TriggerActions(void *arg)
  * WRAP FUNCTIONS
  *
  *************************************************************/
-void MX_APPE_Process(void)
-{
-  /* USER CODE BEGIN MX_APPE_Process_1 */
-
-  /* USER CODE END MX_APPE_Process_1 */
-  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
-  /* USER CODE BEGIN MX_APPE_Process_2 */
-
-  /* USER CODE END MX_APPE_Process_2 */
-}
 
 void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
-#if (CFG_SCM_SUPPORTED == 1)
   /* SCM HSE BEGIN */
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
-  UTIL_LPM_EnterLowPower();
+  UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
   return;
@@ -469,27 +513,19 @@ void UTIL_SEQ_PreIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_PWR_ClearFlag_STOP();
 
-  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_LPM_EnterLowPowerMode();
+    APP_SYS_EnterDeepSleep();
   }
-
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
-
-#if defined(STM32WBAXX_SI_CUT1_0)
-  /* Wait until HSE is ready */
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_WaitUntilReady();
-  /* SCM HSE END */
-#else
-  while (LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
-
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
-  scm_hserdy_isr();
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* STM32WBAXX_SI_CUT1_0 */
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
 
@@ -504,7 +540,8 @@ void UTIL_SEQ_PostIdle( void )
   /* USER CODE END UTIL_SEQ_PostIdle_1 */
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
-  ll_sys_dp_slp_exit();
+  (void)ll_sys_dp_slp_exit();
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 
@@ -513,42 +550,45 @@ void UTIL_SEQ_PostIdle( void )
 }
 
 /**
- * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ * @brief Callback used by Random Number Generator to launch Task to generate Random Numbers
  */
 void HWCB_RNG_Process( void )
 {
-  //UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, TASK_PRIO_RNG);
 }
 
-/**
- *
- */
+#if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
+/* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* RNG module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_1 */
 
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_2 */
 
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
+/* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
-  /* SCM module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
 
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
 
-  /* USER CODE END SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Disable Stop mode before sending a LOG message over UART */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
 
@@ -559,108 +599,28 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Enable Stop mode after LOG message over UART sent */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
 
   /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
 }
 
+/**
+ * @brief  Treat Serial commands.
+ *
+ * @param  pRxBuffer      Pointer on received data from USART.
+ * @param  iRxBufferSize  Number of received data.
+ * @retval None
+ */
+void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
+{
+  /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
+
+  /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
+}
+
 #endif /* (CFG_LOG_SUPPORTED != 0) */
-
- int PKACTRL_MutexTake(void)
-{
-  int error = 0;
-
-  /* Check if mutex is available */
-  if (0u != PkaMut)
-  {
-    /* Clear flag */
-    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
-
-    /* Wait for flag to be raised */
-    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
-  }
-
-  /* Increment mutex */
-  PkaMut++;
-
-  return error;
-}
-
-int PKACTRL_MutexRelease(void)
-{
-  int error = 0;
-
-  if (0u != PkaMut)
-  {
-    PkaMut = 0u;
-
-    /* Set the flag up */
-    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
-  }
-
-  return error;
-}
-
-int PKACTRL_TakeSemEndOfOperation(void)
-{
-  int error = 0;
-
-  /* Check if semaphore is available */
-  if (0u != EndOfProcSem)
-  {
-#if (CFG_LPM_LEVEL != 0)
-    /* Avoid going in standby during computation */
-    UTIL_LPM_SetMaxMode ((1 << CFG_LPM_PKA_OVR_IT),
-#if (UTIL_LPM_LEGACY_ENABLED == 1)
-                         UTIL_LPM_SLEEPMODE);
-#else
-                         UTIL_LPM_SLEEP_MODE);
-#endif /* (UTIL_LPM_LEGACY_ENABLED == 1) */
-#endif /* (CFG_LPM_LEVEL != 0) */
-
-    /* Clear flag */
-    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
-
-    /* Wait for flag to be raised */
-    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
-  }
-
-  /* Increment semaphore */
-  EndOfProcSem++;
-
-  return error;
-}
-
-int PKACTRL_ReleaseSemEndOfOperation(void)
-{
-  int error = 0;
-
-  if (0u != EndOfProcSem)
-  {
-    EndOfProcSem = 0u;
-
-    /* Set the flag up */
-    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
-
-#if (CFG_LPM_LEVEL != 0)
-  /* Restore standby */
-    UTIL_LPM_SetMaxMode ((1 << CFG_LPM_PKA_OVR_IT),
-#if (UTIL_LPM_LEGACY_ENABLED == 1)
-                         UTIL_LPM_OFFMODE);
-#else
-#if (CFG_LPM_STANDBY_SUPPORTED == 1)
-                         UTIL_LPM_STANDBY_MODE);
-#else
-                         UTIL_LPM_STOP1_MODE);
-#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
-#endif /* (UTIL_LPM_LEGACY_ENABLED == 1) */
-#endif /* (CFG_LPM_LEVEL != 0) */
-  }
-
-  return error;
-}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 #if (CFG_BUTTON_SUPPORTED == 1)

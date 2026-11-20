@@ -2,6 +2,7 @@
 
 How to advertise 5 types of beacon (Eddystone uid, Eddystone url, Eddystone uid+tlm, Eddystone url+tlm, iBeacon).
 This application's default low power mode is set to stop2. Debugging and log features are enabled, it is not optimized for power measurement purpose.
+Memory allocation is managed using malloc and free functions, not using Advanced Memory Manager (AMM) module.
 
 ### __Keywords__
 

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -65,6 +65,7 @@ typedef struct
 /* Exported constants --------------------------------------------------------*/
 
 /* USER CODE BEGIN EC */
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
@@ -88,7 +89,7 @@ uint8_t GATT_CLIENT_APP_Get_State(uint8_t index);
 tBleStatus GATT_CLIENT_APP_ReadCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t *data_length_p, uint8_t **data_p, uint8_t use_read_long);
 tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t data_length, uint8_t *data);
 /* USER CODE BEGIN EFP */
-uint8_t compare_array(uint8_t *X, uint8_t *Y, uint8_t dim);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

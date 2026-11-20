@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023-2026 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,7 +27,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
-#include "pka_ctrl.h"
 
 /* USER CODE END Includes */
 
@@ -88,7 +87,7 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
+  while(1)
   {
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
@@ -105,6 +104,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
@@ -120,6 +120,7 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
@@ -135,6 +136,7 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
@@ -150,6 +152,7 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
@@ -165,6 +168,7 @@ void SecureFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_SecureFault_IRQn 0 */
+
     /* USER CODE END W1_SecureFault_IRQn 0 */
   }
 }
@@ -260,9 +264,7 @@ void RCC_IRQHandler(void)
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-#if (CFG_SCM_SUPPORTED == 1)
     scm_pllrdy_isr();
-#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -392,7 +394,6 @@ void ADC4_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
 /**
   * @brief This function handles EXTI Line13 interrupt.
   */

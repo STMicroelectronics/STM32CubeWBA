@@ -35,6 +35,29 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for OTA */
+#define OTA_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for OTA (service declaration not counted in attributes)
+  *                + 2 for BASE_ADR
+  *                + 2 for CONF
+  *                + 2 for RAW_DATA
+  *                + 1 for CONF CCCD
+  *                = 7
+**/
+#define OTA_NUM_GATT_ATTRIBUTES (7)
+
+/**
+  * Size_Attributes = 0 for OTA (service declaration not counted in attributes)
+  *                 + 19 for BASE_ADR declaration + 6 for BASE_ADR size
+  *                 + 19 for CONF declaration + 1 for CONF size
+  *                 + 19 for RAW_DATA declaration + 248 for RAW_DATA size
+  *                 + 2 for CONF CCCD * CFG_BLE_NUM_LINK
+  *                 = 312 + 2 * CFG_BLE_NUM_LINK
+**/
+#define OTA_ATT_VALUE_ARRAY_SIZE  (312 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

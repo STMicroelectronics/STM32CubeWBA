@@ -20,9 +20,6 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.
 
   - This application runs on STM32WBA55xx Nucleo board.
 
-  - Another Nucleo board may be necessary to run BLE_Power_Central application.
-  - For power measurement: STLINK-V3PWR or STM32 Power shield can be used with STM32CubeMonitor-Power Graphical tool.
-
   - Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).
   - Another Nucleo board may be necessary to run BLE_Power_Central application.
   - For power measurement: STLINK-V3PWR or STM32 Power shield can be used with STM32CubeMonitor-Power Graphical tool.

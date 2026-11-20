@@ -36,6 +36,28 @@ extern "C" {
 #define CLUSTER_NB_MAX                          6u          /* Maximum number of Clusters in this application */
 
 /* USER CODE BEGIN ED */
+/* Define Led by their use and not their color */
+#ifdef CFG_BSP_ON_NUCLEO
+#define   LED_JOIN                              LED_BLUE    /* Led used during Join */
+#define   LED_WORK                              LED_RED     /* Led indicate that application work */
+#define   LED_OK                                LED_GREEN   /* Led indicate that application is OK */
+#endif /* CFG_BSP_ON_NUCLEO */
+#ifdef CFG_BSP_ON_DISCOVERY
+#ifdef STM32WBA65xx
+#define   LED_JOIN                              LED_GREEN   /* Led used during Join */
+#define   LED_WORK                              LED_RED     /* Led indicate that application work */
+#define   LED_OK                                LED_RED     /* Led indicate that application is OK */
+#else /* STM32WBA65xx */
+#define   LED_JOIN                              LED_BLUE    /* Led used during Join */
+#define   LED_WORK                              LED_BLUE    /* Led indicate that application work */
+#define   LED_OK                                LED_BLUE    /* Led indicate that application is OK */
+#endif /* STM32WBA65xx */
+#endif /* CFG_BSP_ON_DISCOVERY */
+#ifdef CFG_BSP_ON_CEB
+#define   LED_JOIN                              LED_BLUE    /* Led used during Join */
+#define   LED_WORK                              LED_BLUE    /* Led indicate that application work */
+#define   LED_OK                                LED_BLUE    /* Led indicate that application is OK */
+#endif /* CFG_BSP_ON_CEB */
 
 /* USER CODE END ED */
 
@@ -67,7 +89,9 @@ extern void       APP_ZIGBEE_ConfigEndpoints              ( void );
 extern bool       APP_ZIGBEE_ConfigGroupAddr              ( void );
 
 extern void       APP_ZIGBEE_GetStartupConfig             ( struct ZbStartupT * pstConfig );
-extern void       APP_ZIGBEE_SetNewDevice                 ( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability );
+extern void       APP_ZIGBEE_SetNewDevice                 ( uint16_t iShortAddress, uint64_t dlExtendedAddress );
+extern void       APP_ZIGBEE_SetRejoinDevice              ( uint16_t iShortAddress, uint64_t dlExtendedAddress );
+extern void       APP_ZIGBEE_SetLeaveDevice               ( uint16_t iShortAddress, uint64_t dlExtendedAddress );
 
 /* USER CODE BEGIN EFP */
 

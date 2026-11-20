@@ -457,9 +457,9 @@ void Menu_SetRemoteMicMute(uint8_t Mute)
  */
 void Menu_SetProfilesLinked(audio_profile_t Profiles)
 {
-	char bap_string[5] = "";
-	char vcp_string[5] = "";
-	char micp_string[6] = "";
+  char bap_string[5] = "";
+  char vcp_string[5] = "";
+  char micp_string[6] = "";
   if (Profiles != 0 && linkup_text.NumLines == 2)
   {
     snprintf(linkup_text.Lines[2], MENU_CONTROL_MAX_LINE_LEN, "%s", linkup_text.Lines[1]);
@@ -617,7 +617,7 @@ static void Menu_StartStreamGameVoice(void)
 {
   LOG_INFO_APP("[APP_MENU_CONF] Start Game + Voice Stream\n");
 
-  GMAPAPP_StartStream(LC3_QOS_32_2_gs,
+  GMAPAPP_StartStream(LC3_QOS_32_2_gr,
                       2,
                       AUDIO_CONTEXT_GAME,
                       LC3_QOS_16_2_gs, 
@@ -651,7 +651,7 @@ static void Menu_StartStreamVoice(void)
 
   if (APP_GetNumActiveACLConnections() == 1)
   {
-    GMAPAPP_StartStream(LC3_QOS_32_2_gs,
+    GMAPAPP_StartStream(LC3_QOS_32_2_gr,
                         1,
                         AUDIO_CONTEXT_CONVERSATIONAL,
                         LC3_QOS_32_2_gs,
@@ -661,7 +661,7 @@ static void Menu_StartStreamVoice(void)
   }
   else
   {
-    GMAPAPP_StartStream(LC3_QOS_32_2_gs,
+    GMAPAPP_StartStream(LC3_QOS_32_2_gr,
                         1,
                         AUDIO_CONTEXT_CONVERSATIONAL,
                         LC3_QOS_16_2_gs,

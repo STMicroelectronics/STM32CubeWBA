@@ -919,7 +919,6 @@ static void APP_THREAD_CoapRequestHandlerFuotaReboot(void                * pCont
 {
   uint32_t l_data = 0;
   LOG_INFO_APP(" Received CoAP request on %s", C_RESSOURCE_FUOTA_REBOOT);
-  /* USER CODE BEGIN APP_THREAD_CoapRequestHandler */
   if (otMessageRead(pMessage, otMessageGetOffset(pMessage), &l_data, sizeof(l_data)) != sizeof(l_data))
   {
     APP_THREAD_Error(ERR_THREAD_MESSAGE_READ, 0);

@@ -2,6 +2,8 @@
 
 How to build Thread sleepy end device application based on Coap messages.
 
+In this application, the System Clock Module (SCM) is disabled, and the new Clock_Switching strategy is used. Clock_Switching preserves the system clock configuration set by the application throughout the active phase. The same configuration is restored upon wake-up from power save.
+
 ### __Keywords__
 
 Connectivity, 802.15.4 protocol, Thread, COAP

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -84,7 +84,6 @@ void NMI_Handler(void)
   while(1)
   {
   }
-
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -243,9 +242,6 @@ void RCC_IRQHandler(void)
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-#if (CFG_SCM_SUPPORTED == 1)
-    scm_pllrdy_isr();
-#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -265,6 +261,7 @@ void EXTI1_IRQHandler(void)
     LL_EXTI_ClearFallingFlag_0_31(LL_EXTI_LINE_1);
     /* USER CODE BEGIN LL_EXTI_LINE_1_FALLING */
 	APP_BLE_Key_Button1_Action();
+
     /* USER CODE END LL_EXTI_LINE_1_FALLING */
   }
   /* USER CODE BEGIN EXTI1_IRQn 1 */

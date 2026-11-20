@@ -335,9 +335,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_FULL_LL_DRIVER,BLE_LL,PHY_40nm_6_00_a,USE_HAL_DRIVER,STM32WBA25xx</Define>
+              <Define>USE_FULL_LL_DRIVER,BLE_LL,USE_HAL_DRIVER,STM32WBA25xx</Define>
               <Undefine />
-              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Config;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../System/Config/ADC_Ctrl;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../STM32_WPAN/App/NVMDB/Inc</IncludePath>
+              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Config;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../System/Config/ADC_Ctrl;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../STM32_WPAN/App/NVMDB/Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -694,9 +694,9 @@
           <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
           <Files>
             <File>
-              <FileName>stm32wbaxx_ll_dma.c</FileName>
+              <FileName>stm32wbaxx_ll_utils.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</FilePath>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_ll_exti.c</FileName>
@@ -911,8 +911,108 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>::CMSIS</GroupName>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
+          <Files>
+            <File>
+              <FileName>baes_cmac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</FilePath>
+            </File>
+            <File>
+              <FileName>baes_ccm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</FilePath>
+            </File>
+            <File>
+              <FileName>baes_ecb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/Flash</GroupName>
+          <Files>
+            <File>
+              <FileName>flash_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Flash/flash_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Flash/flash_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>rf_timing_synchro.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Flash/rf_timing_synchro.c</FilePath>
+            </File>
+            <File>
+              <FileName>simple_nvm_arbiter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Flash/simple_nvm_arbiter.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/MemoryManager</GroupName>
+          <Files>
+            <File>
+              <FileName>advanced_memory_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_mm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/RTDebug</GroupName>
+          <Files>
+            <File>
+              <FileName>RTDebug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</FilePath>
+            </File>
+            <File>
+              <FileName>RTDebug_dtb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/SerialCmdInterpreter</GroupName>
+          <Files>
+            <File>
+              <FileName>serial_cmd_interpreter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/Log</GroupName>
+          <Files>
+            <File>
+              <FileName>log_module.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Middlewares/STM32_WPAN/LinkLayer</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>ll_sys_cs.c</FileName>
               <FileType>1</FileType>
@@ -944,6 +1044,8 @@
           <GroupName>Middlewares/STM32_WPAN/BLE</GroupName>
           <Files>
             <File>
+            </File>
+            <File>
               <FileName>stm32wba_ble_stack_full.a</FileName>
               <FileType>4</FileType>
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_full.a</FilePath>
@@ -952,116 +1054,6 @@
               <FileName>svc_ctl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
-          <Files>
-            <File>
-            </File>
-            <File>
-              <FileName>baes_cmac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</FilePath>
-            </File>
-            <File>
-              <FileName>baes_ccm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</FilePath>
-            </File>
-            <File>
-              <FileName>baes_ecb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/Flash</GroupName>
-          <Files>
-            <File>
-            </File>
-            <File>
-              <FileName>flash_driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Flash/flash_driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>flash_manager.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Flash/flash_manager.c</FilePath>
-            </File>
-            <File>
-              <FileName>rf_timing_synchro.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Flash/rf_timing_synchro.c</FilePath>
-            </File>
-            <File>
-              <FileName>simple_nvm_arbiter.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Flash/simple_nvm_arbiter.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/MemoryManager</GroupName>
-          <Files>
-            <File>
-            </File>
-            <File>
-              <FileName>advanced_memory_manager.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32_mm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/RTDebug</GroupName>
-          <Files>
-            <File>
-            </File>
-            <File>
-              <FileName>RTDebug.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</FilePath>
-            </File>
-            <File>
-              <FileName>RTDebug_dtb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/SerialCmdInterpreter</GroupName>
-          <Files>
-            <File>
-            </File>
-            <File>
-              <FileName>serial_cmd_interpreter.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/Log</GroupName>
-          <Files>
-            <File>
-            </File>
-            <File>
-              <FileName>log_module.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</FilePath>
             </File>
           </Files>
         </Group>

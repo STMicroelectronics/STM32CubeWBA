@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -37,17 +37,20 @@
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
 #include "serial_cmd_interpreter.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 
 /* USER CODE BEGIN PTD */
+
 /* USER CODE END PTD */
 
 typedef enum
 {
   NOTIFICATION_INFO_RECEIVED_EVT,
   /* USER CODE BEGIN GATT_CLIENT_APP_Opcode_t */
+
   /* USER CODE END GATT_CLIENT_APP_Opcode_t */
 }GATT_CLIENT_APP_Opcode_t;
 
@@ -70,6 +73,7 @@ typedef enum
   /* USER CODE BEGIN svcId_t */
   /* Serial Port Client*/
   SVC_ID_SPC,
+
   /* USER CODE END svcId_t */
   SVC_ID_MAX
 }svcId_t;
@@ -81,6 +85,7 @@ typedef enum
   SVC_INFO_STATUS_DISCOVERED,
   SVC_INFO_STATUS_ERROR,
   /* USER CODE BEGIN svcInfoStatus_t */
+
   /* USER CODE END svcInfoStatus_t */
   SVC_INFO_STATUS_MAX
 }svcInfoStatus_t;
@@ -97,6 +102,7 @@ typedef struct
   svcInfoStatus_t status;
   uint8_t findIncludedServices; /* Set to TRUE to search for included services */
   /* USER CODE BEGIN SvcInfo_t */
+
   /* USER CODE END SvcInfo_t */
 
 }SvcInfo_t;
@@ -190,6 +196,7 @@ static uint8_t a_buffUartRxValid[BUFFUARTRX_SIZE];
 static uint8_t buffUartRxValidIndex;
 static uint8_t a_buffSpTx[BUFFCOCTX_SIZE];
 static uint8_t buffSpTxLen;
+
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -214,6 +221,7 @@ static uint8_t gatt_procedure(uint8_t index, ProcGattId_t GattProcId);
 /* USER CODE BEGIN PFP */
 static void SPCclient_write_char(void);
 void My_Log_Module_Print(Log_Verbose_Level_t VerboseLevel, Log_Region_t Region, const char * Text, ...);
+
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -247,6 +255,7 @@ void GATT_CLIENT_APP_Init(void)
       a_ClientContext[index].svcInfo[svcIndex].status = SVC_INFO_STATUS_EMPTY;
       /* USER CODE BEGIN GATT_CLIENT_APP_Init_3 */
       a_ClientContext[index].connHdl = 0;
+
       /* USER CODE END GATT_CLIENT_APP_Init_3 */
     }
 
@@ -441,18 +450,6 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
 }
 
 /* USER CODE BEGIN FD */
-uint8_t compare_array(uint8_t *X, uint8_t *Y, uint8_t dim)
-{
-  uint8_t isEqual=1;
-
-  for(uint8_t i=0; i<dim && isEqual; i++)
-  {
-    if (X[i] != Y[i])
-        isEqual=0;
-  }
-
-  return isEqual;
-}
 
 /* USER CODE END FD */
 
@@ -600,7 +597,7 @@ uint8_t compare_array(uint8_t *X, uint8_t *Y, uint8_t dim)
             }
             /* USER CODE BEGIN PROC_GATT_DISC_ALL_CHARS_0 */
             if(a_ClientContext[index].SPCServiceHdl != 0)
-            {            
+            {
               LOG_INFO_APP("  Service SPC_SERVICE_UUID 0x%04X, [0x%04X - 0x%04X]\n",
                                 SPC_SERVICE_UUID,
                                 a_ClientContext[index].SPCServiceHdl,
@@ -621,8 +618,9 @@ uint8_t compare_array(uint8_t *X, uint8_t *Y, uint8_t dim)
                 LOG_ERROR_APP("  Service SPC_SERVICE_UUID 0x%04X characteristics discovery Failed, status =0x%02X\n\n", SPC_SERVICE_UUID, bleStatus);
                 status++;
               }
-              
+
             }
+
             /* USER CODE END PROC_GATT_DISC_ALL_CHARS_0 */
           }
         }
@@ -692,17 +690,10 @@ uint8_t compare_array(uint8_t *X, uint8_t *Y, uint8_t dim)
       {
         uint16_t charPropVal = 0x0000;
 
-        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000)
+        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000
+            && ((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
         {
-          if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_NOTIFY) == CHAR_PROP_NOTIFY)
-          {
-            charPropVal = 0x0001;
-          }
-          else if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
-          {
-            charPropVal = 0x0002;
-          }
-
+          charPropVal = 0x0002;
           procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
@@ -722,7 +713,7 @@ uint8_t compare_array(uint8_t *X, uint8_t *Y, uint8_t dim)
         if(a_ClientContext[index].SPCNotificationDescHdl != 0x0000)
         {
           charPropVal = 0x0001;
-          
+
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].SPCNotificationDescHdl,
                                                 2,
@@ -1010,6 +1001,7 @@ static void gatt_parse_services(aci_att_read_by_group_type_resp_event_rp0 *p_evt
           LOG_INFO_APP("\t\t\t, SPCServiceHdl 0x%04X\n", a_ClientContext[index].SPCServiceHdl);
           LOG_INFO_APP("\t\t\t, SPCServiceEndHdl 0x%04X\n", a_ClientContext[index].SPCServiceEndHdl);
         }
+
         /* USER CODE END gatt_parse_services_2 */
       }
       LOG_INFO_APP("\n");
@@ -1208,6 +1200,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
+          a_ClientContext[index].ServiceChangedCharProperties = CharProperties;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
 /* USER CODE BEGIN gatt_parse_chars_1 */
@@ -1224,7 +1217,8 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
           a_ClientContext[index].SPCWriteToServerCharHdl = CharStartHdl;
           a_ClientContext[index].SPCWriteToServerValueHdl = CharValueHdl;
           LOG_INFO_APP(", ST_SPC_RX_CHAR_UUID charac found [0x%04X, 0x%04X]\n", CharStartHdl, CharValueHdl);
-        } 
+        }
+
 /* USER CODE END gatt_parse_chars_1 */
         else
         {
@@ -1322,7 +1316,6 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
           LOG_INFO_APP(", Service Changed found\n");
         }
 /* USER CODE BEGIN gatt_parse_descs_1 */
-
         else if (a_ClientContext[index].SPCWriteToServerValueHdl == gattCharValueHdl)
         {
           UNUSED(gattCharStartHdl);
@@ -1368,10 +1361,11 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
         {
           LOG_INFO_APP("\t\t\t, found ST_SPC_TX_CHAR_UUID\n");
         }
-        else if (uuid == ST_SPC_RX_CHAR_UUID) 
+        else if (uuid == ST_SPC_RX_CHAR_UUID)
         {
           LOG_INFO_APP("\t\t\t, found ST_SPC_RX_CHAR_UUID\n");
         }
+
 /* USER CODE END gatt_parse_descs_2 */
         else
         {
@@ -1397,7 +1391,6 @@ static int gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
                 p_evt->Connection_Handle,
                 p_evt->Attribute_Handle);
 /* USER CODE BEGIN gatt_parse_notification_1 */
-
   uint16_t attr_handle = p_evt->Attribute_Handle;
 
   /* Safety check: prevent buffer overflow */
@@ -1407,7 +1400,7 @@ static int gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
       return ret;
   }
 
-  if (attr_handle == st_spc_tx_handle + 1) 
+  if (attr_handle == st_spc_tx_handle + 1)
   {
       My_Log_Module_Print( LOG_VERBOSE_INFO, LOG_REGION_APP, "Received data: ");
       for (int i = 0; i < p_evt->Attribute_Value_Length; i++)
@@ -1420,6 +1413,7 @@ static int gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
   {
       LOG_INFO_APP("Received data from unrecognized attribute handle 0x%04X\n", p_evt->Attribute_Handle);
   }
+
 /* USER CODE END gatt_parse_notification_1 */
 
   return ret;
@@ -1609,7 +1603,6 @@ tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint1
 }
 
 /* USER CODE BEGIN LF */
-
 static void RxUART_ValidProcess(uint8_t data)
 {
   if(buffUartRxValidIndex < sizeof(a_buffUartRxValid))
@@ -1652,7 +1645,7 @@ void UartRxCpltCallback(uint8_t * pdata, uint16_t size)
 
     if( (byte_received == '\n') || (buffUartRxIndex >= sizeof(a_buffUartRx)))
     {
-      memcpy(&a_buffSpTx[0], &a_buffUartRx[0], buffUartRxIndex);   
+      memcpy(&a_buffSpTx[0], &a_buffUartRx[0], buffUartRxIndex);
       buffSpTxLen = buffUartRxIndex;
 
       buffUartRxIndex = 0;

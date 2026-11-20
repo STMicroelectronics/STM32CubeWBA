@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -54,10 +54,8 @@ RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
-DMA_HandleTypeDef handle_GPDMA1_Channel1;
 DMA_HandleTypeDef handle_GPDMA1_Channel0;
-DMA_HandleTypeDef handle_GPDMA1_Channel3;
-DMA_HandleTypeDef handle_GPDMA1_Channel2;
+DMA_HandleTypeDef handle_GPDMA1_Channel1;
 
 /* USER CODE BEGIN PV */
 
@@ -67,7 +65,6 @@ DMA_HandleTypeDef handle_GPDMA1_Channel2;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_GPDMA1_Init(void);
 static void MX_HASH_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -107,7 +104,7 @@ int main(void)
   PeriphCommonClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -120,7 +117,6 @@ int main(void)
   MX_HASH_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
-  
 
   /* USER CODE END 2 */
 
@@ -132,11 +128,13 @@ int main(void)
   APP_BSP_Init();
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -265,7 +263,7 @@ void MX_CRC_Init(void)
   * @param None
   * @retval None
   */
-static void MX_GPDMA1_Init(void)
+void MX_GPDMA1_Init(void)
 {
 
   /* USER CODE BEGIN GPDMA1_Init 0 */
@@ -280,10 +278,6 @@ static void MX_GPDMA1_Init(void)
     HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
     HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel1_IRQn);
-    HAL_NVIC_SetPriority(GPDMA1_Channel2_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(GPDMA1_Channel2_IRQn);
-    HAL_NVIC_SetPriority(GPDMA1_Channel3_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(GPDMA1_Channel3_IRQn);
 
   /* USER CODE BEGIN GPDMA1_Init 1 */
 
@@ -504,7 +498,7 @@ void MX_USART1_UART_Init(void)
   huart1.Init.Parity = UART_PARITY_NONE;
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_8;
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
@@ -520,7 +514,7 @@ void MX_USART1_UART_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
+  if (HAL_UARTEx_EnableFifoMode(&huart1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -551,8 +545,8 @@ void MX_USART2_UART_Init(void)
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
   huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_RTS;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_8;
   huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
@@ -568,7 +562,7 @@ void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_UARTEx_DisableFifoMode(&huart2) != HAL_OK)
+  if (HAL_UARTEx_EnableFifoMode(&huart2) != HAL_OK)
   {
     Error_Handler();
   }

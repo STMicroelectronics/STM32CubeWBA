@@ -49,10 +49,6 @@ RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
 RTC_HandleTypeDef hrtc;
 
-UART_HandleTypeDef huart1;
-DMA_HandleTypeDef handle_LPDMA1_Channel0;
-DMA_HandleTypeDef handle_LPDMA1_Channel1;
-
 PCD_HandleTypeDef hpcd_USB_DRD_FS;
 
 /* USER CODE BEGIN PV */
@@ -63,7 +59,6 @@ PCD_HandleTypeDef hpcd_USB_DRD_FS;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void SystemPower_Config(void);
-static void MX_LPDMA1_Init(void);
 static void MX_USB_PCD_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -111,7 +106,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_LPDMA1_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
   MX_ICACHE_Init();
@@ -374,36 +368,6 @@ void MX_ICACHE_Init(void)
 }
 
 /**
-  * @brief LPDMA1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_LPDMA1_Init(void)
-{
-
-  /* USER CODE BEGIN LPDMA1_Init 0 */
-
-  /* USER CODE END LPDMA1_Init 0 */
-
-  /* Peripheral clock enable */
-  __HAL_RCC_LPDMA1_CLK_ENABLE();
-
-  /* LPDMA1 interrupt Init */
-    HAL_NVIC_SetPriority(LPDMA1_Channel0_IRQn, 6, 0);
-    HAL_NVIC_EnableIRQ(LPDMA1_Channel0_IRQn);
-    HAL_NVIC_SetPriority(LPDMA1_Channel1_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(LPDMA1_Channel1_IRQn);
-
-  /* USER CODE BEGIN LPDMA1_Init 1 */
-
-  /* USER CODE END LPDMA1_Init 1 */
-  /* USER CODE BEGIN LPDMA1_Init 2 */
-
-  /* USER CODE END LPDMA1_Init 2 */
-
-}
-
-/**
   * @brief RAMCFG Initialization Function
   * @param None
   * @retval None
@@ -508,54 +472,6 @@ void MX_RTC_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_8;
-  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_EnableFifoMode(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
   * @brief USB Initialization Function
   * @param None
   * @retval None
@@ -598,6 +514,7 @@ static void MX_USB_PCD_Init(void)
   */
 void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
 
   /* USER CODE END MX_GPIO_Init_1 */
@@ -606,6 +523,22 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+
+  /*Configure GPIO pin : PA6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF10_USART1;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

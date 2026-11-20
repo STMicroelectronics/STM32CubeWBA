@@ -30,6 +30,7 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /*Audio Profiles Roles configuration*/
 #define APP_CAP_ROLE                                    (CAP_ROLE_INITIATOR)
+#define APP_AUDIO_ROLE                                  (AUDIO_ROLE_SOURCE)
 
 #define APP_BAP_ROLE_UNICAST_SERVER_SUPPORT             (0u)
 #define APP_BAP_ROLE_UNICAST_CLIENT_SUPPORT             (0u)
@@ -53,20 +54,30 @@ extern "C" {
 #define APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT           (0u)
 #define APP_CSIP_ROLE_SET_MEMBER_SUPPORT                (0u)
 
-/*BAP Configuration Settings*/
+/**
+ * Basic Audio Profile Settings
+ */
 #define MAX_NUM_UCL_SNK_ASE                             (0u)
 #define MAX_NUM_UCL_SRC_ASE                             (0u)
 #define MAX_NUM_USR_SNK_ASE                             (0u)
 #define MAX_NUM_USR_SRC_ASE                             (0u)
+
+/**
+ * Broadcast and Connects Isochronous Stream
+ */
 #define MAX_NUM_CIG                                     (0u)    /* Maximum number of CIGes */
 #define MAX_NUM_CIS_PER_CIG                             (0u)    /* Maximum number of CISes per CIG */
 #define MAX_NUM_BIG                                     (1u)    /* Maximum number of BIGes */
 #define MAX_NUM_BIS_PER_BIG                             (2u)    /* Maximum number of BISes per BIG */
+
+/**
+ * Broadcast Source Settings
+ */
 #define PBP_MAX_BIS                                     (2u)
 #define PBP_MAX_SUBGROUPS                               (2u)
-#define MAX_METADATA_LEN                                (50u)
-#define MAX_BIS_CODEC_SPECIFIC_CONFIG_LEN               (6u)
 #define MAX_SUBGROUP_CODEC_SPECIFIC_CONFIG_LEN          (19u)
+#define MAX_BIS_CODEC_SPECIFIC_CONFIG_LEN               (6u)
+#define MAX_METADATA_LEN                                (20u)
 
 /* These delays refers to the time at which the audio signal passes through an
  * audio interface (such an electroacoustic transducer ) to or from
@@ -80,6 +91,21 @@ extern "C" {
                                                                                  * should add ADC delay)
                                                                                  */
 #define APP_DELAY_SRC_MAX                       (APP_DELAY_SRC_MIN + 0u)        /* No extra buffering of audio data*/
+
+/**
+ * GATT Services Configuration
+ */
+#define BLE_APP_NUM_GATT_SERVICES       (0u)
+
+/**
+ * GATT Attributes Configuration
+ */
+#define BLE_APP_NUM_GATT_ATTRIBUTES     (0u)
+
+/**
+ * Size of the storage area for Attribute values
+ */
+#define BLE_APP_ATT_VALUE_ARRAY_SIZE    (0u)
 
 /* Exported types ------------------------------------------------------------*/
 
@@ -97,4 +123,3 @@ extern "C" {
 #endif
 
 #endif /*__PBP_APP_CONF_H */
-

@@ -60,6 +60,8 @@ defined in linker script */
 	.type	Reset_Handler, %function
 Reset_Handler:
   ldr   sp, =_estack    /* set stack pointer */
+  ldr   r0, =_sstack
+  msr   MSPLIM, r0      /* set stack pointer limit */
 
 /* Call the clock system initialization function.*/
   bl  SystemInit
@@ -209,6 +211,8 @@ g_pfnVectors:
 	.word	RCC_AUDIOSYNC_IRQHandler
 	.word	USB_DRD_FS_IRQHandler
 	.word	XSPI1_IRQHandler
+	.word	0
+	.word	0
 
 	.size	g_pfnVectors, .-g_pfnVectors
 

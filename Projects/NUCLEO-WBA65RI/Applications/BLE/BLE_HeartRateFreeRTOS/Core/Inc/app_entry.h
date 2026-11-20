@@ -61,7 +61,7 @@ extern "C" {
 #define WPAN_FW_BUILD              (0)
 #define WPAN_FW_BRANCH             (0)
 #define WPAN_FW_SUBVERSION         (0)
-#define WPAN_FW_MINOR_VERSION      (10)
+#define WPAN_FW_MINOR_VERSION      (11)
 #define WPAN_FW_MAJOR_VERSION      (1)
 
 /* USER CODE END EC */

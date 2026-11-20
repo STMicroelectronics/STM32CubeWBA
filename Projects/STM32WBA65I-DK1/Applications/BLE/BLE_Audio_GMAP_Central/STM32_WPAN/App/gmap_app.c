@@ -90,7 +90,9 @@ typedef struct
 
 /* Memory size required to allocate resource for Published Audio Capabilities for Unicast Client and/or Broadcast Assistant*/
 #define BAP_PACS_CLT_DYN_ALLOC_SIZE  \
-              BAP_PACS_CLT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,MAX_NUM_UCL_LINK,0,(MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK + MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK))
+              BAP_PACS_CLT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,MAX_NUM_UCL_LINK,\
+                                              0,\
+                                             (MAX_NUM_CLT_SNK_PAC_CHARACTERISTICS_PER_LINK + MAX_NUM_CLT_SRC_PAC_CHARACTERISTICS_PER_LINK))
 
 /*Memory size required for Audio Stream management in Unicast Client Context*/
 #define BAP_ASCS_CLT_DYN_ALLOC_SIZE \
@@ -123,6 +125,8 @@ typedef struct
 #define VOLUME_STEP                             10
 #define BASE_VOLUME                             128
 
+#define ACTIVATE_FAKE_STEREO                    1
+
 #define TARGET_MEDIA_STREAM_QOS_CONFIG LC3_QOS_48_4_1
 
 #define TARGET_TELEPHONY_STREAM_QOS_CONFIG_SINK LC3_QOS_48_2_1
@@ -146,115 +150,125 @@ typedef struct
 
 /* Private variables ---------------------------------------------------------*/
 /* Codec Configurations defined in Basic Audio Profile Specification*/
-const APP_CodecConf_t APP_CodecConf[NUM_LC3_CODEC_CONFIG] =    \
-                  {{SAMPLE_FREQ_8000_HZ,FRAME_DURATION_7_5_MS,26u}, \
-                  {SAMPLE_FREQ_8000_HZ,FRAME_DURATION_10_MS,30u}, \
-                  {SAMPLE_FREQ_16000_HZ,FRAME_DURATION_7_5_MS,30u}, \
-                  {SAMPLE_FREQ_16000_HZ,FRAME_DURATION_10_MS,40u}, \
-                  {SAMPLE_FREQ_24000_HZ,FRAME_DURATION_7_5_MS,45u}, \
-                  {SAMPLE_FREQ_24000_HZ,FRAME_DURATION_10_MS,60u}, \
-                  {SAMPLE_FREQ_32000_HZ,FRAME_DURATION_7_5_MS,60u}, \
-                  {SAMPLE_FREQ_32000_HZ,FRAME_DURATION_10_MS,80u}, \
-                  {SAMPLE_FREQ_44100_HZ,FRAME_DURATION_7_5_MS,97u}, \
-                  {SAMPLE_FREQ_44100_HZ,FRAME_DURATION_10_MS,130u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_7_5_MS,75u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_10_MS,100u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_7_5_MS,90u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_10_MS,120u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_7_5_MS,117u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_10_MS,155u}};
+const APP_CodecConf_t APP_CodecConf[NUM_LC3_CODEC_CONFIG] = {
+  {SAMPLE_FREQ_8000_HZ,  FRAME_DURATION_7_5_MS,  26u},
+  {SAMPLE_FREQ_8000_HZ,  FRAME_DURATION_10_MS,   30u},
+  {SAMPLE_FREQ_16000_HZ, FRAME_DURATION_7_5_MS,  30u},
+  {SAMPLE_FREQ_16000_HZ, FRAME_DURATION_10_MS,   40u},
+  {SAMPLE_FREQ_24000_HZ, FRAME_DURATION_7_5_MS,  45u},
+  {SAMPLE_FREQ_24000_HZ, FRAME_DURATION_10_MS,   60u},
+  {SAMPLE_FREQ_32000_HZ, FRAME_DURATION_7_5_MS,  60u},
+  {SAMPLE_FREQ_32000_HZ, FRAME_DURATION_10_MS,   80u},
+  {SAMPLE_FREQ_44100_HZ, FRAME_DURATION_7_5_MS,  97u},
+  {SAMPLE_FREQ_44100_HZ, FRAME_DURATION_10_MS,  130u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS,  75u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS,  100u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS,  90u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS,  120u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS, 117u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS,  155u}
+};
 
 /* QoS Configuration settings defined in Basic Audio Profile Specification for low latency and for high-reliability audio data*/
-const APP_QoSConf_t APP_QoSConf[NUM_LC3_QoSConf + NUM_GMAP_LC3_QoSConf] =    \
-                  {{SAMPLE_FREQ_8000_HZ,7500,BAP_FRAMING_UNFRAMED,26,2,8,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,10000,BAP_FRAMING_UNFRAMED,30,2,10,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,2,8,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,2,10,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,2,8,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,2,10,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,2,8,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,2,10,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,5,24,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,10884,BAP_FRAMING_FRAMED,130,5,31,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,5,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,5,20,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,5,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,5,20,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,5,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,5,20,40000}, \
+const APP_QoSConf_t APP_UnicastQoSConf[NUM_LC3_UNICAST_QOSCONF + NUM_LC3_GMAP_UNICAST_QOSCONF] = {
+  /* Low Latency BAP Unicast Configs */
+  {SAMPLE_FREQ_8000_HZ,   7500, BAP_FRAMING_UNFRAMED,  26,  2,   8, 40000},
+  {SAMPLE_FREQ_8000_HZ,  10000, BAP_FRAMING_UNFRAMED,  30,  2,  10, 40000},
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  2,   8, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  2,  10, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45,  2,   8, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60,  2,  10, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  2,   8, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  2,  10, 40000},
+  {SAMPLE_FREQ_44100_HZ,  8163, BAP_FRAMING_FRAMED,    97,  5,  24, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED,   130,  5,  31, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  5,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  5,  20, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90,  5,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120,  5,  20, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED, 117,  5,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155,  5,  20, 40000},
+  /* High Reliability BAP Unicast Configs */
+  {SAMPLE_FREQ_8000_HZ,   7500, BAP_FRAMING_UNFRAMED,  26, 13,  75, 40000},
+  {SAMPLE_FREQ_8000_HZ,  10000, BAP_FRAMING_UNFRAMED,  30, 13,  95, 40000},
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30, 13,  75, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40, 13,  95, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45, 13,  75, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60, 13,  95, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60, 13,  75, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80, 13,  95, 40000},
+  {SAMPLE_FREQ_44100_HZ,  8163, BAP_FRAMING_FRAMED,    97, 13,  80, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED,   130, 13,  85, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75, 13,  75, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100, 13,  95, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90, 13,  75, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120, 13, 100, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED, 117, 13,  75, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155, 13, 100, 40000},
+  /* Balanced BAP Unicast Configs */
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  3,  15, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  3,  20, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45,  3,  15, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60,  3,  20, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  3,  15, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  3,  20, 40000},
+  /* GMAP Unicast Configs Source */
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  1,  15, 60000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  1,  20, 60000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  1,  15, 60000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  1,  20, 60000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  1,  15, 60000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  1,  20, 60000},
+  /* GMAP Unicast Configs Sink */
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  1,  15, 10000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  1,  20, 10000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  1,  15, 10000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  1,  20, 10000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90,  1,  15, 10000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120,  1,  20, 10000}
+};
 
-                  {SAMPLE_FREQ_8000_HZ,7500,BAP_FRAMING_UNFRAMED,26,13,75,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,10000,BAP_FRAMING_UNFRAMED,30,13,95,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,13,75,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,13,95,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,13,75,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,13,95,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,13,75,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,13,95,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,13,80,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,10884,BAP_FRAMING_FRAMED,130,13,85,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,13,75,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,13,95,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,13,75,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,13,100,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,13,75,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,13,100,40000}, \
-
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,1,15,60000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,1,20,60000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,1,15,60000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,1,20,60000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,1,15,60000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,1,20,60000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,1,15,10000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,1,20,10000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,1,15,10000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,1,20,10000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,1,15,10000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,1,20,10000}};
-
-const APP_QoSConf_t APP_BroadcastQoSConf[NUM_LC3_QoSConf + NUM_GMAP_Brd_LC3_QoSConf] =    \
-                  { /* Low Latency BAP Configs */
-                  {SAMPLE_FREQ_8000_HZ,7500,BAP_FRAMING_UNFRAMED,26,2,8,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,10000,BAP_FRAMING_UNFRAMED,30,2,10,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,2,8,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,2,10,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,2,8,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,2,10,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,2,8,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,2,10,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,4,24,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,10884,BAP_FRAMING_FRAMED,130,4,31,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,4,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,4,20,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,4,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,4,20,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,4,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,4,20,40000}, \
-
-                    /* High Reliability BAP Configs */
-                  {SAMPLE_FREQ_8000_HZ,7500,BAP_FRAMING_UNFRAMED,26,4,45,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,10000,BAP_FRAMING_UNFRAMED,30,4,60,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,4,45,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,4,60,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,4,45,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,4,60,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,4,45,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,4,60,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,4,54,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,10884,BAP_FRAMING_FRAMED,130,4,60,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,4,50,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,4,65,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,4,50,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,4,65,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,4,50,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,4,65,40000}, \
-
-                    /* GMAP Configs */
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,1,8,10000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,1,10,10000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,1,8,10000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,1,10,10000}};
+const APP_QoSConf_t APP_BroadcastQoSConf[NUM_LC3_BRD_QOSCONF + NUM_LC3_GMAP_BRD_QOSCONF] = {
+  /* Low Latency BAP Broadcast Configs */
+  {SAMPLE_FREQ_8000_HZ,   7500, BAP_FRAMING_UNFRAMED,  26,  2,   8, 40000},
+  {SAMPLE_FREQ_8000_HZ,  10000, BAP_FRAMING_UNFRAMED,  30,  2,  10, 40000},
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  2,   8, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  2,  10, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45,  2,   8, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60,  2,  10, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  2,   8, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  2,  10, 40000},
+  {SAMPLE_FREQ_44100_HZ,  8163, BAP_FRAMING_FRAMED,    97,  4,  24, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED,   130,  4,  31, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  4,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  4,  20, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90,  4,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120,  4,  20, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED, 117,  4,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155,  4,  20, 40000},
+  /* High Reliability BAP Broadcast Configs */
+  {SAMPLE_FREQ_8000_HZ,   7500, BAP_FRAMING_UNFRAMED,  26,  4,  45, 40000},
+  {SAMPLE_FREQ_8000_HZ,  10000, BAP_FRAMING_UNFRAMED,  30,  4,  60, 40000},
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  4,  45, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  4,  60, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45,  4,  45, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60,  4,  60, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  4,  45, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  4,  60, 40000},
+  {SAMPLE_FREQ_44100_HZ,  8163, BAP_FRAMING_FRAMED,    97,  4,  54, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED,   130,  4,  60, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  4,  50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  4,  65, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90,  4,  50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120,  4,  65, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED, 117,  4,  50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155,  4,  65, 40000},
+  /* GMAP Broadcast Configs */
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  1,   8, 10000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  1,  10, 10000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90,  1,   8, 10000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120,  1,  10, 10000}
+};
 
 /* Application context*/
 GMAPAPP_Context_t GMAPAPP_Context = {0};
@@ -304,8 +318,10 @@ static uint16_t aSnkBuff[SAI_SNK_MAX_BUFF_SIZE] __attribute__((aligned));
 static uint16_t *aSnkBuff = NULL;
 #endif /*(SAI_SNK_MAX_BUFF_SIZE != 0)*/
 
+#if (ACTIVATE_FAKE_STEREO == 1u)
 static int16_t* pPrevData = NULL;
 static uint8_t Nb_Active_Ch = 0;
+#endif /* (ACTIVATE_FAKE_STEREO == 1u) */
 
 #define MAX_UNICAST_ACCEPTORS      2u
 /* Structures used as Unicast Audio Start parameters */
@@ -376,6 +392,9 @@ static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
                                              uint16_t CIS_ConnHandle,
                                              uint8_t ASE_ID,
                                              uint32_t ControllerDelay);
+static void APP_ParseRxPACRecordsData(uint16_t ConnHandle,
+                                      CAP_NotCode_t Opcode,
+                                      BAP_PACRecordsData_t *pPACRecordsData);
 static int32_t start_audio_source(void);
 static int32_t start_audio_sink(void);
 static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocations);
@@ -403,14 +422,22 @@ tBleStatus APP_AUDIO_STACK_Init(void)
   tBleStatus status;
 
   /* First register the APP BLE Audio buffer */
-  status = SNVMA_Register(APP_AUDIO_SNVMA_BufferId_1_2,
-                         (uint32_t *)audio_buffer_nvm,
-                         (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
-
-  if (status != SNVMA_ERROR_OK)
+  static uint8_t audio_nvm_init = 0;
+  if (audio_nvm_init == 0)
   {
-    LOG_ERROR_APP( "SNVMA registration for BLE Audio failed with status: %d", status);
-    Error_Handler();
+    status = SNVMA_Register(APP_AUDIO_SNVMA_BufferId_1_2,
+                          (uint32_t *)audio_buffer_nvm,
+                          (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+    if (status != SNVMA_ERROR_OK)
+    {
+      LOG_ERROR_APP( "SNVMA registration for BLE Audio failed with status: %d", status);
+      Error_Handler();
+    }
+    else
+    {
+      audio_nvm_init = 1;
+    }
   }
 
   /* Realize a restore */
@@ -435,7 +462,7 @@ void GMAPAPP_Init(void)
 {
   tBleStatus status;
   /* Init Initiator/Commander with Unicast Client */
-  status = CAPAPP_Init(AUDIO_ROLE_SOURCE | AUDIO_ROLE_SINK);
+  status = CAPAPP_Init(APP_AUDIO_ROLE);
   LOG_INFO_APP("CAPAPP_Init() returns status 0x%02X\n",status);
   Set_Volume(LocalVolume);
   Menu_SetLocalVolume(LocalVolume);
@@ -971,13 +998,13 @@ uint8_t GMAPAPP_StartStream(uint8_t QOSConfIdSink, uint8_t NumChannelSink, Audio
             pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id_sink].frame_duration;
             pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id_sink].octets_per_codec_frame;
 
-            pQoS_Conf->SDUInterval = APP_QoSConf[QOSConfIdSink].sdu_interval;
-            pQoS_Conf->Framing = APP_QoSConf[QOSConfIdSink].framing;
-            pQoS_Conf->MaxSDU = APP_QoSConf[QOSConfIdSink].max_sdu \
+            pQoS_Conf->SDUInterval = APP_UnicastQoSConf[QOSConfIdSink].sdu_interval;
+            pQoS_Conf->Framing = APP_UnicastQoSConf[QOSConfIdSink].framing;
+            pQoS_Conf->MaxSDU = APP_UnicastQoSConf[QOSConfIdSink].max_sdu \
               * MIN(num_chnls, pCodecConf->ChannelPerCIS);
-            pQoS_Conf->RetransmissionNumber = APP_QoSConf[QOSConfIdSink].rtx_num;
-            pQoS_Conf->MaxTransportLatency = APP_QoSConf[QOSConfIdSink].max_tp_latency;
-            pQoS_Conf->PresentationDelay = APP_QoSConf[QOSConfIdSink].presentation_delay;
+            pQoS_Conf->RetransmissionNumber = APP_UnicastQoSConf[QOSConfIdSink].rtx_num;
+            pQoS_Conf->MaxTransportLatency = APP_UnicastQoSConf[QOSConfIdSink].max_tp_latency;
+            pQoS_Conf->PresentationDelay = APP_UnicastQoSConf[QOSConfIdSink].presentation_delay;
 
             aMetadataSnk[i][metadata_snk_len++] = 0x03;
             aMetadataSnk[i][metadata_snk_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
@@ -1006,13 +1033,13 @@ uint8_t GMAPAPP_StartStream(uint8_t QOSConfIdSink, uint8_t NumChannelSink, Audio
             pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id_source].frame_duration;
             pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id_source].octets_per_codec_frame;
 
-            pQoS_Conf->SDUInterval = APP_QoSConf[QOSConfIdSource].sdu_interval;
-            pQoS_Conf->Framing = APP_QoSConf[QOSConfIdSource].framing;
-            pQoS_Conf->MaxSDU = APP_QoSConf[QOSConfIdSource].max_sdu \
+            pQoS_Conf->SDUInterval = APP_UnicastQoSConf[QOSConfIdSource].sdu_interval;
+            pQoS_Conf->Framing = APP_UnicastQoSConf[QOSConfIdSource].framing;
+            pQoS_Conf->MaxSDU = APP_UnicastQoSConf[QOSConfIdSource].max_sdu \
               * MIN(num_chnls, pCodecConf->ChannelPerCIS);
-            pQoS_Conf->RetransmissionNumber = APP_QoSConf[QOSConfIdSource].rtx_num;
-            pQoS_Conf->MaxTransportLatency = APP_QoSConf[QOSConfIdSource].max_tp_latency;
-            pQoS_Conf->PresentationDelay = APP_QoSConf[QOSConfIdSource].presentation_delay;
+            pQoS_Conf->RetransmissionNumber = APP_UnicastQoSConf[QOSConfIdSource].rtx_num;
+            pQoS_Conf->MaxTransportLatency = APP_UnicastQoSConf[QOSConfIdSource].max_tp_latency;
+            pQoS_Conf->PresentationDelay = APP_UnicastQoSConf[QOSConfIdSource].presentation_delay;
 
             aMetadataSrc[i][metadata_src_len++] = 0x03;
             aMetadataSrc[i][metadata_src_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
@@ -1390,42 +1417,46 @@ void APP_NotifyTxAudioHalfCplt(void)
 
 void CODEC_NotifyDataReady(uint16_t conn_handle, void* decoded_data, uint8_t channel_idx, uint8_t channel_nb)
 {
-  /* When only one channel is active, duplicate it for fake stereo on SAI */
   uint32_t i;
-  uint8_t j;
   int16_t *pData = (int16_t *)(decoded_data);   /* 16 bits samples */
 
-  if(pData == (pPrevData + 1)){
+  /* check if we need to upsample the decoded data to fit the audio peripheral */
+  if (GMAPAPP_Context.SinkDecimation > 1)
+  {
+    for (i = 0; i < Sink_frame_size/2 - 2*GMAPAPP_Context.SinkDecimation; i+=2*GMAPAPP_Context.SinkDecimation)
+    {
+      /* When Decimation multiplier is more than one, perform linear interpolation for missing samples */
+      /* Note: for a complete upsampling process, data should also be filtered */
+      for (uint32_t j = 1; j < GMAPAPP_Context.SinkDecimation; j++)
+      {
+        pData[i+2*j] = (pData[i] + pData[i+2*GMAPAPP_Context.SinkDecimation])/2;
+      }
+    }
+
+    for (uint32_t j = 1; j < GMAPAPP_Context.SinkDecimation; j++)
+    {
+      pData[i+2*j] = pData[i];
+    }
+  }
+
+#if (ACTIVATE_FAKE_STEREO == 1u)
+  pData = (int16_t *)(decoded_data);
+  if (pData == (pPrevData + 1)){
     /* we start receiving two channels */
     Nb_Active_Ch = 2;
   }
   pPrevData = pData;
 
+  /* When only one channel is active, duplicate it for fake stereo on SAI */
   if (Nb_Active_Ch < 2)
   {
-    for (i = 0; i < Sink_frame_size/2 - 2*GMAPAPP_Context.SinkDecimation; i+=2*GMAPAPP_Context.SinkDecimation)
+    for (i = 0; i < Sink_frame_size/2; i+=2)
     {
-      /* Copy mono data to right channel */
+      /* Copy mono (left) data to right channel */
       pData[i+1] = pData[i];
-
-      /* When Decimation multiplier is more than one, perform linear interpolation for missing packets */
-      /* Note: for a complete upsampling process, data should also be filtered */
-      for (j = 1; j < GMAPAPP_Context.SinkDecimation; j++)
-      {
-        pData[i+2*j] = (pData[i] + pData[i+2*GMAPAPP_Context.SinkDecimation])/2;
-        pData[i+2*j+1] = (pData[i] + pData[i+2*GMAPAPP_Context.SinkDecimation])/2;
-
-      }
-    }
-
-    /* Process last packets */
-    pData[i+1] = pData[i];
-    for (j = 1; j < GMAPAPP_Context.SinkDecimation; j++)
-    {
-      pData[i+2*j] = pData[i];
-      pData[i+2*j+1] = pData[i];
     }
   }
+#endif /* (ACTIVATE_FAKE_STEREO == 1u) */
 }
 
 void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize)
@@ -1733,8 +1764,8 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   APP_BAP_Config.MaxNumUCLLinks = MAX_NUM_UCL_LINK;
 
   /*Published Audio Capabilities for Unicast Client and/or Broadcast Assistant Configuration*/
-  APP_BAP_Config.PACSCltConfig.MaxNumSnkPACRecordsPerLink = MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK;
-  APP_BAP_Config.PACSCltConfig.MaxNumSrcPACRecordsPerLink = MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK;
+  APP_BAP_Config.PACSCltConfig.MaxNumSnkPACPerLink = MAX_NUM_CLT_SNK_PAC_CHARACTERISTICS_PER_LINK;
+  APP_BAP_Config.PACSCltConfig.MaxNumSrcPACPerLink = MAX_NUM_CLT_SRC_PAC_CHARACTERISTICS_PER_LINK;
   APP_BAP_Config.PACSCltConfig.pStartRamAddr = (uint8_t *)&aPACSCltMemBuffer;
   APP_BAP_Config.PACSCltConfig.RamSize = BAP_PACS_CLT_DYN_ALLOC_SIZE;
 
@@ -1848,6 +1879,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
 
   /*Register the Audio Task */
   UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
+
   /*Initialize the Audio Codec (LC3)*/
   CODEC_LC3Config_t lc3_config;
 
@@ -2258,70 +2290,13 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       break;
     }
 
-    case CAP_REM_ACC_SNK_PAC_RECORD_INFO_EVT:
-    case CAP_REM_ACC_SRC_PAC_RECORD_INFO_EVT:
+    case CAP_REM_ACC_SNK_PAC_RECORDS_DATA_EVT:
+    case CAP_REM_ACC_SRC_PAC_RECORDS_DATA_EVT:
     {
-      BAP_AudioCapabilities_t *p_cap = (BAP_AudioCapabilities_t *)pNotification->pInfo;
-      Supported_Sampling_Freq_t  remote_supported_sampling_freq;
-      Supported_Frame_Duration_t remote_supported_frame_duration;
-      Supported_Channel_Counts_t remote_supported_audio_chan;
-      uint32_t                   remote_supported_octet_per_codec_frame;
-      uint8_t                    remote_supported_max_codec_frame_per_sdu;
-      Audio_Context_t            remote_preferred_audio_contexts = 0x0000u;
-
-      if ( pNotification->EvtOpcode == CAP_REM_ACC_SNK_PAC_RECORD_INFO_EVT)
-      {
-        LOG_INFO_APP("Sink PAC Record from CAP Acceptor on ConnHandle 0x%04X\n",pNotification->ConnHandle);
-      }
-      else
-      {
-        LOG_INFO_APP("Source PAC Record from CAP Acceptor on ConnHandle 0x%04X\n",pNotification->ConnHandle);
-      }
-
-      /* Get supported codec config */
-      remote_supported_sampling_freq = LTV_GetSupportedSamplingFrequencies(p_cap->pSpecificCap,
-                                                                           p_cap->SpecificCapLength);
-      remote_supported_frame_duration = LTV_GetSupportedFrameDuration(p_cap->pSpecificCap,
-                                                                      p_cap->SpecificCapLength);
-      remote_supported_octet_per_codec_frame = LTV_GetSupportedOctetsPerCodecFrame(p_cap->pSpecificCap,
-                                                                                   p_cap->SpecificCapLength);
-      if (remote_supported_sampling_freq == 0 || remote_supported_frame_duration == 0
-          || remote_supported_octet_per_codec_frame == 0)
-      {
-        /* Error: Supported Sampling Freq and Supported Frame duration should be present in specific capabilities */
-        break;
-      }
-
-      remote_supported_audio_chan = LTV_GetSupportedAudioChannelCounts(p_cap->pSpecificCap,
-                                                                       p_cap->SpecificCapLength);
-      if (remote_supported_audio_chan == 0)
-      {
-        /* Default value */
-        remote_supported_audio_chan = 0x01;
-      }
-
-      remote_supported_max_codec_frame_per_sdu = LTV_GetSupportedMaxCodecFramesPerSDU(p_cap->pSpecificCap,
-                                                                                      p_cap->SpecificCapLength);
-      if (remote_supported_max_codec_frame_per_sdu == 0)
-      {
-        /* Default value */
-        remote_supported_max_codec_frame_per_sdu = 0x01;
-      }
-
-      LTV_GetPreferredAudioContexts(p_cap->pMetadata,
-                                    p_cap->MetadataLength,
-                                    &remote_preferred_audio_contexts);
-
-      LOG_INFO_APP("Remote Record: \n");
-      LOG_INFO_APP("    Supported Sample Freq: \n");
-      APP_ReportSupportedSampleFreq(remote_supported_sampling_freq);
-      LOG_INFO_APP("    Supported Frame Duration: \n");
-      APP_ReportSupportedFrameDuration(remote_supported_frame_duration);
-      LOG_INFO_APP("    Supported Channel Counts: \n");
-      APP_ReportSupportedChnlCount(remote_supported_audio_chan);
-      LOG_INFO_APP("    Supported Octets Per Codec Frame: 0x%02X\n",remote_supported_octet_per_codec_frame);
-      LOG_INFO_APP("    Supported Max Codec Frame Per SDU: %d\n",remote_supported_max_codec_frame_per_sdu);
-      LOG_INFO_APP("    Supported Preferred Audio Contexts: 0x%04X\n",remote_preferred_audio_contexts);
+      /*Parse the received data to extarct included PAC Records*/
+      APP_ParseRxPACRecordsData(pNotification->ConnHandle,
+                                pNotification->EvtOpcode,
+                                (BAP_PACRecordsData_t *)pNotification->pInfo);
       break;
     }
 
@@ -2700,7 +2675,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               GMAPAPP_Context.OperationConnHandle = pNotification->ConnHandle;
             }
 #endif /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
-			UNUSED(hciCmdResult);
+            UNUSED(hciCmdResult);
           break;
           }
 
@@ -3016,10 +2991,18 @@ static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocat
 
 static uint8_t Get_LC3_Conf_ID(uint8_t QoSConfId)
 {
-  if (QoSConfId < NUM_LC3_QoSConf)
+  if (QoSConfId < NUM_LC3_UNICAST_QOSCONF)
   {
-    /* CAP Config */
-    return QoSConfId % 16;
+    if (QoSConfId < NUM_LC3_BRD_QOSCONF )
+    {
+      /* CAP Config */
+      return QoSConfId % 16;
+    }
+    else
+    {
+      /* CAP Config */
+      return QoSConfId - NUM_LC3_BRD_QOSCONF  + 2;
+    }
   }
   else
   {
@@ -3058,7 +3041,7 @@ static uint8_t Get_LC3_Conf_ID(uint8_t QoSConfId)
 
 static uint8_t Get_LC3_Broadcast_Conf_ID(uint8_t QoSConfId)
 {
-  if (QoSConfId < NUM_LC3_QoSConf)
+  if (QoSConfId < NUM_LC3_BRD_QOSCONF)
   {
     /* CAP Config */
     return QoSConfId % 16;
@@ -3325,6 +3308,261 @@ static tBleStatus GMAPAPP_BroadcastSetupAudio(void)
   return ret;
 }
 
+static void APP_AnalyzePACRecord(uint16_t ConnHandle,
+                                 CAP_NotCode_t Opcode,
+                                 uint8_t *pData)
+{
+  BAP_AudioCapabilities_t       record;
+
+  Supported_Sampling_Freq_t  remote_supported_sampling_freq;
+  Supported_Frame_Duration_t remote_supported_frame_duration;
+  Supported_Channel_Counts_t remote_supported_audio_chan;
+  uint32_t                   remote_supported_octet_per_codec_frame;
+#if (CFG_LOG_SUPPORTED != 0)
+  uint8_t                    remote_supported_max_codec_frame_per_sdu;
+#endif /* (CFG_LOG_SUPPORTED != 0) */
+  Audio_Context_t            remote_preferred_audio_contexts = 0x0000u;
+
+  record.CodecID.CodingFormat = pData[0];
+  record.CodecID.CompanyID = (uint16_t)((uint16_t) pData[1] + (uint16_t) ((pData[2] << 8 )));
+  record.CodecID.VsCodecID = (uint16_t)((uint16_t) pData[3] + (uint16_t) ((pData[4] << 8 )));
+  record.SpecificCapLength = pData[5];
+  record.pSpecificCap= &pData[6];
+  record.MetadataLength = pData[6+record.SpecificCapLength];
+  record.pMetadata = &pData[7+record.SpecificCapLength];
+
+  /* Get supported codec config */
+  remote_supported_sampling_freq = LTV_GetSupportedSamplingFrequencies(record.pSpecificCap,
+                                                                       record.SpecificCapLength);
+  remote_supported_frame_duration = LTV_GetSupportedFrameDuration(record.pSpecificCap,
+                                                                  record.SpecificCapLength);
+  remote_supported_octet_per_codec_frame = LTV_GetSupportedOctetsPerCodecFrame(record.pSpecificCap,
+                                                                               record.SpecificCapLength);
+  if (remote_supported_sampling_freq == 0 || remote_supported_frame_duration == 0
+      || remote_supported_octet_per_codec_frame == 0)
+  {
+    /* Error: Supported Sampling Freq and Supported Frame duration should be present in specific capabilities */
+    return;
+  }
+
+  remote_supported_audio_chan = LTV_GetSupportedAudioChannelCounts(record.pSpecificCap,
+                                                                   record.SpecificCapLength);
+  if (remote_supported_audio_chan == 0)
+  {
+    /* Default value */
+    remote_supported_audio_chan = 0x01;
+  }
+
+#if (CFG_LOG_SUPPORTED != 0)
+  remote_supported_max_codec_frame_per_sdu = LTV_GetSupportedMaxCodecFramesPerSDU(record.pSpecificCap,
+                                                                                  record.SpecificCapLength);
+  if (remote_supported_max_codec_frame_per_sdu == 0)
+  {
+    /* Default value */
+    remote_supported_max_codec_frame_per_sdu = 0x01;
+  }
+#endif /* (CFG_LOG_SUPPORTED != 0) */
+
+  LTV_GetPreferredAudioContexts(record.pMetadata,
+                                record.MetadataLength,
+                                &remote_preferred_audio_contexts);
+
+  LOG_INFO_APP("Remote Record: \n");
+  LOG_INFO_APP("    Supported Sample Freq: \n");
+  APP_ReportSupportedSampleFreq(remote_supported_sampling_freq);
+  LOG_INFO_APP("    Supported Frame Duration: \n");
+  APP_ReportSupportedFrameDuration(remote_supported_frame_duration);
+  LOG_INFO_APP("    Supported Channel Counts: \n");
+  APP_ReportSupportedChnlCount(remote_supported_audio_chan);
+  LOG_INFO_APP("    Supported Octets Per Codec Frame: 0x%04X\n",remote_supported_octet_per_codec_frame);
+  LOG_INFO_APP("    Supported Max Codec Frame Per SDU: %d\n",remote_supported_max_codec_frame_per_sdu);
+  LOG_INFO_APP("    Supported Preferred Audio Contexts: 0x%04X\n",remote_preferred_audio_contexts);
+}
+
+static void APP_ParseRxPACRecordsData(uint16_t ConnHandle,
+                                      CAP_NotCode_t Opcode,
+                                      BAP_PACRecordsData_t *pPACRecordsData)
+{
+  tBleStatus    status = BLE_STATUS_SUCCESS;
+  uint8_t       numRecords = 0;
+  uint8_t       idx = 0;
+  uint16_t      remain_length = pPACRecordsData->DataLength;
+  uint16_t      i = 0u;
+  uint8_t       length;
+
+  LOG_INFO_APP("Parse PAC Records from Data Packet type 0x%02X (Offset %d)\n",
+               pPACRecordsData->PacketFragment,
+               pPACRecordsData->Offset);
+
+  if (((pPACRecordsData->PacketFragment == PAC_RECORDS_DATA_PACKET_FRAGMENTED) && (pPACRecordsData->Offset == 0u)) \
+      || (pPACRecordsData->PacketFragment == PAC_RECORDS_DATA_PACKET_COMPLETE))
+  {
+    GMAPAPP_Context.RxPACRecord.State = 0x00;
+    GMAPAPP_Context.RxPACRecord.NumRecords = pPACRecordsData->pData[0];
+
+    numRecords = pPACRecordsData->pData[0];
+    GMAPAPP_Context.RxPACRecord.DataLength = 0u;
+    i+=1;
+    remain_length -= 1u;
+  }
+  else
+  {
+    numRecords = GMAPAPP_Context.RxPACRecord.NumRecords;
+  }
+
+  for (idx = 0u;((idx < numRecords) && (status == BLE_STATUS_SUCCESS));idx++)
+  {
+    if (GMAPAPP_Context.RxPACRecord.State == 0x00)
+    {
+      /*Step : Codec ID storage*/
+      /*number of bytes to store Codec ID*/
+      length = (5u - GMAPAPP_Context.RxPACRecord.DataLength);
+      if (remain_length >= length)
+      {
+        if ((GMAPAPP_Context.RxPACRecord.DataLength + length) <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          memcpy(&GMAPAPP_Context.RxPACRecord.aData[GMAPAPP_Context.RxPACRecord.DataLength],
+                 (void*)&pPACRecordsData->pData[i],
+                 length);
+        }
+        GMAPAPP_Context.RxPACRecord.DataLength += length;
+        GMAPAPP_Context.RxPACRecord.State = 0x01;
+        remain_length -= length;
+        i += length;
+      }
+      else
+      {
+        /* remaining received data doesn't include whole header PAC Record structure*/
+        if ((GMAPAPP_Context.RxPACRecord.DataLength + remain_length) <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          memcpy(&GMAPAPP_Context.RxPACRecord.aData[GMAPAPP_Context.RxPACRecord.DataLength],
+                 (void*)&pPACRecordsData->pData[i],
+                 remain_length);
+        }
+        GMAPAPP_Context.RxPACRecord.DataLength += remain_length;
+        status = BLE_STATUS_INSUFFICIENT_RESOURCES;
+      }
+    }
+    if (GMAPAPP_Context.RxPACRecord.State == 0x01)
+    {
+      /*Step : Specific Capacity Length storage*/
+      if (remain_length >= 1u)
+      {
+        if ((GMAPAPP_Context.RxPACRecord.DataLength + 1u) <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          GMAPAPP_Context.RxPACRecord.aData[GMAPAPP_Context.RxPACRecord.DataLength] = pPACRecordsData->pData[i];
+        }
+        GMAPAPP_Context.RxPACRecord.DataLength += 1u;
+        GMAPAPP_Context.RxPACRecord.SpecificCapLength = pPACRecordsData->pData[i];
+        GMAPAPP_Context.RxPACRecord.State = 0x02u;
+        remain_length -= 1u;
+        i += 1u;
+      }
+      else
+      {
+        /*remaining received data doesn't include Specific Capability Length PAC Record structure*/
+        status = BLE_STATUS_INSUFFICIENT_RESOURCES;
+      }
+    }
+    if (GMAPAPP_Context.RxPACRecord.State == 0x02)
+    {
+      /*Step : Specific Capability storage*/
+      /*number of bytes to store Specific Capability*/
+      length = (GMAPAPP_Context.RxPACRecord.SpecificCapLength - (GMAPAPP_Context.RxPACRecord.DataLength-6u));
+      if (remain_length >= length)
+      {
+        if ((GMAPAPP_Context.RxPACRecord.DataLength + length) <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          memcpy(&GMAPAPP_Context.RxPACRecord.aData[GMAPAPP_Context.RxPACRecord.DataLength],
+                 (void*)&pPACRecordsData->pData[i],
+                 length);
+        }
+        GMAPAPP_Context.RxPACRecord.DataLength += length;
+        remain_length -= length;
+        i += length;
+        GMAPAPP_Context.RxPACRecord.State = 0x03;
+      }
+      else
+      {
+        /* remaining received data doesn't include whole Specific Capability PAC Record structure */
+        if ((GMAPAPP_Context.RxPACRecord.DataLength + remain_length) <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          memcpy(&GMAPAPP_Context.RxPACRecord.aData[GMAPAPP_Context.RxPACRecord.DataLength],
+                 (void*)&pPACRecordsData->pData[i],
+                 remain_length);
+        }
+        GMAPAPP_Context.RxPACRecord.DataLength += remain_length;
+        i += remain_length;
+        status = BLE_STATUS_INSUFFICIENT_RESOURCES;
+      }
+    }
+    if (GMAPAPP_Context.RxPACRecord.State == 0x03)
+    {
+      /*Step : Metadata Length storage*/
+      if (remain_length >= 1u)
+      {
+        if ((GMAPAPP_Context.RxPACRecord.DataLength + 1u) <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          GMAPAPP_Context.RxPACRecord.aData[GMAPAPP_Context.RxPACRecord.DataLength] = pPACRecordsData->pData[i];
+        }
+        GMAPAPP_Context.RxPACRecord.DataLength += 1u;
+        GMAPAPP_Context.RxPACRecord.MetadataLength = pPACRecordsData->pData[i];
+        GMAPAPP_Context.RxPACRecord.State = 0x04u;
+        remain_length -= 1u;
+        i += 1u;
+      }
+      else
+      {
+        /* remaining received data doesn't include Metadata Length PAC Record structure */
+        status = BLE_STATUS_INSUFFICIENT_RESOURCES;
+      }
+    }
+    if (GMAPAPP_Context.RxPACRecord.State == 0x04)
+    {
+      /*Step : Metadata storage*/
+      /*number of bytes to store Metadata*/
+      length = (GMAPAPP_Context.RxPACRecord.MetadataLength - (GMAPAPP_Context.RxPACRecord.DataLength - (7u + GMAPAPP_Context.RxPACRecord.SpecificCapLength)));
+      if (remain_length >= length)
+      {
+        if ((GMAPAPP_Context.RxPACRecord.DataLength + length) <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          memcpy(&GMAPAPP_Context.RxPACRecord.aData[GMAPAPP_Context.RxPACRecord.DataLength],
+                 (void*)&pPACRecordsData->pData[i],
+                 length);
+        }
+        GMAPAPP_Context.RxPACRecord.DataLength += length;
+        LOG_INFO_APP("PAC Record with SpecificCapLength %d and  MetadataLength %d\n",
+                     GMAPAPP_Context.RxPACRecord.SpecificCapLength,
+                     GMAPAPP_Context.RxPACRecord.MetadataLength);
+
+        if (GMAPAPP_Context.RxPACRecord.DataLength <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          /*Analyze the PAC Record*/
+          APP_AnalyzePACRecord(ConnHandle,Opcode,GMAPAPP_Context.RxPACRecord.aData);
+        }
+        remain_length -= length;
+        i += length ;
+        /*Initialize the parsing setting*/
+        GMAPAPP_Context.RxPACRecord.DataLength = 0u;
+        GMAPAPP_Context.RxPACRecord.State = 0x00;
+        GMAPAPP_Context.RxPACRecord.NumRecords--;
+      }
+      else
+      {
+        if ((GMAPAPP_Context.RxPACRecord.DataLength + remain_length) <= APP_MAX_SUPPORTED_PAC_RECORD_LEN)
+        {
+          memcpy(&GMAPAPP_Context.RxPACRecord.aData[GMAPAPP_Context.RxPACRecord.DataLength],
+                 (void*)&pPACRecordsData->pData[i],
+                 remain_length);
+        }
+        GMAPAPP_Context.RxPACRecord.DataLength += remain_length;
+        /* remaining received data length %d doesn't include whole Metadata PAC Record structure */
+        status = BLE_STATUS_INSUFFICIENT_RESOURCES;
+      }
+    }
+  }
+}
+
 /*Audio Source */
 static int32_t start_audio_source(void)
 {
@@ -3334,8 +3572,10 @@ static int32_t start_audio_source(void)
 /*Audio Sink */
 static int32_t start_audio_sink(void)
 {
+#if (ACTIVATE_FAKE_STEREO == 1u)
   /* reset numbers of active channels */
   Nb_Active_Ch = 0;
+#endif /* (ACTIVATE_FAKE_STEREO == 1u) */
 
   return Start_TxAudio();
 }

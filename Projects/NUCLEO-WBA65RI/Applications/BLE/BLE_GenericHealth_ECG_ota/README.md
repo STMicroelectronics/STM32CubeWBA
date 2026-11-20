@@ -58,7 +58,7 @@ To change the application using Firmware Update Other The Air:
 - The STM32WBA interface offers the choice to download an Application Binary or a User Conf Binary.
   - Memory mapping is defined as follows:
     - Pages 0 to 2 are reserved for the BLE_ApplicationInstallManager application.
-    - Pages 3 to 127 are dedicated to BLE_GenericHealth_ota application.
+    - Pages 3 to 127 are dedicated to BLE_GenericHealth_ECG_ota application.
     - Pages 128 to 252 are dedicated for the new application.
     - Page 253 is dedicated to User Configuration Data.
     - Pages 254 to 255 reserved for NVM.

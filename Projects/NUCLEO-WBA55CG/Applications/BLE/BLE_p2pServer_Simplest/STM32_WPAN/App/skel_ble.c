@@ -47,17 +47,49 @@ static MyBLEServiceContext_t myBLEServiceContext;
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+/**
+ * Maximum number of Services that can be stored in the GATT database.
+ * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
+ */
+#define CFG_BLE_NUM_GATT_SERVICES (3)
+
+/**
+ * Maximum number of Attributes
+ * (i.e. the number of characteristic + the number of characteristic values + the number of descriptors, excluding the services)
+ * that can be stored in the GATT database.
+ * Note that certain characteristics and relative descriptors are added automatically during device initialization
+ * so this parameters should be 9 plus the number of user Attributes
+ */
+#define CFG_BLE_NUM_GATT_ATTRIBUTES (20)
+
+/**
+ * Size of the storage area for Attribute values
+ *  This value depends on the number of attributes used by application. In particular the sum of the following quantities (in octets) should be made for each attribute:
+ *  - attribute value length
+ *  - 5, if UUID is 16 bit; 19, if UUID is 128 bit
+ *  - 2, if server configuration descriptor is used
+ *  - 2*DTM_NUM_LINK, if client configuration descriptor is used
+ *  - 2, if extended properties is used
+ *  The total amount of memory needed is the sum of the above quantities for each attribute.
+ */
+#define CFG_BLE_ATT_VALUE_ARRAY_SIZE (200)
+
 /* GATT buffer size (in bytes)*/
 #define BLE_GATT_BUF_SIZE \
-          BLE_TOTAL_BUFFER_SIZE_GATT(CFG_BLE_NUM_GATT_ATTRIBUTES, \
-                                     CFG_BLE_NUM_GATT_SERVICES, \
-                                     CFG_BLE_ATT_VALUE_ARRAY_SIZE)
+        (BLE_TOTAL_BUFFER_SIZE_GATT(CFG_BLE_NUM_GATT_ATTRIBUTES, \
+                                    CFG_BLE_NUM_GATT_SERVICES, \
+                                    CFG_BLE_ATT_VALUE_ARRAY_SIZE))
 
 #define BLE_DYN_ALLOC_SIZE \
         (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_MBLOCK_COUNT, 0))
 
 /* Dummy value for NVM buffer in RAM for BLE Host stack */
-#define CFG_BLE_NVM_SIZE_MAX            4
+#define BLE_HOST_NVM_SIZE_U64           4
+
+#define BLE_LL_BUF_SIZE \
+          (BLE_LL_BUFFER_SIZE(CFG_BLE_NUM_STATE_MACHINES, \
+                              CFG_BLE_OPTIONS,            \
+                              SUPPORT_COEXISTENCE))
 
 /* Flag define */
 #define APP_FLAG_BLE_HOST               1
@@ -120,9 +152,13 @@ static const char a_GapDeviceName[] = {  'S', 'T', 'M', '3', '2', 'W', 'B', 'A' 
 static BleStack_init_t pInitParams;
 
 /* Host stack buffers */
-static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
-static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
-static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
+PLACE_IN_SECTION("TAG_HostStack") static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
+PLACE_IN_SECTION("TAG_HostStack") static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
+PLACE_IN_SECTION("TAG_HostStack") static uint16_t host_event_buffer[DIVC(CFG_BLE_HOST_EVENT_BUF_SIZE, 2)];
+PLACE_IN_SECTION("TAG_HostStack") static uint64_t host_nvm_buffer[BLE_HOST_NVM_SIZE_U64];
+PLACE_IN_SECTION("TAG_HostStack") static uint8_t long_write_buffer[CFG_BLE_LONG_WRITE_DATA_BUF_SIZE];
+PLACE_IN_SECTION("TAG_HostStack") static uint8_t extra_data_buffer[CFG_BLE_EXTRA_DATA_BUF_SIZE];
+PLACE_IN_SECTION("TAG_HostStack") static uint32_t ll_buffer[DIVC(BLE_LL_BUF_SIZE, 4)];
 
 /* USER CODE BEGIN PV */
 Service_UUID_t service_uuid;
@@ -356,15 +392,24 @@ uint8_t HOST_BLE_Init(void)
   pInitParams.max_coc_nbr             = CFG_BLE_COC_NBR_MAX;
   pInitParams.max_coc_mps             = CFG_BLE_COC_MPS_MAX;
   pInitParams.max_coc_initiator_nbr   = CFG_BLE_COC_INITIATOR_NBR_MAX;
+  pInitParams.max_add_eatt_bearers    = CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK;
   pInitParams.numOfLinks              = CFG_BLE_NUM_LINK;
   pInitParams.mblockCount             = CFG_BLE_MBLOCK_COUNT;
   pInitParams.bleStartRamAddress      = (uint8_t*)host_buffer;
   pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
   pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
   pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
+  pInitParams.extra_data_buffer_size  = CFG_BLE_EXTRA_DATA_BUF_SIZE;
+  pInitParams.extra_data_buffer       = (uint8_t*)extra_data_buffer;
+  pInitParams.gatt_long_write_buffer  = (uint8_t*)long_write_buffer;
+  pInitParams.host_event_fifo_buffer  = host_event_buffer;
+  pInitParams.host_event_fifo_buffer_size = DIVC(CFG_BLE_HOST_EVENT_BUF_SIZE, 2);
   pInitParams.nvm_cache_buffer        = host_nvm_buffer;
-  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
-  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
+  pInitParams.nvm_cache_max_size      = BLE_HOST_NVM_SIZE_U64;
+  pInitParams.nvm_cache_size          = BLE_HOST_NVM_SIZE_U64 - 1;
+  pInitParams.ll_sm_num               = CFG_BLE_NUM_STATE_MACHINES;
+  pInitParams.ll_buffer               = (uint8_t*)ll_buffer;
+  pInitParams.ll_buffer_size          = BLE_LL_BUF_SIZE;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */

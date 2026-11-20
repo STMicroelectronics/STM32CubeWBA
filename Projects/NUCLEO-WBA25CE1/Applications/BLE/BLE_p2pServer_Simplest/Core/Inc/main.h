@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -85,6 +85,7 @@ void MX_ICACHE_Init(void);
 #define BT1_EXTI_IRQn EXTI1_IRQn
 #define LED1_Pin LL_GPIO_PIN_7
 #define LED1_GPIO_Port GPIOA
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

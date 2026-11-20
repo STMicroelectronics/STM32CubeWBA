@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -50,18 +50,9 @@ extern "C" {
 
 #define SCHDL_TIME_DEFAULT                      (20)
 /* USER CODE BEGIN EC */
-#define DRIFT_TIME_OPTIMIZED                    (13)
-#define EXEC_TIME_OPTIMIZED                     (20)
+#define DRIFT_TIME_OPTIMIZED                    (14)
+#define EXEC_TIME_OPTIMIZED                     (24)
 
-#if DRIFT_TIME_EXTRA_GCC_DEBUG
-    #undef  DRIFT_TIME_EXTRA_GCC_DEBUG
-    #define DRIFT_TIME_EXTRA_GCC_DEBUG          (5)  
-#endif  
-  
-#if EXEC_TIME_EXTRA_GCC_DEBUG
-    #undef  EXEC_TIME_EXTRA_GCC_DEBUG
-    #define EXEC_TIME_EXTRA_GCC_DEBUG           (1) 
-#endif
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

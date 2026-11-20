@@ -7,6 +7,7 @@
 
 /*-Sizes-*/
 define symbol __ICFEDIT_intvec_start__ = 0x0c000000;
+
 define symbol __ICFEDIT_size_cstack__ = 0x1000;
 define symbol __ICFEDIT_size_heap__   = 0x0000;
 
@@ -14,9 +15,9 @@ define symbol __ICFEDIT_size_heap__   = 0x0000;
 /*-End of MX Symbols*/
 
 /*-Symbols-*/
+define symbol __ICFEDIT_region_ROM_start__     = 0x0c000000;
 define symbol __ICFEDIT_region_RAM_start__       = 0x30070000;
 define symbol __ICFEDIT_region_RAM_end__         = 0x3007FFFF;
-define symbol __ICFEDIT_region_ROM_start__     = 0x0c000000;
 define symbol __ICFEDIT_region_ROM_end__       = 0xC0FDFFF;
 define symbol __ICFEDIT_region_ROM_NSC_start__ = 0x0c0fe000;
 define symbol __ICFEDIT_region_ROM_NSC_end__   = 0xC0FFFFF;

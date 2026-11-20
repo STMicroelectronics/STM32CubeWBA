@@ -86,7 +86,12 @@
 #define S_TOTAL_RAM_SIZE        (_SRAM2_SIZE_MAX) /*! size require for Secure part */
 
 /*  This area in SRAM 2 is updated BL2 and can be lock to avoid any changes */
+#if defined(TFM_COMPATIBILITY)
 #define BOOT_SHARED_DATA_SIZE        0x400
+#else
+#define BOOT_SHARED_DATA_SIZE        0x000
+#endif
+
 #define BOOT_SHARED_DATA_BASE        (_SRAM2_BASE_S + _SRAM2_SIZE_MAX - BOOT_SHARED_DATA_SIZE)
 
 /*

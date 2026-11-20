@@ -111,13 +111,14 @@
 
 #define OEMIROT_AREA_2_SIZE            0x0         /* Secure app image secondary slot size for OEMuRoT boot stage */
 
-#define BOOT_SHARED_DATA_BASE          0x3007FC00  /* RAM address of the shared data area */
+#define OEMIROT_AREA_4_OFFSET          0x0         /* Secure data image primary slot for OEMuRoT boot stage */
 
-#define BOOT_SHARED_DATA_SIZE          0x400       /* RAM reserved for sharing data with application */
+#define OEMIROT_AREA_4_SIZE            0x0         /* Secure data image primary slot size for OEMuRoT boot stage */
 
-#define BOOT_RAM_BASE                  0x30078800  /* RAM address used and erased by OEMiRoT_Boot */
+#define OEMIROT_AREA_6_OFFSET          0x0         /* Secure data image secondary slot for OEMuRoT boot stage */
 
-#define BOOT_RAM_SIZE                  0x6C00      /* RAM size used and erased by OEMiRoT_Boot */
+#define OEMIROT_AREA_6_SIZE            0x0         /* Secure data image secondary slot size for OEMuRoT boot stage */
+
 
 /********** All define are updated automatically from ROT_BOOT project : End **********/
 

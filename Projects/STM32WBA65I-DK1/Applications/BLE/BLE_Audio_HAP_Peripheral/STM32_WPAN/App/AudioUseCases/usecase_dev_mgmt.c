@@ -72,7 +72,7 @@ tBleStatus USECASE_DEV_MGMT_Init(void)
   SVCCTL_RegisterHandler(UDM_HCI_Event_Handler);
 
   /**
-  *	Register the event handler to the BLE controller
+  *  Register the event handler to the BLE controller
   */
   SVCCTL_RegisterSvcHandler(UDM_GATT_Event_Handler);
 #endif /* (USECASE_DEV_MGMT_MAX_CONNECTION > 0u) */

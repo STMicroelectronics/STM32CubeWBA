@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,6 +43,22 @@ extern "C" {
 #define WPAN_SUCCESS 0u
 
 /* USER CODE BEGIN EC */
+/******************************************************************************
+ * Information Table
+ *
+ * Version
+ * [0:3]   = Build - 0: Untracked - 15:Released - x: Tracked version
+ * [4:7]   = branch - 0: Mass Market - x: ...
+ * [8:15]  = Subversion
+ * [16:23] = Version minor
+ * [24:31] = Version major
+ *
+ ******************************************************************************/
+#define WPAN_FW_BUILD              (0)
+#define WPAN_FW_BRANCH             (0)
+#define WPAN_FW_SUBVERSION         (0)
+#define WPAN_FW_MINOR_VERSION      (11)
+#define WPAN_FW_MAJOR_VERSION      (1)
 
 /* USER CODE END EC */
 

@@ -80,6 +80,11 @@ typedef struct
 } HciTransport_var_t;
 
 /* Private defines -----------------------------------------------------------*/
+#define BLE_LL_BUF_SIZE \
+        (BLE_LL_BUFFER_SIZE(CFG_BLE_NUM_STATE_MACHINES, \
+                            CFG_BLE_OPTIONS,            \
+                            SUPPORT_COEXISTENCE))
+
 #define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
 /* Definitions for "tm_rx_state" */
@@ -98,6 +103,9 @@ typedef struct
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
+#if CFG_BLE_NUM_LINK > CFG_BLE_NUM_STATE_MACHINES
+#warning CFG_BLE_NUM_STATE_MACHINES must not be lower than CFG_BLE_NUM_LINK
+#endif
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
@@ -117,6 +125,8 @@ static uint8_t *writeBusBuffer;
 
 /* Host stack init variables */
 static BleStack_init_t pInitParams;
+
+PLACE_IN_SECTION("TAG_HostStack") static uint32_t ll_buffer[DIVC(BLE_LL_BUF_SIZE, 4)];
 
 /* USER CODE BEGIN PV */
 static LowPowerModeStatus_t LowPowerModeStatus;
@@ -212,14 +222,15 @@ static uint8_t HOST_BLE_Init(void)
 {
   tBleStatus return_status;
 
+  pInitParams.ll_sm_num               = CFG_BLE_NUM_STATE_MACHINES;
+  pInitParams.ll_buffer               = (uint8_t*)ll_buffer;
+  pInitParams.ll_buffer_size          = BLE_LL_BUF_SIZE;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
-
 /* USER CODE END HOST_BLE_Init_Params */
   return_status = BleStack_Init(&pInitParams);
 /* USER CODE BEGIN HOST_BLE_Init */
-
 /* USER CODE END HOST_BLE_Init */
   return ((uint8_t)return_status);
 }
@@ -623,7 +634,6 @@ static uint8_t* HCI_GetDataReceived(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTION */
-
 static void TM_SetLowPowerMode( LowPowerModeStatus_t low_power_mode_status )
 {
   if(LowPowerModeStatus == LOW_POWER_MODE_DISABLE)
@@ -744,7 +754,6 @@ tBleStatus BLECB_Indication( const uint8_t* data,
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-
 #if (CFG_BUTTON_SUPPORTED == 1)
 void APPE_Button1Action(void)
 {

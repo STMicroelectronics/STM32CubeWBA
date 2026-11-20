@@ -58,7 +58,9 @@ typedef struct
   */
 typedef enum {
     SECURE_APP,
-    SECURE_BOOT
+    SECURE_APP_BOOT,
+    SECURE_DATA,
+    SECURE_DATA_BOOT
 } SFU_FwSecureImageTypeDef;
 
 /**

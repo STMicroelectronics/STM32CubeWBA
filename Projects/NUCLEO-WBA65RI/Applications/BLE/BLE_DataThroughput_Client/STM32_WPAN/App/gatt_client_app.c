@@ -730,17 +730,10 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
       {
         uint16_t charPropVal = 0x0000;
 
-        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000)
+        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000
+            && ((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
         {
-          if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_NOTIFY) == CHAR_PROP_NOTIFY)
-          {
-            charPropVal = 0x0001;
-          }
-          else if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
-          {
-            charPropVal = 0x0002;
-          }
-
+          charPropVal = 0x0002;
           procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
@@ -818,6 +811,7 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
         }
 
         UTIL_SEQ_SetTask(1U << CFG_TASK_CONN_UPDATE_ID, CFG_SEQ_PRIO_0);
+
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (status == 0)
@@ -1298,6 +1292,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
+          a_ClientContext[index].ServiceChangedCharProperties = CharProperties;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
 /* USER CODE BEGIN gatt_parse_chars_1 */

@@ -27,8 +27,13 @@ Two leds LD1 and LD3 are used to monitor the system state as follows:
  - LD1 toggling: system in Run mode
  - LD1 off : system in Standby mode
 
-**Note :** To measure the current consumption in Standby mode, remove  jumper
-      and connect an amperemeter to  to measure IDD current.
+## <b>Measured Current Consumption</b>
+
+| Mode    | Current Consumption |
+|---------|---------------------|
+| Run     | 6.2 mA              |
+| Standby | 2.3 µA              |
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
 
 #### <b>Notes</b>
 

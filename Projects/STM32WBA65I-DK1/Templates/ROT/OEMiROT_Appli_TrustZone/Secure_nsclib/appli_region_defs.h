@@ -72,7 +72,7 @@
 #endif
 
 #define TOTAL_ROM_SIZE                      FLASH_TOTAL_SIZE
-#define S_TOTAL_RAM_SIZE                    (_SRAM2_SIZE_MAX - BOOT_RAM_SIZE - BOOT_SHARED_DATA_SIZE) /*! size require for Secure part */
+#define S_TOTAL_RAM_SIZE                    (_SRAM2_SIZE_MAX) /*! size require for Secure part */
 
 #define BL2_HEADER_SIZE                     (0x400) /*!< Appli image header size */
 #define BL2_TRAILER_SIZE                    (0x2000)

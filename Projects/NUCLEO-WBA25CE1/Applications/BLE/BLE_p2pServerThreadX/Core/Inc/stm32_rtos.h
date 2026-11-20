@@ -57,6 +57,7 @@ extern "C" {
 
 #define RTOS_MAX_THREAD                         (20u)
 
+#define RTOS_STACK_SIZE_XLARGE                  ( 1024u * 4u )
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
@@ -73,6 +74,7 @@ extern "C" {
 #undef TASK_STACK_SIZE_BUTTON_Bx
 #define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_MODERATE
 #endif
+
 /* USER CODE END TASK_Size_Define */
 
 /* USER CODE BEGIN EC */

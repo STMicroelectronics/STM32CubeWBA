@@ -407,6 +407,9 @@ static void AppZbPersistence_SaveCallback( struct ZigBeeT * pstZigbee, void *arg
     pszPersistData = malloc( iPersistLength + iHeaderLength );
     if ( pszPersistData != NULL )
     {
+      /* Reset data in case of data saved are minus than indicated */
+      memset( pszPersistData, 0, iPersistLength + iHeaderLength );
+
       LOG_DEBUG_APP( "  Need %d data to save.", iPersistLength );
       (void)ZbPersistGet( pstZigbee, &pszPersistData[iHeaderLength], iPersistLength );
 
@@ -576,6 +579,7 @@ HAL_StatusTypeDef AppZbPersistence_Init( struct ZigBeeT * pstZigbee, struct ZbSt
       if ( AppZbPersistence_EraseAllData() != false )
       {
         cPersistenceType = APP_ZB_PERSISTENCE_TYPE_ENABLED;
+        HAL_Delay(200);
       }
       else
       {
@@ -598,7 +602,6 @@ HAL_StatusTypeDef AppZbPersistence_Init( struct ZigBeeT * pstZigbee, struct ZbSt
         /* Continue by search the latest persistent data saved */
         if ( AppZbPersistence_SearchLatestData( &stLastPersistInfo ) != false )
         {
-          HAL_Delay(200);
           LOG_INFO_APP( "Persistence : retrieve %d data on NVM.", stLastPersistInfo.iDataSize );
           eStatus = AppZbPersistence_Startup( pstZigbee, pstConfig, &stLastPersistInfo );
         }

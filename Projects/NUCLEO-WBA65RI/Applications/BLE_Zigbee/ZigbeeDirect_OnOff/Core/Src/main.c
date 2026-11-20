@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -60,7 +60,6 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void SystemPower_Config(void);
-static void MX_GPDMA1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -114,6 +113,7 @@ int main(void)
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   ConfigureStandbyWakeupPins();
+
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
@@ -123,11 +123,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -228,6 +230,7 @@ static void SystemPower_Config(void)
   HAL_NVIC_SetPriority(WKUP_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(WKUP_IRQn);
 /* USER CODE BEGIN PWR */
+
 /* USER CODE END PWR */
 }
 
@@ -328,7 +331,7 @@ void MX_CRC_Init(void)
   * @param None
   * @retval None
   */
-static void MX_GPDMA1_Init(void)
+void MX_GPDMA1_Init(void)
 {
 
   /* USER CODE BEGIN GPDMA1_Init 0 */
@@ -563,12 +566,13 @@ void ConfigureStandbyWakeupPins(void)
  /* HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);   B1 --> PC13  --> not used to avoid LSE disturbance */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);   /* B2 --> PB6 */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);   /* B3 --> PB7 */
-  
+
   HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_6);
   HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_7);
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(WKUP_IRQn);
 }
+
 /* USER CODE END 4 */
 
 /**

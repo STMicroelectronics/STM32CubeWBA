@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -59,7 +59,6 @@ void GPDMA1_Channel1_IRQHandler(void);
 void USART1_IRQHandler(void);
 void USART2_IRQHandler(void);
 void TIM16_IRQHandler(void);
-void PKA_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void WKUP_IRQHandler(void);
 void COMP_IRQHandler(void);

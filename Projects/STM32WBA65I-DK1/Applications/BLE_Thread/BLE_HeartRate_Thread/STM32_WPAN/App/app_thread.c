@@ -341,6 +341,7 @@ static void APP_THREAD_DeviceConfig(void)
 
   APP_THREAD_InitPayloadWrite();
 #endif 
+
   /* USER CODE END DEVICECONFIG */
 }
 
@@ -879,7 +880,6 @@ static void APP_THREAD_AppInit(void)
  */
 void APP_BSP_JoystickRightAction(void)
 {
-  /* USER CODE BEGIN JoystickRightAction */
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
   /* If timer for periodic CoAp msg transmission is not running */
   if (UTIL_TIMER_IsRunning(&APP_Thread_transmitTimerId) == 0U)
@@ -905,7 +905,6 @@ void APP_BSP_JoystickRightAction(void)
   }
   APP_THREAD_CoapSendRequest(&OT_Ressource, APP_Thread_CoapType, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
                               NULL, PayloadWrite, APP_Thread_CoapPayloadLength_byte, NULL, NULL);
-  /* USER CODE END JoystickRightAction */
 }
 
 /**
@@ -945,10 +944,8 @@ void APP_BSP_JoystickLeftAction(void)
 {
   LOG_INFO_APP("Send a CoAP CONFIRMABLE PUT Request");
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
-  /* USER CODE BEGIN JoystickLeftAction */
   UTIL_TIMER_Stop(&APP_Thread_transmitTimerId);
   LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
-  /* USER CODE END JoystickLeftAction */
 #endif
   /* Send a CONFIRMABLE PUT Request */
   APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,

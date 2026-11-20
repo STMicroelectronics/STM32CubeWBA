@@ -63,21 +63,21 @@
 #define MCUBOOT_NS_DATA_IMAGE_NUMBER   0x0      /* 1: NS data image for NS application.
                                                    0: No NS data image. */
 
-#define FLASH_AREA_0_OFFSET            0x18000 /* Secure app image primary slot offset */
+#define FLASH_AREA_0_OFFSET            0x18000  /* Secure app image primary slot offset */
 
 #define FLASH_AREA_0_SIZE              0x8000   /* Secure app image primary slot size */
 
 #define FLASH_AREA_1_OFFSET            0x20000  /* Non-secure app image primary slot offset */
 
-#define FLASH_AREA_1_SIZE              0x10000   /* Non-secure app image primary slot size */
+#define FLASH_AREA_1_SIZE              0x10000  /* Non-secure app image primary slot size */
 
 #define FLASH_AREA_2_OFFSET            0x30000  /* Secure app image secondary slot */
 
 #define FLASH_AREA_2_SIZE              0x8000   /* Secure app image secondary slot size */
 
-#define FLASH_AREA_3_OFFSET            0x38000 /* Non-secure app image secondary slot offset */
+#define FLASH_AREA_3_OFFSET            0x38000  /* Non-secure app image secondary slot offset */
 
-#define FLASH_AREA_3_SIZE              0x10000   /* Non-secure app image secondary slot size */
+#define FLASH_AREA_3_SIZE              0x10000  /* Non-secure app image secondary slot size */
 
 #define FLASH_AREA_4_OFFSET            0x0 /* Secure data image primary slot offset */
 
@@ -94,6 +94,10 @@
 #define FLASH_AREA_7_OFFSET            0x0 /* Non-secure data image primary slot offset */
 
 #define FLASH_AREA_7_SIZE              0x0   /* Non-secure data image primary slot size */
+
+#define FLASH_S_LOADER_OFFSET          0x0 /* Secure local loader offset */
+
+#define FLASH_S_LOADER_SIZE            0x0   /* Secure local loader size */
 
 #define FLASH_PARTITION_SIZE           0x18000  /* Secure and Non Secure partition size */
 
@@ -115,6 +119,13 @@
 
 #define OEMIROT_AREA_2_SIZE            0x0   /* Secure app image secondary slot size for OEMuRoT boot stage */
 
+#define OEMIROT_AREA_4_OFFSET          0x0   /* Secure data image primary slot for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_4_SIZE            0x0   /* Secure data image primary slot size for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_6_OFFSET          0x0   /* Secure data image secondary slot for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_6_SIZE            0x0   /* Secure data image secondary slot size for OEMuRoT boot stage */
 /********** All define are updated automatically from ROT_BOOT project : End **********/
 
 #define FLASH_TOTAL_SIZE               (FLASH_B_SIZE + FLASH_B_SIZE) /* total flash size: 512 KBytes */

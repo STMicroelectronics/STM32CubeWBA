@@ -7,6 +7,7 @@
 
 /*-Sizes-*/
 define symbol __ICFEDIT_intvec_start__ = 0x08100000;
+
 define symbol __ICFEDIT_size_cstack__ = 0x1000;
 define symbol __ICFEDIT_size_heap__   = 0x0000;
 

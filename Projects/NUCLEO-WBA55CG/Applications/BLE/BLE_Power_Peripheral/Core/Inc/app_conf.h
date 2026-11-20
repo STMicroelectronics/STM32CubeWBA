@@ -28,16 +28,6 @@
 #include "utilities_conf.h"
 
 /* USER CODE BEGIN Includes */
-#define ADV_Size                           20        /*ADV Size Can be between [1..31] or [5..31] if Local Name is used */
-
-#define NOTIFY_TX_INT_MS                   1000      /*Notification Packet interval*/
-#define USER_PAYLOAD_LENGTH                20        /*User_Payload_Length must be between 1 and 244*/
-#define Setup_Time                         10000     /*Timer before all GPIOs are disabled and clocks off*/
-
-#define CONN_INT_REQ                       50        /*L2cap Connection Interval Request*/
-#define CONN_INT_LP_REQ                    200
-
-#define ADV_TYPE_2                        ADV_NONCONN_IND
 
 /* USER CODE END Includes */
 
@@ -122,6 +112,16 @@
 
 /* USER CODE BEGIN Generic_Parameters */
 
+#define ADV_Size                        20    /* ADV Size Can be between [1..31] or [5..31] if Local Name is used */
+
+#define NOTIFY_TX_INT_MS                1000  /* Notification Packet interval */
+#define USER_PAYLOAD_LENGTH             20    /* User_Payload_Length must be between 1 and 244 */
+#define Setup_Time                      10000 /* Timer before all GPIOs are disabled and clocks off */
+
+#define CONN_INT_REQ                    50    /* L2cap Connection Interval Request */
+#define CONN_INT_LP_REQ                 200
+
+#define ADV_TYPE_2                      ADV_NONCONN_IND
 /* USER CODE END Generic_Parameters */
 
 /**< specific parameters */
@@ -145,46 +145,33 @@
                                      0 | \
                                      0 | \
                                      0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
                                      0)
 
 /**
- * Maximum number of simultaneous connections and advertising that the device will support.
+ * Maximum number of simultaneous connections that the device will support.
  * This setting should not exceed the number of BLE connection supported by BLE host stack.
  */
-#define CFG_BLE_NUM_LINK            (8)
+#define CFG_BLE_NUM_LINK            (2)
 
 /**
- * Maximum number of Services that can be stored in the GATT database.
- * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
+ * Maximum number of simultaneous state machine supported by the LinkLayer, requirements are:
+ * - one per Extended Advertising Set
+ * - one for Periodic Advertising Sync
+ * - one per ACL connection
+ * - one per Broadcast Isochronous Group
+ * - one per Connected Isochronous Stream
  */
-#define CFG_BLE_NUM_GATT_SERVICES   (8)
-
-/**
- * Maximum number of Attributes
- * (i.e. the number of characteristic + the number of characteristic values + the number of descriptors, excluding the services)
- * that can be stored in the GATT database.
- * Note that certain characteristics and relative descriptors are added automatically during device initialization
- * so this parameters should be 9 plus the number of user Attributes
- */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES (68)
+#define CFG_BLE_NUM_STATE_MACHINES  (4)
 
 /**
  * Maximum supported ATT_MTU size
  * This setting should be aligned with ATT_MTU value configured in the ble host
  */
 #define CFG_BLE_ATT_MTU_MAX         (251)
-
-/**
- * Size of the storage area for Attribute values
- *  This value depends on the number of attributes used by application. In particular the sum of the following quantities (in octets) should be made for each attribute:
- *  - attribute value length
- *  - 5, if UUID is 16 bit; 19, if UUID is 128 bit
- *  - 2, if server configuration descriptor is used
- *  - 2*DTM_NUM_LINK, if client configuration descriptor is used
- *  - 2, if extended properties is used
- *  The total amount of memory needed is the sum of the above quantities for each attribute.
- */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (1344)
 
 /**
  * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
@@ -204,7 +191,8 @@
  * Number of allocated memory blocks used to transmit and receive data packets
  */
 #define CFG_BLE_MBLOCK_COUNT          (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                       CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
+                                       MAX(MAX(CFG_BLE_ATT_MTU_MAX, CFG_BLE_COC_MPS_MAX), SM_MTU),\
+                                       CFG_BLE_NUM_LINK) \
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
@@ -231,7 +219,7 @@
  * Connection Oriented Channel parameters
  */
 #define CFG_BLE_COC_NBR_MAX           (64)
-#define CFG_BLE_COC_MPS_MAX           (248)
+#define CFG_BLE_COC_MPS_MAX           (23)
 #define CFG_BLE_COC_INITIATOR_NBR_MAX (32)
 
 /**
@@ -411,7 +399,6 @@ typedef enum
   CFG_FLASH_MUTEX,
   CFG_EVENT_PROC_GAP_COMPLETE,
   /* USER CODE BEGIN CFG_Event_Id_t */
-
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -424,7 +411,6 @@ typedef enum
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
-
 /* NVM area is placed at the end of the flash memory */
 #define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED)
 
@@ -449,19 +435,6 @@ typedef enum
 
 #define CFG_RT_DEBUG_GPIO_MODULE            (0)
 #define CFG_RT_DEBUG_DTB                    (0)
-
-/******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration

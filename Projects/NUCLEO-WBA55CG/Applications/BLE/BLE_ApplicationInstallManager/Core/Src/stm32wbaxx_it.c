@@ -76,7 +76,6 @@ void NMI_Handler(void)
   while(1)
   {
   }
-
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 

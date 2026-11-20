@@ -35,6 +35,27 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for PWR */
+#define PWR_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for PWR (service declaration not counted in attributes)
+  *                + 2 for PWR_TX
+  *                + 2 for PWR_RX
+  *                + 1 for PWR_RX CCCD
+  *                = 5
+**/
+#define PWR_NUM_GATT_ATTRIBUTES (5)
+
+/**
+  * Size_Attributes = 0 for PWR (service declaration not counted in attributes)
+  *                 + 5 for PWR_TX declaration + 247 for PWR_TX size
+  *                 + 5 for PWR_RX declaration + 247 for PWR_RX size
+  *                 + 2 for PWR_RX CCCD * CFG_BLE_NUM_LINK
+  *                 = 504 + 2 * CFG_BLE_NUM_LINK
+**/
+#define PWR_ATT_VALUE_ARRAY_SIZE  (504 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

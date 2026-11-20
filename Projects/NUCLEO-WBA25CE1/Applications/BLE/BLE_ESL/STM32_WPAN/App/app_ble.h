@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -32,6 +32,7 @@ extern "C" {
 #include "ble_types.h"
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -117,24 +118,25 @@ typedef enum
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+
 /* ST Manufacturer ID */
 #define ST_MANUF_ID  0x30
 
 /* BlueSTSDK Version */
 enum
 {
-  BLUESTSDK_V1 =  0x01,
-  BLUESTSDK_V2 =  0x02
+  BLUESTSDK_V1 = 0x01,
+  BLUESTSDK_V2 = 0x02
 };
 
 /* BOARD ID */
 enum
 {
   BOARD_ID_NUCLEO_WBA5X = 0x8B,
-  BOARD_ID_DK_WBA5X     = 0x8C,
+  BOARD_ID_DK_WBA5X =     0x8C,
   BOARD_ID_B_WBA5M_WPAN = 0x91,
   BOARD_ID_NUCLEO_WBA6X = 0x8E,
-  BOARD_ID_DK_WBA6X     = 0x92,
+  BOARD_ID_DK_WBA6X =     0x92,
   BOARD_ID_B_WBA6M_WPAN = 0x93,
   BOARD_ID_NUCLEO_WBA2X = 0x90
 };
@@ -144,13 +146,24 @@ enum
 {
   FW_ID_P2P_SERVER            = 0x83,
   FW_ID_P2P_ROUTER            = 0x85,
-  FW_ID_DT_SERVER             = 0x88,
+  FW_ID_HID                   = 0x86,
   FW_ID_COC_PERIPH            = 0x87,
+  FW_ID_DT_SERVER             = 0x88,
   FW_ID_HEART_RATE            = 0x89,
   FW_ID_HEALTH_THERMO         = 0x8A,
-  FW_ID_HID                   = 0x8B,
+  FW_ID_WEIGHT_SCALE          = 0x8B,
+  FW_ID_BLOOD_PRESSURE        = 0x8C,
+  FW_ID_SERIALPORT_SERVER     = 0x8D,
+  FW_ID_P2P_SERVER_LONG_RANGE = 0x8E,
+  FW_ID_PHONE_ALERT_STATUS    = 0x8F,
+  FW_ID_FIND_ME               = 0x90,
+  FW_ID_GLUCOSE_MONITORING    = 0x9A,
+  FW_ID_RUNNING_SPEED         = 0x9B,
   FW_ID_SENSOR                = 0x9C,
-  FW_ID_GENERIC_HEALTH_SENSOR = 0x9D
+  FW_ID_GENERIC_HEALTH_SENSOR = 0x9D,
+  FW_ID_P2P_SERVER_EAD        = 0xE2,
+  FW_ID_SECURITY              = 0xA0,
+  FW_ID_PRIVACY               = 0xA1,
 };
 
 /* USER CODE END EC */
@@ -174,7 +187,7 @@ enum
                     ((hci_le_advertising_report_event_rp0*)(p))-> \
                     Advertising_Report[0].Length_Data))
 /* USER CODE BEGIN EM */
-          
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 /** @brief Macro that returns a 16-bit value from a buffer where the value is stored in Little Endian Format */
 #define LE_TO_HOST_16(ptr)   (uint16_t) ( ((uint16_t)*((uint8_t *)(ptr))) | \
                                           ((uint16_t)*((uint8_t *)(ptr) + 1) << 8) )
@@ -232,8 +245,8 @@ enum
 
 /* SPSM for OTS */
 #define SPSM_OTS                                                          0x0025
-          
-/* ATT Error codes */          
+
+/* ATT Error codes */
 #define BLE_ATT_ERR_NONE                                (0x00U) /** Not an error! */
 #define BLE_ATT_ERR_INVALID_HANDLE                      (0x01U) /** The attribute handle given was not valid on this server. */
 #define BLE_ATT_ERR_READ_NOT_PERM                       (0x02U) /** The attribute cannot be read. */
@@ -275,8 +288,8 @@ enum
 #define BLE_ATT_ERR_CMN_PROF_SRVC_MAX                   (0xFFU) /** Common profile and service error codes defined in [Core Specification
                                                                  *   Supplement], Part B.
                                                                  *   Higher error value. */
-          
-/*L2CAP Error codes */          
+
+/*L2CAP Error codes */
 #define L2CAP_CONN_SUCCESSFUL                           0x0000
 #define L2CAP_CONN_FAIL_SPSM_NOT_SUPPORTED              0x0002
 #define L2CAP_CONN_FAIL_INSUFFICIENT_RESOURCES          0x0004
@@ -309,6 +322,7 @@ void APP_BLE_HostNvmStore(void);
 /* USER CODE BEGIN EFP */
 void APP_BLE_StartAdvertising(bool fast_adv);
 void APP_BLE_StopAdvertising(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

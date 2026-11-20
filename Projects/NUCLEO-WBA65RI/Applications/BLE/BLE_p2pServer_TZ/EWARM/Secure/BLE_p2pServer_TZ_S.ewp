@@ -231,7 +231,6 @@
         <debug>1</debug>
         <option>
           <name>CCDefines</name>
-          <state>USE_FULL_ASSERT</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA65xx</state>
         </option>
@@ -361,7 +360,6 @@
           <state>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/CMSIS/Include</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../Drivers/STM32U5xx_HAL_Driver/Inc</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1179,6 +1177,12 @@
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash_ex.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</name>
       </file>
       <file>
@@ -1186,12 +1190,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc_ex.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</name>

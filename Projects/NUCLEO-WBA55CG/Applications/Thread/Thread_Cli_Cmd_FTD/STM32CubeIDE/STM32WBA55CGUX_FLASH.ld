@@ -38,15 +38,20 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 
-_Min_Heap_Size = 0x400; /* required amount of heap */
-_Min_Stack_Size = 0x1000; /* required amount of stack */
+_Min_Heap_Size = 0x5000; /* required amount of heap */
+_Min_Stack_Size = 0x2500; /* required amount of stack */
 
 /* Memories definition */
 MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 1024K
+  
+  ITS      (r)      : ORIGIN = 0x080FC000,   LENGTH = 16K
+  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = (1024K - 16K)
 }
+
+  /* Export ITS region symbols */
+  __its_start__ = ORIGIN(ITS);
 
 /* Sections */
 SECTIONS
@@ -85,6 +90,14 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
+  /* ITS storage region - reserved area */
+  ITS_RESERVED (READONLY):
+  {
+    . = ALIGN(4);
+    KEEP(*(ITS_RESERVED))
+    . = ALIGN(4);
+  } >ITS AT >FLASH
+  
   .ARM.extab (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);

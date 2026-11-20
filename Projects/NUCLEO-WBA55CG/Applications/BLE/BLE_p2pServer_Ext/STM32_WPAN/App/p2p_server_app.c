@@ -93,9 +93,10 @@ uint8_t a_P2P_SERVER_UpdateCharData[247];
 /* USER CODE BEGIN PV */
 static uint8_t Long_Written_Data[509];
 static uint8_t i = 0;
-static uint8_t j;
+static uint16_t j;
 static uint16_t Long_Written_Data_Length;
 static uint16_t Long_Written_Data_Offset;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,6 +111,7 @@ static void P2P_SERVER_APP_LED_BUTTON_context_Init(void);
 void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
 {
   /* USER CODE BEGIN Service1_Notification_1 */
+  uint16_t Total_length;
 
   /* USER CODE END Service1_Notification_1 */
   switch(p_Notification->EvtOpcode)
@@ -145,7 +147,7 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service1Char2_NOTIFY_ENABLED_EVT */
       P2P_SERVER_APP_Context.Switch_c_Notification_Status = Switch_c_NOTIFICATION_ON;
       LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION ENABLED\n");
-      LOG_INFO_APP(" \n\r");
+      LOG_INFO_APP(" \n");
       /* USER CODE END Service1Char2_NOTIFY_ENABLED_EVT */
       break;
 
@@ -153,7 +155,7 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service1Char2_NOTIFY_DISABLED_EVT */
       P2P_SERVER_APP_Context.Switch_c_Notification_Status = Switch_c_NOTIFICATION_OFF;
       LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION DISABLED\n");
-      LOG_INFO_APP(" \n\r");
+      LOG_INFO_APP(" \n");
       /* USER CODE END Service1Char2_NOTIFY_DISABLED_EVT */
       break;
 
@@ -181,6 +183,14 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
           j++;
         }
         LOG_INFO_APP("-- Last block received \n");
+        /* test */
+        LOG_INFO_APP("-- Length = %d \n", j);
+        Total_length = j;
+        
+        for (j=0;j<Total_length;(j+=10))
+        {
+          LOG_INFO_APP("-- Long_data[%ld] = %x %x %x %x %x %x %x %x %x %x \n", j, Long_Written_Data[j],Long_Written_Data[j+1],Long_Written_Data[j+2],Long_Written_Data[j+3],Long_Written_Data[j+4],Long_Written_Data[j+5],Long_Written_Data[j+6],Long_Written_Data[j+7],Long_Written_Data[j+8],Long_Written_Data[j+9]);
+        }        
       }
       else
       {

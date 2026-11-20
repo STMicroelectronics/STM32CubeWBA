@@ -33,6 +33,7 @@
 /* USER CODE BEGIN Includes */
 #include "stm32_timer.h"
 #include "host_stack_if.h"
+#include "RTDebug.h"
 #include "app_bsp.h"
 
 /* USER CODE END Includes */
@@ -340,7 +341,7 @@ void HRS_APP_Init(void)
                     UTIL_TIMER_PERIODIC,
                     &HRS_APP_Measurements_timCB, 0);
 
-  UTIL_SEQ_RegTask(1<<CFG_TASK_MEAS_REQ_ID, UTIL_SEQ_RFU, HRS_APP_Measurements);
+  UTIL_SEQ_RegTask(1 << CFG_TASK_MEAS_REQ_ID, UTIL_SEQ_RFU, HRS_APP_Measurements);
 
   /**
    * Set Flags for measurement value
@@ -418,7 +419,7 @@ static void HRS_APP_Measurements_timCB(void *arg)
    * The background is the only place where the application can make sure a new aci command
    * is not sent if there is a pending one
    */
-  UTIL_SEQ_SetTask(1<<CFG_TASK_MEAS_REQ_ID, CFG_SEQ_PRIO_0);
+  UTIL_SEQ_SetTask(1 << CFG_TASK_MEAS_REQ_ID, CFG_SEQ_PRIO_0);
 
   return;
 }
@@ -432,6 +433,8 @@ static void HRS_APP_Measurements(void)
 #if (CFG_LCD_SUPPORTED == 1)
   char measurementText[20];
 #endif /* CFG_LCD_SUPPORTED */
+
+  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_MEAS);
 
   HW_RNG_Get(1, &measurement);
   measurement = (measurement % 15) + 60;
@@ -587,6 +590,8 @@ static void HRS_APP_Measurements(void)
   {
     LOG_INFO_APP("HRS_UpdateValue fails\n");
   }
+
+  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_MEAS);
 
   return;
 }

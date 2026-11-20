@@ -34,6 +34,20 @@
  */
 #define PS_BANK_NUMBER_MIN  3u
 
+/**
+ * @brief Number of supported persistent-data IDs.
+ *
+ * @note The on-flash data header stores the ID in 8 bits, so this value cannot
+ *       exceed 256 without changing the on-flash format.
+ */
+#ifndef PS_DATA_ID_COUNT
+#define PS_DATA_ID_COUNT  32u
+#endif
+
+#if ((PS_DATA_ID_COUNT == 0u) || (PS_DATA_ID_COUNT > 256u))
+#error "PS_DATA_ID_COUNT must be in the range 1..256"
+#endif
+
 /* Exported types ------------------------------------------------------------*/
 /**
  * @brief Persistent Storage command status codes
@@ -97,7 +111,7 @@ typedef enum PS_Data_ID
   PS_DATA_ID_29 = 29u,
   PS_DATA_ID_30 = 30u,
   PS_DATA_ID_31 = 31u,
-  PS_DATA_ID_MAX        /* Shall not be used. Only present to mark the end of the enumeration */
+  PS_DATA_ID_MAX = PS_DATA_ID_COUNT /* Shall not be used. Only present to mark the end of the enumeration */
 } PS_Data_ID_e;
 
 /**

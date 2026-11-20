@@ -38,18 +38,249 @@ typedef struct
   uint8_t             longPressed;
   uint32_t            waitingTime;
 } ButtonDesc_t;
+
+typedef enum
+{
+  BUTTON_ACTION_1 = 0,
+  BUTTON_ACTION_2,
+  BUTTON_ACTION_3
+} ButtonActionId_t;
+
+typedef struct
+{
+  Button_TypeDef      button;
+  ButtonMode_TypeDef  mode;
+  ButtonActionId_t    actionId;
+  const char *        cmd;
+  const char *        cmdAlt;
+  const char *        longCmd;
+  const char *        longCmdAlt;
+} ButtonHwConfig_t;
+
+typedef struct
+{
+  ButtonDesc_t        buttonDesc[BUTTONn];
+  ButtonHwConfig_t    buttons[BUTTONn];
+} ButtonBoardContext_t;
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* Private defines -----------------------------------------------------------*/
 #if (CFG_BUTTON_SUPPORTED == 1)
 #define BUTTON_LONG_PRESS_SAMPLE_MS           (50u)     /* Sample button level rate in milli seconds. */
 #define BUTTON_LONG_PRESS_THRESHOLD_MS        (500u)    /* Long pression time threshold in milli seconds. */
-#ifdef CFG_BSP_ON_CEB
-#define BUTTON_NB_MAX                         (1u)
-#else /* CFG_BSP_ON_CEB */
-#define BUTTON_NB_MAX                         (B3 + 1u)
-#endif /* CFG_BSP_ON_CEB */
+#define BUTTON_NB_MAX                         ((uint32_t)BUTTONn)
+
+/* Button board configuration */
+#if defined(CFG_BSP_ON_CEB) && defined(STM32WBA5Mxx)
+
+#define APP_BSP_BUTTON_WAKEUP_BUTTON2         B2
+#define APP_BSP_BUTTON_DESC_INIT              \
+  {                                           \
+    { B2, { 0 }, 0u, 0u }                     \
+  }
+#define APP_BSP_BUTTON_HWCFG_INIT             \
+  {                                           \
+    { B2, BUTTON_MODE_GPIO, BUTTON_ACTION_2,  \
+      "B2", "SW2", "B2L", "SW2L" }            \
+  }
+
+#define APP_BSP_BUTTON_ENABLE_WAKEUP()        \
+  do                                          \
+  {                                           \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);  /* PC13 */ \
+  } while (0)
+
+#define APP_BSP_BUTTON_ENABLE_RETENTION()     \
+  do                                          \
+  {                                           \
+    SET_BIT(PWR->IORETENRC, B2_PIN);          /* Retention for B2 */ \
+  } while (0)
+
+#ifdef CFG_BSP_ON_SEQUENCER
+#define APP_BSP_BUTTON_ACTION2_SEQ_TASK       CFG_TASK_BSP_BUTTON_B2
+#endif /* CFG_BSP_ON_SEQUENCER */
+
+#elif defined(CFG_BSP_ON_CEB) && defined(STM32WBA6Mxx)
+
+#define APP_BSP_BUTTON_WAKEUP_BUTTON2         B1
+#define APP_BSP_BUTTON_DESC_INIT              \
+  {                                           \
+    { B1, { 0 }, 0u, 0u }                     \
+  }
+#ifdef CFG_BSP_ON_SEQUENCER
+#define APP_BSP_BUTTON_HWCFG_INIT             \
+  {                                           \
+    { B1, BUTTON_MODE_GPIO, BUTTON_ACTION_1,  \
+      "B1", "SW1", "B1L", "SW1L" }            \
+  }
+#else
+#define APP_BSP_BUTTON_HWCFG_INIT             \
+  {                                           \
+    { B1, BUTTON_MODE_GPIO, BUTTON_ACTION_2,  \
+      "B1", "SW1", "B1L", "SW1L" }            \
+  }
+#endif
+
+#define APP_BSP_BUTTON_ENABLE_WAKEUP()        \
+  do                                          \
+  {                                           \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);  /* PC13 */ \
+  } while (0)
+
+#define APP_BSP_BUTTON_ENABLE_RETENTION()     \
+  do                                          \
+  {                                           \
+    SET_BIT(PWR->IORETENRC, B1_PIN);          /* Retention for B1 */ \
+  } while (0)
+
+#ifdef CFG_BSP_ON_SEQUENCER
+#define APP_BSP_BUTTON_ACTION1_SEQ_TASK       CFG_TASK_BSP_BUTTON_B1
+#endif /* CFG_BSP_ON_SEQUENCER */
+
+#elif defined(CFG_BSP_ON_NUCLEO) && defined(STM32WBA6xxx)
+
+#define APP_BSP_BUTTON_WAKEUP_BUTTON2         B1
+#define APP_BSP_BUTTON_DESC_INIT              \
+  {                                           \
+    { B1, { 0 }, 0u, 0u },                    \
+    { B2, { 0 }, 0u, 0u },                    \
+    { B3, { 0 }, 0u, 0u }                     \
+  }
+#define APP_BSP_BUTTON_HWCFG_INIT               \
+  {                                             \
+    { B1, BUTTON_MODE_GPIO, BUTTON_ACTION_1,    \
+      "B1", "SW1", "B1L", "SW1L" },             \
+    { B2, BUTTON_MODE_EXTI, BUTTON_ACTION_2,    \
+      "B2", "SW2", "B2L", "SW2L" },             \
+    { B3, BUTTON_MODE_EXTI, BUTTON_ACTION_3,    \
+      "B3", "SW3", "B3L", "SW3L" }              \
+  }
+
+/* WBA Nucleo boards push buttons are configured to pwr wakeup pins
+   except for WBA65 B2 and B3 configured to GPIO EXTIs. */
+#define APP_BSP_BUTTON_ENABLE_WAKEUP()        \
+  do                                          \
+  {                                           \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW_1);    /* B1 --> PC13 */ \
+  } while (0)
+
+#define APP_BSP_BUTTON_ENABLE_RETENTION()     \
+  do                                          \
+  {                                           \
+    SET_BIT(PWR->IORETENRC, B1_PIN);          /* Retention for B1 */ \
+  } while (0)
+
+#define APP_BSP_BUTTON_EXTI4_BUTTON           B3
+#define APP_BSP_BUTTON_EXTI5_BUTTON           B2
+
+#ifdef CFG_BSP_ON_SEQUENCER
+#define APP_BSP_BUTTON_ACTION1_SEQ_TASK       CFG_TASK_BSP_BUTTON_B1
+#define APP_BSP_BUTTON_ACTION2_SEQ_TASK       CFG_TASK_BSP_BUTTON_B2
+#define APP_BSP_BUTTON_ACTION3_SEQ_TASK       CFG_TASK_BSP_BUTTON_B3
+#endif /* CFG_BSP_ON_SEQUENCER */
+
+#elif defined(CFG_BSP_ON_NUCLEO) && defined(STM32WBA2xxx)
+
+#define APP_BSP_BUTTON_WAKEUP_BUTTON2         B2
+#define APP_BSP_BUTTON_DESC_INIT              \
+  {                                           \
+    { B1, { 0 }, 0u, 0u },                    \
+    { B2, { 0 }, 0u, 0u },                    \
+    { B3, { 0 }, 0u, 0u }                     \
+  }
+#define APP_BSP_BUTTON_HWCFG_INIT               \
+  {                                             \
+    { B1, BUTTON_MODE_GPIO, BUTTON_ACTION_1,    \
+      "B1", "SW1", "B1L", "SW1L" },             \
+    { B2, BUTTON_MODE_GPIO, BUTTON_ACTION_2,    \
+      "B2", "SW2", "B2L", "SW2L" },             \
+    { B3, BUTTON_MODE_GPIO, BUTTON_ACTION_3,    \
+      "B3", "SW3", "B3L", "SW3L" }              \
+  }
+
+#define APP_BSP_BUTTON_ENABLE_WAKEUP()        \
+  do                                          \
+  {                                           \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW_1);    /* B2 --> PC13 */ \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_1);    /* B1 --> PA1  */ \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN4_LOW_0);    /* B3 --> PA2  */ \
+  } while (0)
+
+#define APP_BSP_BUTTON_ENABLE_RETENTION()     \
+  do                                          \
+  {                                           \
+    SET_BIT(PWR->IORETENRA, ( B1_PIN | B3_PIN ) );     /* Retention for B1 and B3 */ \
+    SET_BIT(PWR->IORETENRC, B2_PIN );                  /* Retention for B2 */ \
+  } while (0)
+
+#define APP_BSP_BUTTON_WKUP3_BUTTON           B1
+#define APP_BSP_BUTTON_WKUP4_BUTTON           B3
+
+#ifdef CFG_BSP_ON_SEQUENCER
+#define APP_BSP_BUTTON_ACTION1_SEQ_TASK       CFG_TASK_BSP_BUTTON_B1
+#define APP_BSP_BUTTON_ACTION2_SEQ_TASK       CFG_TASK_BSP_BUTTON_B2
+#define APP_BSP_BUTTON_ACTION3_SEQ_TASK       CFG_TASK_BSP_BUTTON_B3
+#endif /* CFG_BSP_ON_SEQUENCER */
+
+#elif defined(CFG_BSP_ON_NUCLEO) && defined(STM32WBA5xxx)
+
+#define APP_BSP_BUTTON_WAKEUP_BUTTON2         B1
+#define APP_BSP_BUTTON_DESC_INIT              \
+  {                                           \
+    { B1, { 0 }, 0u, 0u },                    \
+    { B2, { 0 }, 0u, 0u },                    \
+    { B3, { 0 }, 0u, 0u }                     \
+  }
+#define APP_BSP_BUTTON_HWCFG_INIT               \
+  {                                             \
+    { B1, BUTTON_MODE_GPIO, BUTTON_ACTION_1,    \
+      "B1", "SW1", "B1L", "SW1L" },             \
+    { B2, BUTTON_MODE_GPIO, BUTTON_ACTION_2,    \
+      "B2", "SW2", "B2L", "SW2L" },             \
+    { B3, BUTTON_MODE_GPIO, BUTTON_ACTION_3,    \
+      "B3", "SW3", "B3L", "SW3L" }              \
+  }
+
+#define APP_BSP_BUTTON_ENABLE_WAKEUP()        \
+  do                                          \
+  {                                           \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW_1);    /* B1 --> PC13 */ \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);    /* B2 --> PB6  */ \
+    HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);    /* B3 --> PB7  */ \
+  } while (0)
+
+#define APP_BSP_BUTTON_ENABLE_RETENTION()     \
+  do                                          \
+  {                                           \
+    SET_BIT(PWR->IORETENRC, B1_PIN );                 /* Retention for B1 */ \
+    SET_BIT(PWR->IORETENRB, ( B2_PIN | B3_PIN ) );    /* Retention for B2 & B3 */ \
+  } while (0)
+
+#define APP_BSP_BUTTON_WKUP3_BUTTON           B2
+#define APP_BSP_BUTTON_WKUP5_BUTTON           B3
+
+#ifdef CFG_BSP_ON_SEQUENCER
+#define APP_BSP_BUTTON_ACTION1_SEQ_TASK       CFG_TASK_BSP_BUTTON_B1
+#define APP_BSP_BUTTON_ACTION2_SEQ_TASK       CFG_TASK_BSP_BUTTON_B2
+#define APP_BSP_BUTTON_ACTION3_SEQ_TASK       CFG_TASK_BSP_BUTTON_B3
+#endif /* CFG_BSP_ON_SEQUENCER */
+
+#else
+#error "Unsupported button board configuration"
+#endif
+
+#define APP_BSP_BUTTON_WKUP2_BUTTON           APP_BSP_BUTTON_WAKEUP_BUTTON2
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
+#if (CFG_LCD_SUPPORTED == 1) && defined(CFG_BSP_ON_DISCOVERY)
+#if defined(STM32WBA6xxx)
+#define APP_BSP_LCD_ENABLE_RST_RETENTION()    HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_E, LCD_RST_PIN)
+#elif defined(STM32WBA5xxx)
+#define APP_BSP_LCD_ENABLE_RST_RETENTION()    HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_A, LCD_RST_PIN)
+#else
+#error "Unsupported LCD board configuration"
+#endif
+#endif /* (CFG_LCD_SUPPORTED == 1) && defined(CFG_BSP_ON_DISCOVERY) */
 
 #ifndef CFG_BSP_ON_SEQUENCER
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -112,10 +343,10 @@ typedef struct
 #ifdef CFG_BSP_ON_SEQUENCER
 #define JOYSTICK_PRESS_SAMPLE_MS              (100u)    /* Sample Joystick level rate in milli seconds. */
 #define JOYSTICK_LONG_PRESS_THRESHOLD_MS      (500u)    /* Long pression time threshold in milliseconds. */
-#else // CFG_BSP_ON_SEQUENCER
+#else /* CFG_BSP_ON_SEQUENCER */
 #define JOYSTICK_PRESS_SAMPLE_MS              (200u)    /* Sample Joystick level rate in milli seconds. */
 #define JOYSTICK_LONG_PRESS_THRESHOLD_MS      (800u)    /* Long pression time threshold in milliseconds. */
-#endif // CFG_BSP_ON_SEQUENCER
+#endif /* CFG_BSP_ON_SEQUENCER */
 
 #ifndef CFG_JOYSTICK_USE_TYPE
 #define CFG_JOYSTICK_USE_TYPE                 JOYSTICK_USE_AS_BUTTON  /* By Default Joystick used same as Button */
@@ -123,11 +354,36 @@ typedef struct
 #ifndef CFG_JOYSTICK_MODE
 #define CFG_JOYSTICK_MODE                     JOY_MODE_EXTI  /* Default Joystick Mode */
 #endif /* CFG_JOYSTICK_MODE */
+
+/* Joystick is supported only on Discovery DK boards. */
+#if defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA6xxx)
+#define APP_BSP_JOYSTICK_WAKEUP_FLAG          PWR_WAKEUP_PIN5
+#define APP_BSP_JOYSTICK_WAKEUP_CALLBACK      HAL_PWR_WKUP5_Callback
+#define APP_BSP_JOYSTICK_ENABLE_WAKEUP()      HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_1)  /* JOY-PA3 */
+#define APP_BSP_JOYSTICK_STATE_LIST_INIT      { JOY_RIGHT, JOY_UP, JOY_DOWN, JOY_LEFT, JOY_SEL }
+#elif defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA5xxx)
+#define APP_BSP_JOYSTICK_WAKEUP_FLAG          PWR_WAKEUP_PIN3
+#define APP_BSP_JOYSTICK_WAKEUP_CALLBACK      HAL_PWR_WKUP3_Callback
+#define APP_BSP_JOYSTICK_ENABLE_WAKEUP()      HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_1)  /* JOY-PA1 */
+#define APP_BSP_JOYSTICK_STATE_LIST_INIT      { JOY_DOWN, JOY_RIGHT, JOY_LEFT, JOY_UP, JOY_SEL }
+#else
+#error "Unsupported joystick board configuration"
+#endif
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 
 /* Private macros ------------------------------------------------------------*/
 
 /* Private constants ---------------------------------------------------------*/
+#if (CFG_BUTTON_SUPPORTED == 1)
+
+static ButtonBoardContext_t s_buttonBoard =
+{
+  .buttonDesc    = APP_BSP_BUTTON_DESC_INIT,
+  .buttons       = APP_BSP_BUTTON_HWCFG_INIT
+};
+
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
 #if (CFG_JOYSTICK_SUPPORTED == 1)
   /* The ADC value gives the pad pressed. It depends on the DK board
   WBA55-DK1   WBA65-DK
@@ -137,11 +393,7 @@ typedef struct
   JOY_LEFT    JOY_DOWN  -> around 1.3V  -> ADC value around 1638.
   JOY_UP      JOY_LEFT  -> around 0.6V  -> ADC value around 831.
   JOY_SEL     JOY_SEL   -> around 0V    -> ADC value around 0. */
-#ifdef STM32WBA65xx
-const JOYPin_TypeDef eJoystickStateList[] = { JOY_RIGHT, JOY_UP, JOY_DOWN, JOY_LEFT, JOY_SEL };
-#else /* STM32WBA65xx */
-const JOYPin_TypeDef eJoystickStateList[] = { JOY_DOWN, JOY_RIGHT, JOY_LEFT, JOY_UP, JOY_SEL };
-#endif /* STM32WBA65xx */
+static const JOYPin_TypeDef eJoystickStateList[] = APP_BSP_JOYSTICK_STATE_LIST_INIT;
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 
 #ifdef CFG_BSP_ON_FREERTOS
@@ -173,7 +425,7 @@ const osThreadAttr_t JoystickUpThreadAttributes =
 /* FreeRtos Joystick Right stack attributes */
 const osThreadAttr_t JoystickRightThreadAttributes =
 {
-  .name         = "Joystick Up Thread",
+  .name         = "Joystick Right Thread",
   .attr_bits    = TASK_DEFAULT_ATTR_BITS,
   .cb_mem       = TASK_DEFAULT_CB_MEM,
   .cb_size      = TASK_DEFAULT_CB_SIZE,
@@ -282,17 +534,6 @@ static TX_THREAD            ButtonB1Thread, ButtonB2Thread, ButtonB3Thread;
 osSemaphoreId_t             ButtonB1Semaphore, ButtonB2Semaphore, ButtonB3Semaphore;
 static osThreadId_t         ButtonB1Thread, ButtonB2Thread, ButtonB3Thread;
 #endif /* CFG_BSP_ON_FREERTOS */
-#ifdef CFG_BSP_ON_CEB
-#if STM32WBA5Mxx
-static ButtonDesc_t         buttonDesc[BUTTON_NB_MAX] = { { B2, { 0 } , 0, 0 } };
-#endif
-#if STM32WBA6Mxx
-static ButtonDesc_t         buttonDesc[BUTTON_NB_MAX] = { { B1, { 0 } , 0, 0 } };
-#endif
-#endif /* CFG_BSP_ON_CEB */
-#ifdef CFG_BSP_ON_NUCLEO
-static ButtonDesc_t         buttonDesc[BUTTON_NB_MAX] = { { B1, { 0 }, 0, 0 } , { B2, { 0 } , 0, 0 }, { B3, { 0 }, 0, 0 } };
-#endif /* CFG_BSP_ON_NUCLEO */
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 #if (CFG_JOYSTICK_SUPPORTED == 1)
@@ -334,7 +575,6 @@ void APP_BSP_Init( void )
   APP_BSP_LedInit();
 #endif /* (CFG_LED_SUPPORTED == 1) */
 
-#ifdef CFG_BSP_ON_DISCOVERY
 #if (CFG_LCD_SUPPORTED == 1)
   APP_BSP_LcdInit();
 #endif /* (CFG_LCD_SUPPORTED == 1) */
@@ -342,7 +582,6 @@ void APP_BSP_Init( void )
 #if (CFG_JOYSTICK_SUPPORTED == 1)
   APP_BSP_JoystickInit();
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
-#endif /* CFG_BSP_ON_DISCOVERY */
 
 #if (CFG_BUTTON_SUPPORTED == 1)
   APP_BSP_ButtonInit();
@@ -360,32 +599,37 @@ void APP_BSP_PostIdle( void )
   if ( ( PWR->WUSR & PWR_WAKEUP_PIN2 ) != 0 )
   {
     PWR->WUSCR = PWR_WAKEUP_PIN2;
-#ifdef CFG_BSP_ON_CEB
-#ifdef STM32WBA5Mxx
-      BSP_PB_Callback(B2);
-#else
-      BSP_PB_Callback(B1);
-#endif
-#else
-     BSP_PB_Callback(B1);
-#endif
+    BSP_PB_Callback(APP_BSP_BUTTON_WKUP2_BUTTON);
   }
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  /* Treatment of WakeUp Joystick */
-#ifdef STM32WBA65xx
-  if ( ( PWR->WUSR & PWR_WAKEUP_PIN5 ) != 0 )
-  {
-    PWR->WUSCR = PWR_WAKEUP_PIN5;
-    APP_BSP_JoystickTimerCallback(NULL);
-  }
-#else // STM32WBA65xx
+#ifdef APP_BSP_BUTTON_WKUP3_BUTTON
   if ( ( PWR->WUSR & PWR_WAKEUP_PIN3 ) != 0 )
   {
     PWR->WUSCR = PWR_WAKEUP_PIN3;
+    BSP_PB_Callback(APP_BSP_BUTTON_WKUP3_BUTTON);
+  }
+#endif
+#ifdef APP_BSP_BUTTON_WKUP4_BUTTON
+  if ( ( PWR->WUSR & PWR_WAKEUP_PIN4 ) != 0 )
+  {
+    PWR->WUSCR = PWR_WAKEUP_PIN4;
+    BSP_PB_Callback(APP_BSP_BUTTON_WKUP4_BUTTON);
+  }
+#endif
+#ifdef APP_BSP_BUTTON_WKUP5_BUTTON
+  if ( ( PWR->WUSR & PWR_WAKEUP_PIN5 ) != 0 )
+  {
+    PWR->WUSCR = PWR_WAKEUP_PIN5;
+    BSP_PB_Callback(APP_BSP_BUTTON_WKUP5_BUTTON);
+  }
+#endif
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+#if (CFG_JOYSTICK_SUPPORTED == 1)
+  /* Treatment of WakeUp Joystick */
+  if ( ( PWR->WUSR & APP_BSP_JOYSTICK_WAKEUP_FLAG ) != 0 )
+  {
+    PWR->WUSCR = APP_BSP_JOYSTICK_WAKEUP_FLAG;
     APP_BSP_JoystickTimerCallback(NULL);
   }
-#endif // STM32WBA65xx
 #endif /* CFG_JOYSTICK_SUPPORTED */
 #endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U)) */
 }
@@ -397,29 +641,15 @@ void APP_BSP_StandbyExit( void )
 {
 #if (CFG_LED_SUPPORTED == 1)
   /* Leds Initialization */
-#if defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx)
-  BSP_LED_Init(LED_GREEN);
-  BSP_LED_Init(LED_RED);
-#else /* defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx) */
-  BSP_LED_Init(LED_BLUE);
-#ifdef CFG_BSP_ON_NUCLEO
-  BSP_LED_Init(LED_GREEN);
-  BSP_LED_Init(LED_RED);
-#endif /* CFG_BSP_ON_NUCLEO */
-#endif /* defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx) */
-#endif /* (CFG_LED_SUPPORTED == 1) */
-
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-#ifdef CFG_BSP_ON_DISCOVERY
-  /* Joystick HW Initialization is not done after Standby */
-
-#endif /* CFG_BSP_ON_DISCOVERY */
-#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
+  for (uint32_t i = 0; i < LEDn; i++)
+  {
+    BSP_LED_Init((Led_TypeDef)i);
+  }
+#endif /* CFG_LED_SUPPORTED */
 
 #if (CFG_LCD_SUPPORTED == 1)
-#ifdef CFG_BSP_ON_DISCOVERY
   HAL_GPIO_WritePin(LCD_RST_GPIO_PORT, LCD_RST_PIN, GPIO_PIN_SET);
- 
+
   /* GPIO are reinitialized after wakeup from stdby */
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   GPIO_InitStruct.Pin     = LCD_RST_PIN;
@@ -427,44 +657,23 @@ void APP_BSP_StandbyExit( void )
   GPIO_InitStruct.Pull    = GPIO_NOPULL;
   GPIO_InitStruct.Speed   = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LCD_RST_GPIO_PORT, &GPIO_InitStruct);
- 
-#if STM32WBA65xx
-  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_E, LCD_RST_PIN);
-#else
-  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_A, LCD_RST_PIN);
-#endif /* STM32WBA65xx */
- 
+
+  APP_BSP_LCD_ENABLE_RST_RETENTION();
+
   GPIO_InitStruct.Pin     = LCD_DC_PIN;
   HAL_GPIO_Init(LCD_DC_GPIO_PORT, &GPIO_InitStruct);
- 
+
   GPIO_InitStruct.Pin     = LCD_CS_PIN;
   HAL_GPIO_Init(LCD_CS_GPIO_PORT, &GPIO_InitStruct);
-#endif /* CFG_BSP_ON_DISCOVERY */
 #endif /* (CFG_LCD_SUPPORTED == 1) */
+
 #if (CFG_BUTTON_SUPPORTED == 1)
-#ifdef CFG_BSP_ON_CEB
   /* Button HW Initialization */
-#if STM32WBA5Mxx
-  BSP_PB_Init( B2, BUTTON_MODE_GPIO );
-#endif
-#if STM32WBA6Mxx
-  BSP_PB_Init( B1, BUTTON_MODE_GPIO );
-#endif
-#endif /* CFG_BSP_ON_CEB */
-
-#ifdef CFG_BSP_ON_NUCLEO
-  
-  /* Buttons HW Initialization */
-  BSP_PB_Init( B1, BUTTON_MODE_GPIO );
-
-#ifdef STM32WBA65xx
-  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
-  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
-#else /* STM32WBA65xx */
-  BSP_PB_Init( B2, BUTTON_MODE_GPIO );
-  BSP_PB_Init( B3, BUTTON_MODE_GPIO );
-#endif
-#endif /* CFG_BSP_ON_NUCLEO */
+  for (uint32_t i = 0; i < BUTTON_NB_MAX; i++)
+  {
+    BSP_PB_Init( s_buttonBoard.buttons[i].button,
+                 s_buttonBoard.buttons[i].mode );
+  }
 
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(WKUP_IRQn);
@@ -485,8 +694,8 @@ uint8_t APP_BSP_ButtonIsLongPressed( uint16_t btnIdx )
 
   if ( btnIdx < BUTTON_NB_MAX )
   {
-    pressStatus = buttonDesc[btnIdx].longPressed;
-    buttonDesc[btnIdx].longPressed = 0;
+    pressStatus = s_buttonBoard.buttonDesc[btnIdx].longPressed;
+    s_buttonBoard.buttonDesc[btnIdx].longPressed = 0;
   }
 
   return pressStatus;
@@ -499,7 +708,10 @@ uint8_t APP_BSP_ButtonIsLongPressed( uint16_t btnIdx )
  */
 void APP_BSP_SetButtonIsLongPressed( uint16_t btnIdx )
 {
-  buttonDesc[btnIdx].longPressed = 1;
+  if ( btnIdx < BUTTON_NB_MAX )
+  {
+    s_buttonBoard.buttonDesc[btnIdx].longPressed = 1;
+  }
 }
 
 /**
@@ -638,21 +850,14 @@ __WEAK void APP_BSP_JoystickNoneAction( void )
  */
 void APP_BSP_LedInit( void )
 {
-  /* Leds Initialization */
-#if defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx)
-  BSP_LED_Init(LED_GREEN);
-  BSP_LED_Init(LED_RED);
-#else /* defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx) */
-  BSP_LED_Init(LED_BLUE);
-#ifdef CFG_BSP_ON_NUCLEO
-  BSP_LED_Init(LED_GREEN);
-  BSP_LED_Init(LED_RED);
-#endif /* CFG_BSP_ON_NUCLEO */
-#endif /* defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx) */
+  for (uint32_t i = 0; i < LEDn; i++)
+  {
+    BSP_LED_Init((Led_TypeDef)i);
+  }
 }
 
 #endif /* (CFG_LED_SUPPORTED == 1) */
-#ifdef CFG_BSP_ON_DISCOVERY
+
 #if (CFG_LCD_SUPPORTED == 1)
 
 /**
@@ -773,8 +978,8 @@ static void Joystick_LaunchActionTask( JOYPin_TypeDef joystickState )
         break;
 #endif /* CFG_BSP_ON_SEQUENCER */
 
-    default :   /* No Action */
-                break;
+    default :
+        break;
   }
 }
 
@@ -798,7 +1003,7 @@ static JOYPin_TypeDef APP_BSP_JoystickGetState( JOY_TypeDef eJoy )
   /* Get the converted value of regular channel */
   iKeyConvertedValue = HAL_ADC_GetValue( &hjoy_adc[eJoy] );
 
-  /* The ADC value gives the pad pressed. Function of DK*/
+  /* The ADC value gives the pad pressed. Function of DK */
   if ( ( iKeyConvertedValue >= 2800U ) && ( iKeyConvertedValue < 3600U ) )
   {
     eJoyPin = eJoystickStateList[0];
@@ -849,74 +1054,74 @@ static void APP_BSP_JoystickSampleManage( void )
   /* Wait first conversion */
   if ( HAL_ADC_PollForConversion( &hjoy_adc[JOY1], ( JOYSTICK_PRESS_SAMPLE_MS / 2u ) ) == HAL_OK )
   {
-  eJoystickState = APP_BSP_JoystickGetState( JOY1 );
+    eJoystickState = APP_BSP_JoystickGetState( JOY1 );
 
-  BSP_JOY_DeInit(JOY1, JOY_ALL);
+    BSP_JOY_DeInit(JOY1, JOY_ALL);
 
 #if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER)
-  /* Process Joystick information. */
-  if ( ( eJoystickState != JOY_NONE ) && ( eJoystickState == eJoystickPreviousState ) )
-  {
-    /* Verify if it's a LongTime */
-    if ( bActionDone == false )
+    /* Process Joystick information. */
+    if ( ( eJoystickState != JOY_NONE ) && ( eJoystickState == eJoystickPreviousState ) )
     {
-      lStartTime += JOYSTICK_PRESS_SAMPLE_MS;
-      if ( lStartTime > JOYSTICK_LONG_PRESS_THRESHOLD_MS )
+      /* Verify if it's a LongTime */
+      if ( bActionDone == false )
       {
-        cJoystickLongPressed = 1;
-        bActionDone = true;
-        cJoystickInitialPress = 0;
-        Joystick_LaunchActionTask( eJoystickState );
-      }
-#if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER)
-      else
-      {
-        if ( cJoystickInitialPress == 0 )
+        lStartTime += JOYSTICK_PRESS_SAMPLE_MS;
+        if ( lStartTime > JOYSTICK_LONG_PRESS_THRESHOLD_MS )
         {
-          cJoystickInitialPress = 1;
+          cJoystickLongPressed = 1;
+          bActionDone = true;
+          cJoystickInitialPress = 0;
           Joystick_LaunchActionTask( eJoystickState );
         }
-      }
+#if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER)
+        else
+        {
+          if ( cJoystickInitialPress == 0 )
+          {
+            cJoystickInitialPress = 1;
+            Joystick_LaunchActionTask( eJoystickState );
+          }
+        }
 #endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER) */
-    }
-  }
-  else
-  {
-    if ( ( eJoystickState == JOY_NONE ) && ( eJoystickState != eJoystickPreviousState ) )
-    {
-      /* Verify if it's a 'Short Pressed' case */
-      if ( ( lStartTime != 0u ) && ( bActionDone == false ) )
-      {
-        cJoystickInitialPress = 0;
-        Joystick_LaunchActionTask( eJoystickPreviousState );
       }
     }
     else
     {
-      cJoystickLongPressed = 0;
-      cJoystickInitialPress = 0;
-      bActionDone = false;
-      lStartTime = 0;
+      if ( ( eJoystickState == JOY_NONE ) && ( eJoystickState != eJoystickPreviousState ) )
+      {
+        /* Verify if it's a 'Short Pressed' case */
+        if ( ( lStartTime != 0u ) && ( bActionDone == false ) )
+        {
+          cJoystickInitialPress = 0;
+          Joystick_LaunchActionTask( eJoystickPreviousState );
+        }
+      }
+      else
+      {
+        cJoystickLongPressed = 0;
+        cJoystickInitialPress = 0;
+        bActionDone = false;
+        lStartTime = 0;
+      }
     }
-  }
 #else /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER) */
-  /* Process Joystick information. */
+    /* Process Joystick information. */
 #if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_CHANGE)
-  if ( eJoystickState != eJoystickPreviousState )
-#else /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_CHANGE) */
+    if ( eJoystickState != eJoystickPreviousState )
+#else
 #if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_JOYSTICK)
-  if ( eJoystickState != JOY_NONE )
-#else /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_JOYSTICK) */
-  if ( ( eJoystickState != JOY_NONE ) && ( eJoystickState != eJoystickPreviousState ) )
+    if ( eJoystickState != JOY_NONE )
+#else
+    if ( ( eJoystickState != JOY_NONE ) && ( eJoystickState != eJoystickPreviousState ) )
 #endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_JOYSTICK) */
 #endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_CHANGE) */
-  {
-    Joystick_LaunchActionTask( eJoystickState );
-  }
+    {
+      Joystick_LaunchActionTask( eJoystickState );
+    }
 #endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER) */
 
-  /* Set State */
-  eJoystickPreviousState = eJoystickState;
+    /* Set State */
+    eJoystickPreviousState = eJoystickState;
   }
   else
   {
@@ -929,9 +1134,9 @@ static void APP_BSP_JoystickSampleManage( void )
   {
     UTIL_TIMER_Start( &stJoystickTimer );
   }
-#else /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U)) && (CFG_JOYSTICK_USE_TYPE != JOYSTICK_USE_AS_CHANGE))*/
+#else
   UTIL_TIMER_Start( &stJoystickTimer );
-#endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U)) && (CFG_JOYSTICK_USE_TYPE != JOYSTICK_USE_AS_CHANGE))*/
+#endif
 }
 
 /**
@@ -939,6 +1144,8 @@ static void APP_BSP_JoystickSampleManage( void )
  */
 static void APP_BSP_JoystickTimerCallback(void *arg)
 {
+  UNUSED(arg);
+
 #ifdef CFG_BSP_ON_SEQUENCER
   UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_JOY_SAMPLE, CFG_SEQ_PRIO_0);
 #endif /* CFG_BSP_ON_SEQUENCER */
@@ -1077,15 +1284,15 @@ static void Joystick_InitTask( void )
   JoystickUpSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickUpThread = osThreadNew( JoystickUpTask, NULL, &JoystickUpThreadAttributes );
 
-  /* Register Semaphore & Task for the Joystick Up Semaphore */
+  /* Register Semaphore & Task for the Joystick Right Semaphore */
   JoystickRightSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickRightThread = osThreadNew( JoystickRightTask, NULL, &JoystickRightThreadAttributes );
 
-  /* Register Semaphore & Task for the Joystick Up Semaphore */
+  /* Register Semaphore & Task for the Joystick Down Semaphore */
   JoystickDownSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickDownThread = osThreadNew( JoystickDownTask, NULL, &JoystickDownThreadAttributes );
 
-  /* Register Semaphore & Task for the Joystick Up Semaphore */
+  /* Register Semaphore & Task for the Joystick Left Semaphore */
   JoystickLeftSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickLeftThread = osThreadNew( JoystickLeftTask, NULL, &JoystickLeftThreadAttributes );
 
@@ -1310,7 +1517,7 @@ static void Joystick_InitTask( void )
   /* Register Semaphore to launch the Joystick None Task */
   if ( ThreadXStatus == TX_SUCCESS )
   {
-    ThreadXStatus = tx_semaphore_create( &JoystickNoneSemaphore, "JoystickSNone Semaphore", 0 );
+    ThreadXStatus = tx_semaphore_create( &JoystickNoneSemaphore, "JoystickNone Semaphore", 0 );
     ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_JOYSTICK_NONE, TX_NO_WAIT);
     if ( ThreadXStatus == TX_SUCCESS )
     {
@@ -1336,7 +1543,7 @@ static void Joystick_InitTask( void )
  */
 static void Joystick_InitTask( void)
 {
-  /* Stask to Sample management */
+  /* Task to sample management */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_SAMPLE, UTIL_SEQ_RFU, APP_BSP_JoystickSampleManage );
 
   /* Task associated with Joystick */
@@ -1355,18 +1562,14 @@ static void Joystick_InitTask( void)
  */
 void APP_BSP_JoystickInit( void )
 {
-  /* Button task initialisation */
+  /* Joystick task initialisation */
   Joystick_InitTask();
   cJoystickLongPressed = 0;
   cJoystickInitialPress = 0;
 
 #if ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))
   /* StandBy WakeUp via Joystick */
-#ifdef STM32WBA65xx
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_1);     /* JOY-PA3 */
-#else // STM32WBA65xx
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_1);     /* JOY-PA1. */
-#endif // STM32WBA65xx
+  APP_BSP_JOYSTICK_ENABLE_WAKEUP();
 #endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U)) */
 
   /* Create periodic timer for joystick position reading */
@@ -1374,8 +1577,18 @@ void APP_BSP_JoystickInit( void )
   UTIL_TIMER_Start( &stJoystickTimer );
 }
 
+#if ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))
+/**
+ * @brief  Joystick wakeup pin event while in Run/Sleep/Stop0/Stop1 (WKUP_IRQn clears the flag before APP_BSP_PostIdle).
+ */
+void APP_BSP_JOYSTICK_WAKEUP_CALLBACK( void )
+{
+  APP_BSP_JoystickTimerCallback( NULL );
+}
+#endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U)) */
+
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
-#endif /* CFG_BSP_ON_DISCOVERY */
+
 #if ( CFG_BUTTON_SUPPORTED == 1 )
 #ifdef CFG_BSP_ON_FREERTOS
 
@@ -1455,6 +1668,7 @@ static void Button_InitTask( void )
 }
 
 #endif /* CFG_BSP_ON_FREERTOS */
+
 #ifdef CFG_BSP_ON_THREADX
 
 /**
@@ -1537,7 +1751,7 @@ static void Button_InitTask( void )
   if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_semaphore_create( &ButtonB3Semaphore, "ButtonB3 Semaphore", 0 );
-    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_BUTTON_B3, TX_NO_WAIT);
+    ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_BUTTON_B3, TX_NO_WAIT);
     if ( ThreadXStatus == TX_SUCCESS )
     {
       ThreadXStatus = tx_thread_create( &ButtonB3Thread, "ButtonB3 Thread", ButtonB3Task, 0, pStack,
@@ -1555,6 +1769,7 @@ static void Button_InitTask( void )
 }
 
 #endif /* CFG_BSP_ON_THREADX */
+
 #ifdef CFG_BSP_ON_SEQUENCER
 
 /**
@@ -1562,25 +1777,17 @@ static void Button_InitTask( void )
  */
 static void Button_InitTask( void )
 {
-#ifdef CFG_BSP_ON_CEB
-#if STM32WBA5Mxx
-  /* Task associated with push button B2 */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_BUTTON_B2, UTIL_SEQ_RFU, APP_BSP_Button2Action );
+#ifdef APP_BSP_BUTTON_ACTION1_SEQ_TASK
+  UTIL_SEQ_RegTask( 1U << APP_BSP_BUTTON_ACTION1_SEQ_TASK, UTIL_SEQ_RFU, APP_BSP_Button1Action );
 #endif
-#if STM32WBA6Mxx
-  /* Task associated with push button B1 */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_BUTTON_B1, UTIL_SEQ_RFU, APP_BSP_Button1Action );
+
+#ifdef APP_BSP_BUTTON_ACTION2_SEQ_TASK
+  UTIL_SEQ_RegTask( 1U << APP_BSP_BUTTON_ACTION2_SEQ_TASK, UTIL_SEQ_RFU, APP_BSP_Button2Action );
 #endif
-#else /* CFG_BSP_ON_CEB */
-  /* Task associated with push button B1 */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_BUTTON_B1, UTIL_SEQ_RFU, APP_BSP_Button1Action );
 
-  /* Task associated with push button B2 */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_BUTTON_B2, UTIL_SEQ_RFU, APP_BSP_Button2Action );
-
-  /* Task associated with push button B3 */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_BUTTON_B3, UTIL_SEQ_RFU, APP_BSP_Button3Action );
-#endif /* CFG_BSP_ON_CEB */
+#ifdef APP_BSP_BUTTON_ACTION3_SEQ_TASK
+  UTIL_SEQ_RegTask( 1U << APP_BSP_BUTTON_ACTION3_SEQ_TASK, UTIL_SEQ_RFU, APP_BSP_Button3Action );
+#endif
 }
 
 #endif /* CFG_BSP_ON_SEQUENCER */
@@ -1590,86 +1797,38 @@ static void Button_InitTask( void )
  */
 void APP_BSP_ButtonInit( void )
 {
-  Button_TypeDef  buttonIndex;
+  uint32_t        buttonIndex;
+  Button_TypeDef  button;
 
   /* Buttons HW Initialization */
-#ifdef CFG_BSP_ON_CEB
-HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);  /* PC13 */
-#if STM32WBA5Mxx
-  BSP_PB_Init( B2, BUTTON_MODE_GPIO );
-#if ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))
-  /* StandBy WakeUp via buttons */
-  SET_BIT(PWR->IORETENRC, B2_PIN );                 /* Retention for B2 */
-#endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))   */
-#endif
-#if STM32WBA6Mxx
-  BSP_PB_Init( B1, BUTTON_MODE_GPIO );
-  #if ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))
-  /* StandBy WakeUp via buttons */
-  SET_BIT(PWR->IORETENRC, B1_PIN );                 /* Retention for B1 */
-#endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))   */
-#endif
-#endif /* CFG_BSP_ON_CEB */
-#ifdef CFG_BSP_ON_NUCLEO 
-/* WBA Nucleo boards push buttons are configured to pwr wakeup pins
-   except for WBA6 B2 and B3 are configured to GPIO EXTIs.   
-   please refer to the product Reference Manual: PWR wake-up source table */
-  
-  BSP_PB_Init( B1, BUTTON_MODE_GPIO );
+  for ( buttonIndex = 0; buttonIndex < BUTTON_NB_MAX; buttonIndex++ )
+  {
+    button = s_buttonBoard.buttons[buttonIndex].button;
+    BSP_PB_Init( button, s_buttonBoard.buttons[buttonIndex].mode );
+  }
 
-#ifdef STM32WBA65xx
-  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
-  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
-#else
-  BSP_PB_Init( B2, BUTTON_MODE_GPIO );
-  BSP_PB_Init( B3, BUTTON_MODE_GPIO );
-#endif /* STM32WBA65xx */
-  
-  /* StandBy WakeUp via buttons */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW_1);  /* B1 --> PC13 / B2 for WBA2 */
-#ifdef STM32WBA55xx
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);  /* B2 --> PB6 */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);  /* B3 --> PB7 */
-#endif /* STM32WBA55xx */
-#ifdef STM32WBA25xx
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_1);  /* B1 --> PA1 */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN4_LOW_0);  /* B3 --> PA2 */
- #endif /* STM32WBA25xx  */
-#if ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))
-#ifdef STM32WBA25xx
-    SET_BIT(PWR->IORETENRA, ( B1_PIN | B3_PIN ) );                 /* Retention for B1 and B3 */
-    SET_BIT(PWR->IORETENRC, B2_PIN );                              /* Retention for B2 */
-#else
-  SET_BIT(PWR->IORETENRC, B1_PIN );                 /* Retention for B1*/
-  #ifdef STM32WBA55xx
-   SET_BIT(PWR->IORETENRB, ( B2_PIN | B3_PIN ) );    /* Retention for B2 & B3 */
-  #endif /* STM32WBA55xx  */
-#endif /* STM32WBA25xx */
+  APP_BSP_BUTTON_ENABLE_WAKEUP();
 
- #endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))   */
-  
-#endif /* CFG_BSP_ON_NUCLEO */
+#if ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))
+  APP_BSP_BUTTON_ENABLE_RETENTION();
+#endif
 
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(WKUP_IRQn);
+
   /* Button task initialisation */
   Button_InitTask();
 
   /* Button timers initialisation (one for each button) */
-#ifdef CFG_BSP_ON_CEB
-#if STM32WBA5Mxx
-  buttonIndex = B2;
-#endif
-#if STM32WBA6Mxx
-  buttonIndex = B1;
-#endif
-  UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, UTIL_TIMER_PERIODIC, &Button_TriggerActions, &buttonDesc[buttonIndex] );
-#else /* CFG_BSP_ON_CEB */
-  for ( buttonIndex = B1; buttonIndex < BUTTON_NB_MAX; buttonIndex++ )
+  for ( buttonIndex = 0; buttonIndex < BUTTON_NB_MAX; buttonIndex++ )
   {
-    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, UTIL_TIMER_PERIODIC, &Button_TriggerActions, &buttonDesc[buttonIndex] );
+    button = s_buttonBoard.buttons[buttonIndex].button;
+    UTIL_TIMER_Create( &s_buttonBoard.buttonDesc[button].longTimerId,
+                       0,
+                       UTIL_TIMER_PERIODIC,
+                       &Button_TriggerActions,
+                       &s_buttonBoard.buttonDesc[button] );
   }
-#endif /* CFG_BSP_ON_CEB */
 }
 
 /**
@@ -1680,82 +1839,73 @@ HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);  /* PC13 */
  */
 static void Button_LaunchActionTask( Button_TypeDef button )
 {
-#ifdef CFG_BSP_ON_CEB
-#if STM32WBA5Mxx
-  if ( button == B2 )
-#endif
-#if STM32WBA6Mxx
-  if ( button == B1 )
-#endif
+  ButtonActionId_t actionId;
+
+  if ( (uint32_t)button >= BUTTON_NB_MAX )
   {
-#ifdef CFG_BSP_ON_FREERTOS
-    osSemaphoreRelease( ButtonB2Semaphore );
-#endif /* CFG_BSP_ON_FREERTOS */
-#ifdef CFG_BSP_ON_THREADX
-    tx_semaphore_put( &ButtonB2Semaphore );
-#endif /* CFG_BSP_ON_THREADX */
-#ifdef CFG_BSP_ON_SEQUENCER
-#if STM32WBA5Mxx
-    UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_BUTTON_B2, CFG_SEQ_PRIO_0 );
-#endif
-#if STM32WBA6Mxx
-    UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_BUTTON_B1, CFG_SEQ_PRIO_0 );
-#endif    
-#endif /* CFG_BSP_ON_SEQUENCER */
+    return;
   }
-#endif /* CFG_BSP_ON_CEB */
-#ifdef CFG_BSP_ON_NUCLEO
-  switch ( button )
+
+  actionId = s_buttonBoard.buttons[button].actionId;
+
+  switch ( actionId )
   {
 #ifdef CFG_BSP_ON_FREERTOS
-    case B1:
+    case BUTTON_ACTION_1:
         osSemaphoreRelease( ButtonB1Semaphore );
         break;
 
-    case B2:
+    case BUTTON_ACTION_2:
         osSemaphoreRelease( ButtonB2Semaphore );
         break;
 
-    case B3:
+    case BUTTON_ACTION_3:
         osSemaphoreRelease( ButtonB3Semaphore );
         break;
 #endif /* CFG_BSP_ON_FREERTOS */
+
 #ifdef CFG_BSP_ON_THREADX
-    case B1:
+    case BUTTON_ACTION_1:
         tx_semaphore_put( &ButtonB1Semaphore );
         break;
 
-    case B2:
+    case BUTTON_ACTION_2:
         tx_semaphore_put( &ButtonB2Semaphore );
         break;
 
-    case B3:
+    case BUTTON_ACTION_3:
         tx_semaphore_put( &ButtonB3Semaphore );
         break;
 #endif /* CFG_BSP_ON_THREADX */
+
 #ifdef CFG_BSP_ON_SEQUENCER
-    case B1:
-        UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_BUTTON_B1, CFG_SEQ_PRIO_0 );
+    case BUTTON_ACTION_1:
+#ifdef APP_BSP_BUTTON_ACTION1_SEQ_TASK
+        UTIL_SEQ_SetTask( 1U << APP_BSP_BUTTON_ACTION1_SEQ_TASK, CFG_SEQ_PRIO_0 );
+#endif
         break;
 
-    case B2:
-        UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_BUTTON_B2, CFG_SEQ_PRIO_0 );
+    case BUTTON_ACTION_2:
+#ifdef APP_BSP_BUTTON_ACTION2_SEQ_TASK
+        UTIL_SEQ_SetTask( 1U << APP_BSP_BUTTON_ACTION2_SEQ_TASK, CFG_SEQ_PRIO_0 );
+#endif
         break;
 
-    case B3:
-        UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_BUTTON_B3, CFG_SEQ_PRIO_0 );
+    case BUTTON_ACTION_3:
+#ifdef APP_BSP_BUTTON_ACTION3_SEQ_TASK
+        UTIL_SEQ_SetTask( 1U << APP_BSP_BUTTON_ACTION3_SEQ_TASK, CFG_SEQ_PRIO_0 );
+#endif
         break;
 #endif /* CFG_BSP_ON_SEQUENCER */
 
     default:
         break;
   }
-#endif /* CFG_BSP_ON_NUCLEO */
 }
 
 static void Button_TriggerActions( void * arg )
 {
-  ButtonDesc_t    * p_buttonDesc = arg;
+  ButtonDesc_t    * p_buttonDesc = (ButtonDesc_t *)arg;
   int32_t         buttonState = 0;
 
   buttonState = BSP_PB_GetState( p_buttonDesc->button );
@@ -1782,69 +1932,57 @@ static void Button_TriggerActions( void * arg )
 
 void BSP_PB_Callback( Button_TypeDef button )
 {
-  buttonDesc[button].waitingTime = 0;
-  UTIL_TIMER_StartWithPeriod( &buttonDesc[button].longTimerId, BUTTON_LONG_PRESS_SAMPLE_MS );
+  s_buttonBoard.buttonDesc[button].waitingTime = 0;
+  UTIL_TIMER_StartWithPeriod( &s_buttonBoard.buttonDesc[button].longTimerId, BUTTON_LONG_PRESS_SAMPLE_MS );
 }
 
+#ifdef APP_BSP_BUTTON_WKUP2_BUTTON
 void HAL_PWR_WKUP2_Callback(void)
 {
-#ifdef CFG_BSP_ON_CEB
-#ifdef STM32WBA5Mxx
-  BSP_PB_Callback(B2);
-#else
- BSP_PB_Callback(B1);
-#endif
-#else
-#ifdef STM32WBA25xx
-  BSP_PB_Callback(B2);
-#else
-  BSP_PB_Callback(B1);
-#endif
-#endif
+  BSP_PB_Callback(APP_BSP_BUTTON_WKUP2_BUTTON);
 }
+#endif
 
+#ifdef APP_BSP_BUTTON_WKUP3_BUTTON
 void HAL_PWR_WKUP3_Callback(void)
 {
-#ifdef STM32WBA55xx
-  BSP_PB_Callback(B2);
-#elif  STM32WBA25xx
-  BSP_PB_Callback(B1);
-#endif
+  BSP_PB_Callback(APP_BSP_BUTTON_WKUP3_BUTTON);
 }
+#endif
 
-#ifdef STM32WBA25xx
+#ifdef APP_BSP_BUTTON_WKUP4_BUTTON
 void HAL_PWR_WKUP4_Callback(void)
 {
-  BSP_PB_Callback(B3);
+  BSP_PB_Callback(APP_BSP_BUTTON_WKUP4_BUTTON);
 }
-#endif /* STM32WBA25xx */
+#endif
 
-#ifdef STM32WBA55xx
+#ifdef APP_BSP_BUTTON_WKUP5_BUTTON
 void HAL_PWR_WKUP5_Callback(void)
 {
-  BSP_PB_Callback(B3);
+  BSP_PB_Callback(APP_BSP_BUTTON_WKUP5_BUTTON);
 }
-#endif /* STM32WBA55xx */
+#endif
 
-#ifdef CFG_BSP_ON_NUCLEO 
-#ifdef STM32WBA65xx
+#ifdef APP_BSP_BUTTON_EXTI4_BUTTON
 /**
   * @brief This function handles EXTI Line4 interrupt.
   */
 void EXTI4_IRQHandler(void)
 {
-  BSP_PB_IRQHandler(B3);
+  BSP_PB_IRQHandler(APP_BSP_BUTTON_EXTI4_BUTTON);
 }
+#endif
 
+#ifdef APP_BSP_BUTTON_EXTI5_BUTTON
 /**
   * @brief This function handles EXTI Line5 interrupt.
   */
 void EXTI5_IRQHandler(void)
 {
-  BSP_PB_IRQHandler(B2);
+  BSP_PB_IRQHandler(APP_BSP_BUTTON_EXTI5_BUTTON);
 }
-#endif /* STM32WBA65xx */
-#endif /* CFG_BSP_ON_NUCLEO */
+#endif
 
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
@@ -1857,112 +1995,64 @@ void EXTI5_IRQHandler(void)
  */
 uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 {
-  uint8_t   cReturn = 0;
-  uint16_t  iUserChoice = UINT16_MAX;
+  UNUSED(iRxBufferSize);
 
-  /* Parse received frame */
 #if ( CFG_BUTTON_SUPPORTED == 1 )
-#ifdef CFG_BSP_ON_CEB
-#if STM32WBA5Mxx
-  /* For Board B_WBA5M_WPAN, the only button (same as B1 on other board) is named B2. */
-  if ( (strcmp( (char const*)pRxBuffer, "B2" ) == 0) ||
-       (strcmp( (char const*)pRxBuffer, "SW2" ) == 0) )
+  for (uint32_t buttonIndex = 0; buttonIndex < BUTTON_NB_MAX; buttonIndex++)
   {
-    iUserChoice = B2;
+    ButtonHwConfig_t * pButton = &s_buttonBoard.buttons[buttonIndex];
+
+    if ( (strcmp( (char const*)pRxBuffer, pButton->cmd ) == 0) ||
+         (strcmp( (char const*)pRxBuffer, pButton->cmdAlt ) == 0) )
+    {
+      LOG_INFO_APP( "%s pressed by Serial Command.\n", pRxBuffer );
+      Button_LaunchActionTask( pButton->button );
+      return 1;
+    }
+
+    if ( (strcmp( (char const*)pRxBuffer, pButton->longCmd ) == 0) ||
+         (strcmp( (char const*)pRxBuffer, pButton->longCmdAlt ) == 0) )
+    {
+      APP_BSP_SetButtonIsLongPressed( pButton->button );
+      LOG_INFO_APP( "%s pressed by Serial Command.\n", pRxBuffer );
+      Button_LaunchActionTask( pButton->button );
+      return 1;
+    }
   }
-  else if ( (strcmp( (char const*)pRxBuffer, "B2L" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW2L" ) == 0) )
-  {
-    APP_BSP_SetButtonIsLongPressed(B2);
-    iUserChoice = B2;
-  }
-#endif
-#if STM32WBA6Mxx
-  /* For Board B_WBA6M_WPAN, the only button is named B1. */
-  if ( (strcmp( (char const*)pRxBuffer, "B1" ) == 0) ||
-       (strcmp( (char const*)pRxBuffer, "SW1" ) == 0) )
-  {
-    iUserChoice = B1;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B1L" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW1L" ) == 0) )
-  {
-    APP_BSP_SetButtonIsLongPressed(B1);
-    iUserChoice = B1;
-  }
-#endif
-#else /* CFG_BSP_ON_CEB */
-  if ( (strcmp( (char const*)pRxBuffer, "B1" ) == 0) ||
-       (strcmp( (char const*)pRxBuffer, "SW1" ) == 0) )
-  {
-    iUserChoice = B1;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B1L" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW1L" ) == 0) )
-  {
-    APP_BSP_SetButtonIsLongPressed(B1);
-    iUserChoice = B1;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B2" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW2" ) == 0) )
-  {
-    iUserChoice = B2;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B2L" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW2L" ) == 0) )
-  {
-    APP_BSP_SetButtonIsLongPressed(B2);
-    iUserChoice = B2;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B3" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW3" ) == 0) )
-  {
-    iUserChoice = B3;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B3L" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW3L" ) == 0) )
-  {
-    APP_BSP_SetButtonIsLongPressed(B3);
-    iUserChoice = B3;
-  }
-#endif /* CFG_BSP_ON_CEB */
-#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
+#endif /* ( CFG_BUTTON_SUPPORTED == 1 ) */
+
 #if ( CFG_JOYSTICK_SUPPORTED == 1 )
   if (strcmp( (char const*)pRxBuffer, "UP" ) == 0)
   {
-    iUserChoice = JOY_UP;
+    LOG_INFO_APP( "%s pressed by Serial Command.\n", pRxBuffer );
+    Joystick_LaunchActionTask( JOY_UP );
+    return 1;
   }
   else if (strcmp( (char const*)pRxBuffer, "RIGHT" ) == 0)
   {
-    iUserChoice = JOY_RIGHT;
+    LOG_INFO_APP( "%s pressed by Serial Command.\n", pRxBuffer );
+    Joystick_LaunchActionTask( JOY_RIGHT );
+    return 1;
   }
   else if (strcmp( (char const*)pRxBuffer, "DOWN" ) == 0 )
   {
-    iUserChoice = JOY_DOWN;
+    LOG_INFO_APP( "%s pressed by Serial Command.\n", pRxBuffer );
+    Joystick_LaunchActionTask( JOY_DOWN );
+    return 1;
   }
   else if (strcmp( (char const*)pRxBuffer, "LEFT" ) == 0)
   {
-    iUserChoice = JOY_LEFT;
+    LOG_INFO_APP( "%s pressed by Serial Command.\n", pRxBuffer );
+    Joystick_LaunchActionTask( JOY_LEFT );
+    return 1;
   }
   else if (strcmp( (char const*)pRxBuffer, "SELECT" ) == 0)
   {
-    iUserChoice = JOY_SEL;
-  }
-#endif /* ( CFG_JOYSTICK_SUPPORTED == 1 )  */
-
-  if ( iUserChoice != UINT16_MAX )
-  {
-    /* Launch Command */
     LOG_INFO_APP( "%s pressed by Serial Command.\n", pRxBuffer );
-#if ( CFG_BUTTON_SUPPORTED == 1 )
-    Button_LaunchActionTask( (Button_TypeDef)iUserChoice );
-#endif /* ( CFG_BUTTON_SUPPORTED == 1 ) */
-#if ( CFG_JOYSTICK_SUPPORTED == 1 )
-    Joystick_LaunchActionTask( (JOYPin_TypeDef)iUserChoice );
-#endif /* ( CFG_JOYSTICK_SUPPORTED == 1 ) */
-    cReturn = 1;
+    Joystick_LaunchActionTask( JOY_SEL );
+    return 1;
   }
+#endif /* ( CFG_JOYSTICK_SUPPORTED == 1 ) */
 
-  return cReturn;
+  return 0;
 }
-

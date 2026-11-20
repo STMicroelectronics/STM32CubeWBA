@@ -35,6 +35,25 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for BAS */
+#define BAS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for BAS (service declaration not counted in attributes)
+  *                + 2 for BAL
+  *                + 1 for BAL CCCD
+  *                = 3
+**/
+#define BAS_NUM_GATT_ATTRIBUTES (3)
+
+/**
+  * Size_Attributes = 0 for BAS (service declaration not counted in attributes)
+  *                 + 5 for BAL declaration + 1 for BAL size
+  *                 + 2 for BAL CCCD * CFG_BLE_NUM_LINK
+  *                 = 6 + 2 * CFG_BLE_NUM_LINK
+**/
+#define BAS_ATT_VALUE_ARRAY_SIZE  (6 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

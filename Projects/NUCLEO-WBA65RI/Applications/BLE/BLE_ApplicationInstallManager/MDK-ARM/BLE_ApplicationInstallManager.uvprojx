@@ -335,7 +335,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_FULL_LL_DRIVER,USE_HAL_DRIVER,STM32WBA65xx,PHY_40nm_3_40_a</Define>
+              <Define>USE_FULL_LL_DRIVER,USE_HAL_DRIVER,STM32WBA65xx</Define>
               <Undefine />
               <IncludePath>../Core/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>
@@ -418,11 +418,6 @@
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_pka.c</FilePath>
             </File>
             <File>
-              <FileName>stm32wbaxx_ll_utils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_utils.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32wbaxx_hal_cryp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</FilePath>
@@ -441,6 +436,11 @@
               <FileName>stm32wbaxx_hal_dma_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_utils.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_ll_exti.c</FileName>

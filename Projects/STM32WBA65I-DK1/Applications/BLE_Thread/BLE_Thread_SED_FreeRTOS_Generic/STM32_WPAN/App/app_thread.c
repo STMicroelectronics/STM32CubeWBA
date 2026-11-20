@@ -302,12 +302,6 @@ static void APP_THREAD_DeviceConfig(void)
   /* Start the COAP server */
   APP_COAP_Init(PtOpenThreadInstance);
 
-#if (CFG_LPM_LEVEL == 2)
-  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
-#endif // CFG_LPM_LEVEL
-#if (CFG_LPM_LEVEL == 1)
-  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_STOP1_MODE);
-#endif // CFG_LPM_LEVEL
   /* USER CODE END DEVICECONFIG */
 }
 
@@ -477,6 +471,10 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           APP_BSP_LED_Off(LED_GREEN);
           APP_BSP_LED_On(LED_RED);
 #endif
+
+#if (CFG_LPM_LEVEL != 0)
+          UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
+#endif /* CFG_LPM_LEVEL */
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
 

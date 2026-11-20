@@ -362,7 +362,7 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
   
   while (1)
   {
-    APP_LED_TOGGLE(LD1);
+    APP_BSP_LED_Toggle(LD1);
     HAL_Delay(500U);
   }
 
@@ -491,25 +491,25 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
       case OT_DEVICE_ROLE_DETACHED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DETACHED */
-           APP_LED_TOGGLE(LD1);
+           APP_BSP_LED_Toggle(LD1);
           /* USER CODE END OT_DEVICE_ROLE_DETACHED */
           break;
 
       case OT_DEVICE_ROLE_CHILD:
           /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
-          APP_LED_TOGGLE(LD1);
+          APP_BSP_LED_Toggle(LD1);
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
 
       case OT_DEVICE_ROLE_ROUTER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
-          APP_LED_TOGGLE(LD1);
+          APP_BSP_LED_Toggle(LD1);
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
 
       case OT_DEVICE_ROLE_LEADER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
-          APP_LED_TOGGLE(LD1);
+          APP_BSP_LED_Toggle(LD1);
           /* USER CODE END OT_DEVICE_ROLE_LEADER */
           break;
 
@@ -683,7 +683,7 @@ static void APP_THREAD_CoapRequestHandler(void                 * pContext,
 
   if (APP_THREAD_CheckMsgValidity() == true)
   {
-    APP_LED_TOGGLE(LD1);
+    APP_BSP_LED_Toggle(LD1);
   }
   
   /* If Message is Confirmable, send response */

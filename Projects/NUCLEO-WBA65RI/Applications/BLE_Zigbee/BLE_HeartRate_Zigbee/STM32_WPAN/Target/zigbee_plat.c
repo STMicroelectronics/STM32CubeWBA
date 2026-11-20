@@ -199,6 +199,10 @@ void * ZIGBEE_PLAT_ZbHeapMalloc( uint32_t iSize )
     ptr = NULL;
   }
 
+  /* USER CODE BEGIN ZIGBEE_PLAT_ZbHeapMalloc */
+
+  /* USER CODE END ZIGBEE_PLAT_ZbHeapMalloc */
+
   return ptr;
 }
 
@@ -210,6 +214,10 @@ void ZIGBEE_PLAT_ZbHeapFree( void * ptr )
   if ( ptr != NULL )
   {
     AMM_Free( ptr );
+
+    /* USER CODE BEGIN ZIGBEE_PLAT_ZbHeapFree */
+
+    /* USER CODE END ZIGBEE_PLAT_ZbHeapFree */
   }
   else
   {
@@ -253,6 +261,10 @@ void * ZIGBEE_PLAT_HeapMalloc( uint32_t iSize )
     ptr = NULL;
   }
 
+  /* USER CODE BEGIN ZIGBEE_PLAT_HeapMalloc */
+
+  /* USER CODE END ZIGBEE_PLAT_HeapMalloc */
+
   return ptr;
 }
 
@@ -264,6 +276,10 @@ void ZIGBEE_PLAT_HeapFree( void * ptr )
   if ( ptr != NULL )
   {
     AMM_Free( ptr );
+
+    /* USER CODE BEGIN ZIGBEE_PLAT_HeapFree */
+
+    /* USER CODE END ZIGBEE_PLAT_HeapFree */
   }
   else
   {

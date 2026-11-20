@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -42,12 +42,12 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* USER CODE BEGIN PTD */
-
 typedef struct
 {
   uint8_t selection;
   uint8_t level;
 }PrivacyButton_t;
+
 /* USER CODE END PTD */
 
 typedef enum
@@ -55,6 +55,7 @@ typedef enum
   NOTIFICATION_INFO_RECEIVED_EVT,
   /* USER CODE BEGIN GATT_CLIENT_APP_Opcode_t */
   PRIVACY_NOTIFICATION_INFO_RECEIVED_EVT,
+
   /* USER CODE END GATT_CLIENT_APP_Opcode_t */
 }GATT_CLIENT_APP_Opcode_t;
 
@@ -76,6 +77,7 @@ typedef enum
   SVC_ID_GATT,
   /* USER CODE BEGIN svcId_t */
   SVC_ID_PRIVACY,
+
   /* USER CODE END svcId_t */
   SVC_ID_MAX
 }svcId_t;
@@ -121,7 +123,6 @@ typedef struct
   uint16_t ServiceChangedCharDescHdl;
   uint8_t ServiceChangedCharProperties;
   /* USER CODE BEGIN BleClientAppContext_t */
-
   /* SVC_ID_P2P characteristics handle */
   /* handles of the Tx characteristic - Write To Server */
   uint16_t PrivacyWriteToServerCharHdl;
@@ -131,6 +132,7 @@ typedef struct
   uint16_t PrivacyNotificationCharHdl;
   uint16_t PrivacyNotificationValueHdl;
   uint16_t PrivacyNotificationDescHdl;
+
   /* USER CODE END BleClientAppContext_t */
 
 }BleClientAppContext_t;
@@ -183,6 +185,7 @@ static uint8_t PrivacyLedSelection;
 static uint8_t PrivacyLedLevel;
 
 static PrivacyButton_t PrivacyButtonData;
+
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -206,6 +209,7 @@ static uint8_t gatt_cmd_resp_wait(void);
 static uint8_t gatt_procedure(uint8_t index, ProcGattId_t GattProcId);
 /* USER CODE BEGIN PFP */
 static void Privacy_client_write_char(void);
+
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -218,7 +222,7 @@ void GATT_CLIENT_APP_Init(void)
 {
   uint8_t index =0, svcIndex=0;
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_1 */
-  
+
   /* USER CODE END GATT_CLIENT_APP_Init_1 */
   for(index = 0; index < CFG_BLE_NUM_CLIENT_CONTEXTS; index++)
   {
@@ -246,6 +250,7 @@ void GATT_CLIENT_APP_Init(void)
     a_ClientContext[index].svcInfo[SVC_ID_GATT].uuid = GATT_SERVICE_UUID;
     /* USER CODE BEGIN GATT_CLIENT_APP_Init_4 */
     a_ClientContext[index].svcInfo[SVC_ID_PRIVACY].uuid  = ST_PRIVACY_SERVICE_UUID;
+
     /* USER CODE END GATT_CLIENT_APP_Init_4 */
   }
 
@@ -256,7 +261,6 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_task);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
-  /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
   UTIL_SEQ_RegTask(1U << CFG_TASK_WRITE_CHAR_ID, UTIL_SEQ_RFU, Privacy_client_write_char);
 
   PrivacyLedSelection = 0x00;
@@ -266,6 +270,7 @@ void GATT_CLIENT_APP_Init(void)
   PrivacyButtonData.level = 0x00;
 
   APP_DBG_MSG("-- CENTRAL INITIALIZED \n");
+
   /* USER CODE END GATT_CLIENT_APP_Init_2 */
   return;
 }
@@ -635,8 +640,9 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
             /* USER CODE BEGIN PROC_GATT_DISC_ALL_DESCS_0 */
             if (a_ClientContext[index].svcInfo[svcIdx].status == SVC_INFO_STATUS_DISCOVERED)
             {
-              UTIL_SEQ_SetTask(1<<CFG_TASK_CENTRAL_CONN_INTERV_UPDATE_ID, CFG_SEQ_PRIO_0);
+              UTIL_SEQ_SetTask(1 << CFG_TASK_CENTRAL_CONN_INTERV_UPDATE_ID, CFG_SEQ_PRIO_0);
             }
+
             /* USER CODE END PROC_GATT_DISC_ALL_DESCS_0 */
           }
         }
@@ -657,17 +663,10 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
       {
         uint16_t charPropVal = 0x0000;
 
-        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000)
+        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000
+            && ((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
         {
-          if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_NOTIFY) == CHAR_PROP_NOTIFY)
-          {
-            charPropVal = 0x0001;
-          }
-          else if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
-          {
-            charPropVal = 0x0002;
-          }
-
+          charPropVal = 0x0002;
           procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
@@ -702,6 +701,7 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
             status++;
           }
         }
+
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (status == 0)
@@ -823,9 +823,10 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           tx_pool_available = (aci_gatt_tx_pool_available_event_rp0 *)p_blecore_evt->data;
           UNUSED(tx_pool_available);
           /* USER CODE BEGIN ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
-          APP_DBG_MSG(">>== Connection Handle = %d \n",tx_pool_available->Connection_Handle );
-          APP_DBG_MSG(">>== Available buffers = %d \n",tx_pool_available->Available_Buffers );
-          APP_DBG_MSG("\n");
+          LOG_INFO_APP(">>== Connection Handle = %d\n",tx_pool_available->Connection_Handle);
+          LOG_INFO_APP(">>== Available buffers = %d\n",tx_pool_available->Available_Buffers);
+          LOG_INFO_APP("\n");
+
           /* USER CODE END ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
         }
         break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
@@ -842,14 +843,14 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           }
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           tBleStatus result;
-	  result = hci_le_set_data_length(a_ClientContext[0].connHdl,251,2120);
+          result = hci_le_set_data_length(a_ClientContext[0].connHdl, 251, 2120);
           if (result != BLE_STATUS_SUCCESS)
           {
-            APP_DBG_MSG("  Fail   : set data length command   : error code: 0x%x \n\r", result);
+            LOG_INFO_APP("  Fail   : set data length command   : error code: 0x%x\n", result);
           }
           else
           {
-            APP_DBG_MSG("  Success: set data length command  \n\r");
+            LOG_INFO_APP("  Success: set data length command\n");
           }
 
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
@@ -893,25 +894,21 @@ __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif
       PrivacyLedSelection = p_Notif->DataTransfered.p_Payload[0];
       UNUSED(PrivacyLedSelection);
       PrivacyLedLevel = p_Notif->DataTransfered.p_Payload[1];
-      
+
       if (PrivacyLedLevel == 0x00)
       {
-        #if (CFG_LED_SUPPORTED == 1)
         APP_BSP_LED_Off(LED_BLUE);
-		#endif
-        APP_DBG_MSG("  PRIVACY APPLICATION CLIENT : NOTIFICATION RECEIVED - LED OFF \n");
+        LOG_INFO_APP("  PRIVACY APPLICATION CLIENT : NOTIFICATION RECEIVED - LED OFF \n");
       }
       else
       {
-        #if (CFG_LED_SUPPORTED == 1)
         APP_BSP_LED_On(LED_BLUE);
-		#endif
-        APP_DBG_MSG("  PRIVACY APPLICATION CLIENT : NOTIFICATION RECEIVED - LED ON\n");
+        LOG_INFO_APP("  PRIVACY APPLICATION CLIENT : NOTIFICATION RECEIVED - LED ON\n");
       }
-    
-     
+
       break;
     }
+
     /* USER CODE END Client_Evt_Opcode */
 
     case NOTIFICATION_INFO_RECEIVED_EVT:
@@ -1197,6 +1194,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
+          a_ClientContext[index].ServiceChangedCharProperties = CharProperties;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
 /* USER CODE BEGIN gatt_parse_chars_1 */
@@ -1212,6 +1210,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
           a_ClientContext[index].PrivacyWriteToServerValueHdl = CharValueHdl;
           LOG_INFO_APP(", ST_PRIVACY_WRITE_CHAR_UUID charac found\n");
         }
+
 /* USER CODE END gatt_parse_chars_1 */
         else
         {
@@ -1312,15 +1311,16 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
         else if (a_ClientContext[index].PrivacyWriteToServerValueHdl == gattCharValueHdl)
         {
           a_ClientContext[index].PrivacyWriteToServerDescHdl = handle;
-          APP_DBG_MSG("PrivacyWrite found : Desc UUID=0x%04X handle=0x%04X-0x%04X-0x%04X\n",
-                      uuid, gattCharStartHdl, gattCharValueHdl, handle);
+          LOG_INFO_APP("PrivacyWrite found : Desc UUID=0x%04X handle=0x%04X-0x%04X-0x%04X\n",
+                        uuid, gattCharStartHdl, gattCharValueHdl, handle);
         }
         else if (a_ClientContext[index].PrivacyNotificationValueHdl == gattCharValueHdl)
         {
           a_ClientContext[index].PrivacyNotificationDescHdl = handle;
-          APP_DBG_MSG("PrivacyNotification found : Desc UUID=0x%04X handle=0x%04X-0x%04X-0x%04X\n",
-                      uuid, gattCharStartHdl, gattCharValueHdl, handle);
+          LOG_INFO_APP("PrivacyNotification found : Desc UUID=0x%04X handle=0x%04X-0x%04X-0x%04X\n",
+                        uuid, gattCharStartHdl, gattCharValueHdl, handle);
         }
+
 /* USER CODE END gatt_parse_descs_1 */
         else
         {
@@ -1349,12 +1349,13 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
 /* USER CODE BEGIN gatt_parse_descs_2 */
         else if (uuid == ST_PRIVACY_WRITE_CHAR_UUID)
         {
-          APP_DBG_MSG(", found ST_PRIVACY_WRITE_CHAR_UUID\n");
+          LOG_INFO_APP(", found ST_PRIVACY_WRITE_CHAR_UUID\n");
         }
         else if (uuid == ST_PRIVACY_NOTIFY_CHAR_UUID)
         {
-          APP_DBG_MSG(", found ST_PRIVACY_NOTIFY_CHAR_UUID\n");
+          LOG_INFO_APP(", found ST_PRIVACY_NOTIFY_CHAR_UUID\n");
         }
+
 /* USER CODE END gatt_parse_descs_2 */
         else
         {
@@ -1408,6 +1409,7 @@ static int gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
   {
     LOG_INFO_APP("ACI_GATT_NOTIFICATION_VSEVT_CODE, failed handle not found in connection table !\n");
   }
+
 /* USER CODE END gatt_parse_notification_1 */
 
   return ret;
@@ -1600,7 +1602,7 @@ tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint1
 static void Privacy_client_write_char(void)
 {
   /* Specific implementation for CFG_TASK_WRITE_CHAR_ID */
-  
+
   uint8_t index = 0;
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
 
@@ -1634,10 +1636,11 @@ static void Privacy_client_write_char(void)
                     a_ClientContext[index].connHdl,
                     a_ClientContext[index].PrivacyWriteToServerValueHdl);
       }
-      
+
     }
   }
 
   return;
 }
+
 /* USER CODE END LF */

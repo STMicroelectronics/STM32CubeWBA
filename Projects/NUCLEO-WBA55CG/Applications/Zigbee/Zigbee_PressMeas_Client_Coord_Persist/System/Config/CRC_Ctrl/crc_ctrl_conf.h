@@ -43,11 +43,6 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
 
-/**
- * @brief Handle used by the Simple NVM Arbiter to access the CRC functions
- */
-extern CRCCTRL_Handle_t SNVMA_Handle;
-
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions prototypes ---------------------------------------------*/
 

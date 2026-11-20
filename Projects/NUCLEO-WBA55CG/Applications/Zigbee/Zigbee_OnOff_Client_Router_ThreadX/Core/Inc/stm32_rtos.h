@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -75,6 +75,7 @@ extern "C" {
 
 #define RTOS_MAX_THREAD                         (20u)
 
+#define RTOS_STACK_SIZE_XLARGE                  ( 1024u * 4u )
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )

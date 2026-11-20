@@ -24,6 +24,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "stm32_seq.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -120,6 +121,7 @@ do {\
 extern uint8_t long_write_buffer[CFG_BLE_LONG_WRITE_DATA_BUF_SIZE];
 extern uint8_t extra_data_buffer[CFG_BLE_EXTRA_DATA_BUF_SIZE];
 uint8_t ReceivedData[CFG_BLE_EXTRA_DATA_BUF_SIZE];
+
 /* USER CODE END PF */
 
 /**
@@ -237,6 +239,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
           UTIL_SEQ_SetTask(1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
+
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
           break;/* ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
         }
@@ -281,6 +284,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
 
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           LOG_INFO_APP("  MTU exchanged size = %d\n",p_exchange_mtu->Server_RX_MTU );
+
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
@@ -288,8 +292,9 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
         /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */
         case ACI_GATT_INDICATION_VSEVT_CODE:
           {
+            tBleStatus status = BLE_STATUS_FAILED;
             aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
-            tBleStatus status = aci_gatt_confirm_indication(pr->Connection_Handle);
+            status = aci_gatt_confirm_indication(pr->Connection_Handle);
             if (status != BLE_STATUS_SUCCESS)
             {
               LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);

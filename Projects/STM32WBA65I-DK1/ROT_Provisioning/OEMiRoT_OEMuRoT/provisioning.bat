@@ -10,14 +10,8 @@ set cube_fw_path=%cube_fw_path:"=%
 setlocal EnableDelayedExpansion
 
 set "projectdir=%~dp0"
-
-:: Environment variable used to generate binary keys
-set oemurot_config_xml="%projectdir%\Config\OEMuRoT_Config.xml"
-set oemirot_config_xml="%projectdir%\Config\OEMiRoT_Config.xml"
-
-:: Path of files to be updated in OEMiROT_Boot
-set "flash_layout=%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\flash_layout.h"
-set boot_cfg_h="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\boot_hal_cfg.h"
+set oemirot_config_xml="%projectdir%Config\OEMiRoT_Config.xml"
+set oemurot_config_xml="%projectdir%Config\OEMuRoT_Config.xml"
 
 :: CubeProgammer path and input files
 set ob_flash_programming="ob_flash_programming.bat"
@@ -28,9 +22,40 @@ set oem2_password="./Keys/oem2_password.txt"
 :: Log files
 set ob_flash_log="ob_flash_programming.log"
 set provisioning_log="provisioning.log"
+set command_log="command.log"
 
 :: Remove all log files (*.log)
 if exist *.log del /f /q *.log
+
+:: Environment variable for path project
+set appli_dir=..\..\%oemirot_appli_path_project%
+set boot_dir=..\..\%oemirot_boot_path_project%
+
+:: Get config updated by OEMiROT_Boot
+set oemurot_img_config=%projectdir%/img_config.bat
+set oemirot_img_config=%projectdir%\..\OEMiROT\img_config.bat
+
+set s_data_xml="%projectdir%Images\OEMuROT_S_Data_Image.xml"
+set ns_data_xml="%projectdir%Images\OEMuROT_NS_Data_Image.xml"
+set s_data_init_xml="%projectdir%Images\OEMuROT_S_Data_Init_Image.xml"
+set ns_data_init_xml="%projectdir%Images\OEMuROT_NS_Data_Init_Image.xml"
+set fw_in_bin="Firmware binary input file"
+set fw_out_bin="Image output file"
+set ns_app_bin="..\%appli_dir%\Binary\oemirot_tz_ns_app.bin"
+set s_app_bin="..\%appli_dir%\Binary\oemirot_tz_s_app.bin"
+set s_code_image_file="%projectdir%Images\OEMuROT_S_Code_Image.xml"
+set ns_code_image_file="%projectdir%Images\OEMuROT_NS_Code_Image.xml"
+set oemurot_data_xml="%projectdir%Images\OEMiROT_Data_Image.xml"
+set oemurot_data_init_xml="%projectdir%Images\OEMiROT_Data_Init_Image.xml"
+set ns_app_enc_sign_bin="../%appli_dir%/Binary/%oemurot_appli_non_secure%"
+set s_app_enc_sign_bin="../%appli_dir%/Binary/%oemurot_appli_secure%"
+
+set boot_cfg_h="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\boot_hal_cfg.h"
+set flash_layout="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\flash_layout.h"
+
+:: Initial configuration
+set connect_no_reset=-c port=SWD speed=fast ap=1 mode=HotPlug
+set connect_reset=-c port=SWD mode=UR ap=1
 
 :: Check if Python is installed
 python3 --version >nul 2>&1
@@ -48,6 +73,7 @@ if %errorlevel% neq 0 (
 :: Environment variable for AppliCfg
 set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
 
+
 :: Display Boot path
 echo =====
 echo ===== Provisioning of OEMiROT_OEMuRoT boot path
@@ -57,20 +83,6 @@ echo %ESC%[91m===== Python and some python packages are required to execute this
 echo %ESC%[91m===== Utilities\PC_Software\ROT_AppliConfig\README.md for more details%ESC%[0m
 echo =====
 echo.
-
-:: Get config updated by OEMiROT_Boot
-set tmp_oemurot_file=%projectdir%\img_config.bat
-set tmp_oemirot_file=%projectdir%\..\OEMiROT\img_config.bat
-
-:: ====================================== Step to update oemurot value in img_config.bat =========================================
-:: update oemurot value in img_config.bat
-set "command=%python%%applicfg% definevalue --name=oemurot_enabled  --value=1 %tmp_oemirot_file% --decimal"
-%command%
-if !errorlevel! neq 0 goto :step_error
-
-:: Get config updated by OEMiROT_Boot
-set appli_dir=..\..\%oemirot_appli_path_project%
-set boot_dir=..\..\%oemirot_boot_path_project%
 
 :: Check if boot path exists
 if not exist %boot_dir% (
@@ -88,24 +100,7 @@ echo ===== please put the right path
 goto step_error
 )
 
-set fw_in_bin="Firmware binary input file"
-set fw_out_bin="Image output file"
-set ns_app_bin="..\%appli_dir%\Binary\oemirot_tz_ns_app.bin"
-set s_app_bin="..\%appli_dir%\Binary\oemirot_tz_s_app.bin"
-set s_code_image_file="%projectdir%Images\OEMuROT_S_Code_Image.xml"
-set ns_code_image_file="%projectdir%Images\OEMuROT_NS_Code_Image.xml"
-set s_data_xml="%projectdir%Images\OEMuROT_S_Data_Image.xml"
-set ns_data_xml="%projectdir%Images\OEMuROT_NS_Data_Image.xml"
-set s_data_init_xml="%projectdir%Images\OEMuROT_S_Data_Init_Image.xml"
-set ns_data_init_xml="%projectdir%Images\OEMuROT_NS_Data_Init_Image.xml"
-set ns_app_enc_sign_bin="../%appli_dir%/Binary/%oemurot_appli_non_secure%"
-set s_app_enc_sign_bin="../%appli_dir%/Binary/%oemurot_appli_secure%"
-
-:: Initial configuration
-set connect_no_reset=-c port=SWD speed=fast ap=1 mode=Hotplug
-set connect_reset=-c port=SWD mode=UR ap=1
-
-:: ========================================================= Configuration management========================================================
+:: ============================================================= RDP selection =============================================================
 echo Step 1 : Configuration management
 :: RDP selection
 :define_rdp_level
@@ -151,7 +146,31 @@ if [%1] neq [AUTO] pause >nul
 :: Step to update RDP Level in boot_hal_cfg
 :: Replace RDP level in boot_hal_cfg
 set "action=Update RDP Level in boot_hal_cfg"
-%python%%applicfg% modifyfilevalue --variable OEMIROT_OB_RDP_LEVEL_VALUE --value %rdp_str% %boot_cfg_h% --str
+set "command=%python%%applicfg% modifyfilevalue --variable OEMIROT_OB_RDP_LEVEL_VALUE --value %rdp_str% %boot_cfg_h% --str"
+%command%
+IF !errorlevel! NEQ 0 goto :step_error
+
+:: Set OEMuROT configuration
+set "action=Update oemurot_enabled in %oemirot_img_config%"
+set "command=%python%%applicfg% definevalue --name=oemurot_enabled  --value=1 --decimal %oemirot_img_config%"
+%command%
+IF !errorlevel! NEQ 0 goto :step_error
+
+set "action=UnComment OEMUROT_ENABLE in %flash_layout%"
+set "command=%python%%applicfg% setdefine -a uncomment -n OEMUROT_ENABLE -v 1 %flash_layout%"
+%command%
+IF !errorlevel! NEQ 0 goto :step_error
+
+:: Clean TFM_OEMiROT configuration
+set "action=Update tfm_enabled in %oemirot_img_config%"
+set "command=%python%%applicfg% definevalue --name=tfm_enabled  --value=0 --decimal %oemirot_img_config%"
+%command%
+IF !errorlevel! NEQ 0 goto :step_error
+
+set "action=Comment TFM_COMPATIBILITY in %flash_layout%"
+set "command=%python%%applicfg% setdefine -a comment -n TFM_COMPATIBILITY -v 1 %flash_layout%"
+%command%
+IF !errorlevel! NEQ 0 goto :step_error
 
 :: ================================================ Step to generate OEMiRoT_Keys.bin file =================================================
 echo    * OEMiROT keys configuration
@@ -177,10 +196,14 @@ if [%1] neq [AUTO] pause >nul
 %stm32tpccli% -obk %oemurot_config_xml% >> %provisioning_log% 2>>&1
 if !errorlevel! neq 0 goto :step_error
 
-:: ======================================== Step Configure OEMIROT_Boot project as OEMUROT =================================================
-set "command=%python%%applicfg% setdefine -a uncomment -n OEMUROT_ENABLE -v 1 %flash_layout%"
-%command%
-IF !errorlevel! NEQ 0 goto :step_error
+echo        Generate the OEMuRoT_Keys_enc_sign.bin and OEMuRoT_Keys_init_sign.bin files from OEMuRoT_Keys.bin
+echo.
+
+%stm32tpccli% -pb %oemurot_data_xml% >> %provisioning_log% 2>>&1
+IF !errorlevel! neq 0 goto :step_error
+
+%stm32tpccli% -pb %oemurot_data_init_xml% >> %provisioning_log% 2>>&1
+IF !errorlevel! neq 0 goto :step_error
 
 :: ========================================================= Images generation steps =======================================================
 echo Step 2 : Images generation
@@ -194,7 +217,8 @@ echo        Press any key to continue...
 echo.
 if [%1] neq [AUTO] pause >nul
 
-call %tmp_oemurot_file%
+call %oemurot_img_config%
+
 if  "%app_image_number%" == "2" goto :next
 if  "%app_full_secure%" == "1" (
 set s_app_enc_sign_bin="../%appli_dir%/Binary/%oemurot_appli_secure%"
@@ -273,7 +297,7 @@ if [%1] neq [AUTO] pause >nul
 set /p oem2_key=<"%oem2_password%"
 
 set "action=Programming oem2 password"
-%stm32programmercli% %connect_reset% -hardRst -lockRDP2 %oem2_key% >> %provisioning_log% 2>>&1
+call :log_and_run %stm32programmercli% %connect_reset% -hardRst -lockRDP2 %oem2_key% >> %provisioning_log% 2>>&1
 IF !errorlevel! NEQ 0 goto :step_error
 echo    * Provisioning of OEM2 key Done
 echo.
@@ -297,7 +321,7 @@ echo.
 set "action=Setting RDP level %RDP_level%"
 set current_log_file=%provisioning_log%
 echo    * %action%
-%stm32programmercli% %connect_no_reset% -ob RDP=%rdp_value% >> %provisioning_log% 2>>&1
+call :log_and_run %stm32programmercli% %connect_no_reset% -ob RDP=%rdp_value% >> %provisioning_log% 2>>&1
 echo.
 if "%rdp_value%" == "0xAA" ( goto final_execution )
 echo    * Please unplug USB cable and plug it again to recover SWD Connection.
@@ -324,3 +348,13 @@ echo ===== See %current_log_file% for details. Then try again.
 echo =====
 cmd /k
 exit 1
+
+:: Command to log (batch compatible)
+:log_and_run
+:: Usage: call :log_and_run <command>
+:: Log the command as a single string
+echo %* >> %command_log%
+echo %* >> %provisioning_log%
+:: Run the command and append output to provisioning.log
+call %* >> %provisioning_log%
+goto :eof

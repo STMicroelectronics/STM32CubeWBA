@@ -250,7 +250,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
 
         if (name_ptr != 0)
         {
-          UTIL_MEM_cpy_8(&name[0], name_ptr, name_len);
+          UTIL_MEM_cpy_8(&name[0], name_ptr, MIN(29,name_len));
           name[name_len] = '\0';
         }
         else if (bid[5] != '\0')
@@ -336,8 +336,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
       uint8_t index = 0;
       uint8_t i;
       uint8_t j;
-      uint8_t k;
-      uint8_t l;
+      uint8_t m;
       uint8_t is_different;
       uint8_t payload_len = 0;
       LOG_INFO_APP(">>== PBP_PBK_BASE_REPORT_EVT\n");
@@ -359,20 +358,22 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
       if (is_different == 0x00u)
       {
         payload_len += index;
-        for (i = 0; i < PBPAPP_Context.base_group.NumSubgroups && is_different == 0x00u; i++)
+        m = 0; /* index for BIS accross all subgroups */
+        for (i = 0; i < MIN(PBPAPP_Context.base_group.NumSubgroups, PBP_MAX_SUBGROUPS) && is_different == 0x00u; i++)
         {
           is_different = CAP_Broadcast_IsBASESubgroupDifferent(base_data->pBasePayload + payload_len,
                                                     base_data->BasePayloadLength - payload_len,
                                                     &(PBPAPP_Context.base_subgroups[i]),
                                                     &(index));
           payload_len += index;
-          for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes && is_different == 0x00u); j++)
+          for (j = 0; j < PBPAPP_Context.base_subgroups[i].NumBISes && is_different == 0x00u && m < PBP_MAX_BIS; j++)
           {
             is_different = CAP_Broadcast_IsBASEBISDifferent(base_data->pBasePayload + payload_len,
                                                           base_data->BasePayloadLength - payload_len,
-                                                          &(PBPAPP_Context.base_bis[j+i]),
+                                                          &(PBPAPP_Context.base_bis[m]),
                                                           &(index));
             payload_len += index;
+            m++;
           }
         }
       }
@@ -397,7 +398,8 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
         base_data->BasePayloadLength -= index;
 
         /* Parse Subgroups */
-        for (i = 0; i < PBPAPP_Context.base_group.NumSubgroups && status == BLE_STATUS_SUCCESS; i++)
+        m = 0; /* index for BIS accross all subgroups */
+        for (i = 0; i < MIN(PBPAPP_Context.base_group.NumSubgroups, PBP_MAX_SUBGROUPS) && status == BLE_STATUS_SUCCESS; i++)
         {
           status = CAP_Broadcast_ParseBASESubgroup(base_data->pBasePayload,
                                                     base_data->BasePayloadLength,
@@ -412,14 +414,14 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
                       PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength);
           if (PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength > 0u)
           {
-            for (k = 0;k<PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength;k++)
+            for (int k = 0; k < PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength; k++)
             {
               if (PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k] > 0u)
               {
                 LOG_INFO_APP("      Length: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k]);
                 LOG_INFO_APP("        Type: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k+1u]);
                 LOG_INFO_APP("        Value: 0x");
-                for (l = 0 ;l<(PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k]-1);l++)
+                for (int l = 0; l < (PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k]-1); l++)
                 {
                   LOG_INFO_APP("%02x",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k+2u+l]);
                 }
@@ -431,14 +433,14 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
           LOG_INFO_APP("    Metadata length : %d bytes\n",PBPAPP_Context.base_subgroups[i].MetadataLength);
           if (PBPAPP_Context.base_subgroups[i].MetadataLength > 0)
           {
-            for (k = 0;k<PBPAPP_Context.base_subgroups[i].MetadataLength;k++)
+            for (int k = 0; k < PBPAPP_Context.base_subgroups[i].MetadataLength; k++)
             {
               if (PBPAPP_Context.base_subgroups[i].pMetadata[k] > 0u)
               {
                 LOG_INFO_APP("      Length: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pMetadata[k]);
                 LOG_INFO_APP("        Type: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pMetadata[k+1u]);
                 LOG_INFO_APP("        Value: 0x");
-                for (l = 0 ;l<(PBPAPP_Context.base_subgroups[i].pMetadata[k]-1);l++)
+                for (int l = 0 ;l<(PBPAPP_Context.base_subgroups[i].pMetadata[k]-1);l++)
                 {
                   LOG_INFO_APP("%02x",PBPAPP_Context.base_subgroups[i].pMetadata[k+2u+l]);
                 }
@@ -449,42 +451,47 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
           }
           LOG_INFO_APP("    Num_BIS : %d\n",PBPAPP_Context.base_subgroups[i].NumBISes);
 
+          PBPAPP_Context.base_subgroups[i].pBIS = &(PBPAPP_Context.base_bis[m]);
+
           /* Parse BIS */
-          for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes) && (status == BLE_STATUS_SUCCESS); j++)
+          for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes) && (m < PBP_MAX_BIS) && (status == BLE_STATUS_SUCCESS); j++)
           {
             status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload,
                                                 base_data->BasePayloadLength,
-                                                &(PBPAPP_Context.base_bis[j+i]),
+                                                &(PBPAPP_Context.base_bis[m]),
                                                 &(index));
             base_data->pBasePayload += index;
             base_data->BasePayloadLength -= index;
 
-            LOG_INFO_APP("      BIS INDEX : 0x%02x\n",PBPAPP_Context.base_bis[j+i].BIS_Index);
-            LOG_INFO_APP("      Codec specific config length : %d bytes\n",PBPAPP_Context.base_bis[j+i].CodecSpecificConfLength);
-            if (PBPAPP_Context.base_bis[j+i].CodecSpecificConfLength > 0u)
+            LOG_INFO_APP("      BIS INDEX : 0x%02x\n",PBPAPP_Context.base_bis[m].BIS_Index);
+            LOG_INFO_APP("      Codec specific config length : %d bytes\n",PBPAPP_Context.base_bis[m].CodecSpecificConfLength);
+            if (PBPAPP_Context.base_bis[m].CodecSpecificConfLength > 0u)
             {
-              for (int k = 0;k<PBPAPP_Context.base_bis[j+i].CodecSpecificConfLength;k++)
+              for (int k = 0; k < PBPAPP_Context.base_bis[m].CodecSpecificConfLength; k++)
               {
-                if (PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k] > 0u)
+                if (PBPAPP_Context.base_bis[m].pCodecSpecificConf[k] > 0u)
                 {
-                  LOG_INFO_APP("        Length: 0x%02x\n",PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k]);
-                  LOG_INFO_APP("          Type: 0x%02x\n",PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k+1u]);
+                  LOG_INFO_APP("        Length: 0x%02x\n",PBPAPP_Context.base_bis[m].pCodecSpecificConf[k]);
+                  LOG_INFO_APP("          Type: 0x%02x\n",PBPAPP_Context.base_bis[m].pCodecSpecificConf[k+1u]);
                   LOG_INFO_APP("          Value: 0x");
-                  for (int l = 0 ;l<(PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k]-1);l++)
+                  for (int l = 0 ;l<(PBPAPP_Context.base_bis[m].pCodecSpecificConf[k]-1);l++)
                   {
-                    LOG_INFO_APP("%02x",PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k+2u+l]);
+                    LOG_INFO_APP("%02x",PBPAPP_Context.base_bis[m].pCodecSpecificConf[k+2u+l]);
                   }
                   LOG_INFO_APP("\n");
                 }
-                k+=PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k];
+                k+=PBPAPP_Context.base_bis[m].pCodecSpecificConf[k];
               }
             }
+            m++;
           }
         }
         LOG_INFO_APP("==>> End Start BAP BSNK Parse BASE Group INFO\n");
 
         if (PBPAPP_Context.BIGSyncState == PBPAPP_BIG_SYNC_STATE_IDLE)
         {
+          PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_BASE_READY;
+
           memcpy(&PBPAPP_Context.codec_specific_config_subgroup[0],
                   PBPAPP_Context.base_subgroups[0].pCodecSpecificConf,
                   PBPAPP_Context.base_subgroups[0].CodecSpecificConfLength);
@@ -501,7 +508,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
 
     case PBP_PBK_BIGINFO_REPORT_EVT:
     {
-      if (PBPAPP_Context.BIGSyncState == PBPAPP_BIG_SYNC_STATE_IDLE)
+      if (PBPAPP_Context.BIGSyncState == PBPAPP_BIG_SYNC_STATE_BASE_READY)
       {
         uint8_t status;
         BAP_BIGInfo_Report_Data_t *data = (BAP_BIGInfo_Report_Data_t *) pNotification->pInfo;
@@ -999,13 +1006,27 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
   }
   if (ret == BLE_STATUS_SUCCESS)
   {
+    /* Initialise BASE report variables */
+    PBPAPP_Context.base_group.pSubgroups = &(PBPAPP_Context.base_subgroups[0]);
 
-    /*Initialize the Audio Codec (LC3)*/
-    CODEC_LC3Config_t lc3_config = {0};
+    for (int i = 0; i < PBP_MAX_SUBGROUPS; i++)
+    {
+    PBPAPP_Context.base_subgroups[i].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_subgroup[i][0]);
+    PBPAPP_Context.base_subgroups[i].pMetadata = &(PBPAPP_Context.subgroup_metadata[i][0]);
+    }
+
+    for (int i = 0; i < PBP_MAX_BIS; i++)
+    {
+      PBPAPP_Context.base_bis[i].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_bis[i][0]);
+    }
+
     PBPAPP_Context.bap_role = PBPAPP_BAP_Config.Role;
 
     /*Register the Audio Task */
     UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
+
+    /*Initialize the Audio Codec (LC3)*/
+    CODEC_LC3Config_t lc3_config = {0};
 
     lc3_config.SessionSize = sizeof(aLC3SessionMemBuffer);
     lc3_config.ChannelSize = sizeof(aLC3ChannelMemBuffer);
@@ -1021,15 +1042,6 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
                       CODEC_PROC_MARGIN_US,
                       CODEC_RF_SETUP_US,
                       CODEC_MODE_DEFAULT);
-    PBPAPP_Context.base_group.pSubgroups = &(PBPAPP_Context.base_subgroups[0]);
-    PBPAPP_Context.base_subgroups[0].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_subgroup[0][0]);
-    PBPAPP_Context.base_subgroups[0].pMetadata = &(PBPAPP_Context.subgroup_metadata[0][0]);
-    PBPAPP_Context.base_subgroups[0].pBIS = &(PBPAPP_Context.base_bis[0]);
-    PBPAPP_Context.base_subgroups[1].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_subgroup[1][0]);
-    PBPAPP_Context.base_subgroups[1].pMetadata = &(PBPAPP_Context.subgroup_metadata[1][0]);
-    PBPAPP_Context.base_subgroups[1].pBIS = &(PBPAPP_Context.base_bis[1]);
-    PBPAPP_Context.base_bis[0].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_bis[0][0]);
-    PBPAPP_Context.base_bis[1].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_bis[1][0]);
   }
   return ret;
 }

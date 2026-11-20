@@ -35,6 +35,29 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for BLE_Sensor */
+#define BLE_SENSOR_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for BLE_Sensor (service declaration not counted in attributes)
+  *                + 2 for Motion_C
+  *                + 2 for Env_C
+  *                + 1 for Motion_C CCCD
+  *                + 1 for Env_C CCCD
+  *                = 6
+**/
+#define BLE_SENSOR_NUM_GATT_ATTRIBUTES (6)
+
+/**
+  * Size_Attributes = 0 for BLE_Sensor (service declaration not counted in attributes)
+  *                 + 19 for Motion_C declaration + 14 for Motion_C size
+  *                 + 19 for Env_C declaration + 6 for Env_C size
+  *                 + 2 for Motion_C CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for Env_C CCCD * CFG_BLE_NUM_LINK
+  *                 = 58 + 4 * CFG_BLE_NUM_LINK
+**/
+#define BLE_SENSOR_ATT_VALUE_ARRAY_SIZE  (58 + 4 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

@@ -58,4 +58,4 @@ __You can interact with BLE p2pServer_Ext application with another Nucleo board 
 - When link is established:
    - B1: sends a notification message to the connected BLE p2pClient_Ext device. The blue LED on the Client device should switch on/off.
 
-   - B3 is pushed on client device: 509 bytes are received on server side into 3 events (ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE), full data message needs to be reconstruted
+   - B3 is pushed on client device: 509 bytes are received on server side into 3 events (ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE), full data message needs to be reconstructed

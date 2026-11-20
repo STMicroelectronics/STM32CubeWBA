@@ -104,30 +104,6 @@
 #define HSI_VALUE     (16000000U) /*!< Value of the Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
 
-/* Note: Following vector table addresses must be defined in line with linker
-         configuration. */
-/*!< Uncomment the following line if you need to relocate the vector table
-     anywhere in Flash or Sram, else the vector table is kept at the automatic
-     remap of boot address selected */
-/* #define USER_VECT_TAB_ADDRESS */
-
-#if defined(USER_VECT_TAB_ADDRESS)
-/*!< Uncomment the following line if you need to relocate your vector Table
-     in Sram else user remap will be done in Flash. */
-/* #define VECT_TAB_SRAM */
-#if defined(VECT_TAB_SRAM)
-#define VECT_TAB_BASE_ADDRESS   SRAM1_BASE      /*!< Vector Table base address field.
-                                                     This value must be a multiple of 0x200. */
-#define VECT_TAB_OFFSET         0x00000000U     /*!< Vector Table base offset field.
-                                                     This value must be a multiple of 0x200. */
-#else
-#define VECT_TAB_BASE_ADDRESS   FLASH_BASE      /*!< Vector Table base address field.
-                                                     This value must be a multiple of 0x200. */
-#define VECT_TAB_OFFSET         0x00000000U     /*!< Vector Table base offset field.
-                                                     This value must be a multiple of 0x200. */
-#endif /* VECT_TAB_SRAM */
-#endif /* USER_VECT_TAB_ADDRESS */
-
 static void flash_init_cfg(void);
 
 /******************************************************************************/
@@ -167,7 +143,9 @@ static void flash_init_cfg(void);
 /** @addtogroup STM32WBAxx_System_Private_FunctionPrototypes
   * @{
   */
-void SecureSystemInit(void);
+typedef void(*pFunc)(void);
+extern const pFunc __VECTOR_TABLE[];
+
 /**
   * @}
   */
@@ -175,6 +153,7 @@ void SecureSystemInit(void);
 /** @addtogroup STM32WBAxx_System_Private_Functions
   * @{
   */
+void SecureSystemInit(void);
 
 /**
   * @brief  Setup the microcontroller system.
@@ -190,6 +169,8 @@ void SystemInit(void)
 #if defined(STM32WBAXX_SI_CUT1_0) || defined (VREFBUF)
   __IO uint32_t tmpreg;
 #endif
+  /* Configure the Vector Table location -------------------------------------*/
+  SCB->VTOR = (uint32_t)&__VECTOR_TABLE[0];
 
   /* FPU settings ------------------------------------------------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)

@@ -1,7 +1,7 @@
 /*
 ******************************************************************************
 **
-** @file        : STM32WBA55CGUX_FLASH.ld
+** @file        : LinkerScript.ld
 **
 ** @author      : Application team
 **
@@ -38,6 +38,7 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 
+/* Heap and Stack sizes */
 _Min_Heap_Size = 0x0; /* required amount of heap */
 _Min_Stack_Size = 0x1000; /* required amount of stack */
 
@@ -45,9 +46,8 @@ _Min_Stack_Size = 0x1000; /* required amount of stack */
 MEMORY
 {
   RAM      (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
-
-  NVM      (r)      : ORIGIN = 0x080FC000,   LENGTH = 16K
   FLASH    (rx)     : ORIGIN = 0x08000000,   LENGTH = (1024K - 16K)
+  NVM      (rx)     : ORIGIN = 0x080FC000,   LENGTH = 16K
 }
 
 /* Sections */
@@ -166,7 +166,7 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
-  /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
+  /* User_heap_stack section, used to check that there is enough "RAM" Ram type memory left */
   ._user_heap_stack :
   {
     . = ALIGN(8);
@@ -187,4 +187,3 @@ SECTIONS
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -45,10 +45,10 @@ extern "C" {
 #define TASK_PRIO_US_ALARM                      TASK_PRIO_ALARM
 #define TASK_PRIO_TASKLETS                      CFG_SEQ_PRIO_0
 #define TASK_PRIO_UART                          CFG_SEQ_PRIO_1
-#define TASK_PRIO_PKA                           CFG_SEQ_PRIO_1
 #define TASK_PRIO_RCP_SPINEL_RX                 CFG_SEQ_PRIO_1
 
 /* USER CODE BEGIN TASK_Priority_Define */
+#define CFG_TASK_PRIO_BUTTON_Bx                 CFG_SEQ_PRIO_1
 
 /* USER CODE END TASK_Priority_Define */
 

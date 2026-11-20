@@ -21,6 +21,7 @@ set oem2_password="./Keys/oem2_password.txt"
 :: Log files
 set ob_flash_log="ob_flash_programming.log"
 set provisioning_log="provisioning.log"
+set command_log="command.log"
 
 :: Remove all log files (*.log)
 if exist *.log del /f /q *.log
@@ -183,6 +184,14 @@ echo        Press any key to continue...
 echo.
 if [%1] neq [AUTO] pause >nul
 
+if  "%otfdec_enabled%" == "1" (
+echo    * Loader firmware image generation
+echo        Open the OEMiROT_Loader project with preferred toolchain and rebuild all files.
+echo        Press any key to continue...
+echo.
+if [%1] neq [AUTO] pause >nul
+)
+
 echo    * Data secure generation (if Data secure image is enabled)
 echo        Select OEMiRoT_S_Data_Image.xml(Default path is \ROT_Provisioning\OEMiROT\Images\OEMiROT_S_Data_Image.xml)
 echo        Generate the data_enc_sign.bin image
@@ -225,7 +234,7 @@ if [%1] neq [AUTO] pause >nul
 set /p oem2_key=<"%oem2_password%"
 
 set "action=Programming oem2 password"
-%stm32programmercli% %connect_reset% -hardRst -lockRDP2 %oem2_key% >> %provisioning_log% 2>>&1
+call :log_and_run %stm32programmercli% %connect_reset% -hardRst -lockRDP2 %oem2_key% >> %provisioning_log% 2>>&1
 IF !errorlevel! NEQ 0 goto :step_error
 echo    * Provisioning of OEM2 key Done
 echo.
@@ -249,7 +258,7 @@ echo.
 set "action=Setting RDP level %RDP_level%"
 set current_log_file=%provisioning_log%
 echo    * %action%
-%stm32programmercli% %connect_no_reset% -ob RDP=%rdp_value% >> %provisioning_log% 2>>&1
+call :log_and_run %stm32programmercli% %connect_no_reset% -ob RDP=%rdp_value% >> %provisioning_log% 2>>&1
 echo.
 if "%rdp_value%" == "0xAA" ( goto final_execution )
 echo    * Please unplug USB cable and plug it again to recover SWD Connection.
@@ -276,3 +285,13 @@ echo ===== See %current_log_file% for details. Then try again.
 echo =====
 cmd /k
 exit 1
+
+:: Command to log (batch compatible)
+:log_and_run
+:: Usage: call :log_and_run <command>
+:: Log the command as a single string
+echo %* >> %command_log%
+echo %* >> %provisioning_log%
+:: Run the command and append output to provisioning.log
+call %* >> %provisioning_log%
+goto :eof

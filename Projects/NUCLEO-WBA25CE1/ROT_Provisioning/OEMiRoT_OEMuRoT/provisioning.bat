@@ -28,6 +28,7 @@ set oem2_password="./Keys/oem2_password.txt"
 :: Log files
 set ob_flash_log="ob_flash_programming.log"
 set provisioning_log="provisioning.log"
+set command_log="command.log"
 
 :: Remove all log files (*.log)
 if exist *.log del /f /q *.log
@@ -96,8 +97,10 @@ set s_code_image_file="%projectdir%Images\OEMuROT_S_Code_Image.xml"
 set ns_code_image_file="%projectdir%Images\OEMuROT_NS_Code_Image.xml"
 set s_data_xml="%projectdir%Images\OEMuROT_S_Data_Image.xml"
 set ns_data_xml="%projectdir%Images\OEMuROT_NS_Data_Image.xml"
+set oemurot_data_xml="%projectdir%Images\OEMiROT_Data_Image.xml"
 set s_data_init_xml="%projectdir%Images\OEMuROT_S_Data_Init_Image.xml"
 set ns_data_init_xml="%projectdir%Images\OEMuROT_NS_Data_Init_Image.xml"
+set oemurot_data_init_xml="%projectdir%Images\OEMiROT_Data_Init_Image.xml"
 set ns_app_enc_sign_bin="../%appli_dir%/Binary/%oemurot_appli_non_secure%"
 set s_app_enc_sign_bin="../%appli_dir%/Binary/%oemurot_appli_secure%"
 
@@ -176,6 +179,15 @@ echo.
 if [%1] neq [AUTO] pause >nul
 %stm32tpccli% -obk %oemurot_config_xml% >> %provisioning_log% 2>>&1
 if !errorlevel! neq 0 goto :step_error
+
+echo        Generate the OEMuRoT_Keys_enc_sign.bin and OEMuRoT_Keys_init_sign.bin files from OEMuRoT_Keys.bin
+echo.
+
+%stm32tpccli% -pb %oemurot_data_xml% >> %provisioning_log% 2>>&1
+IF !errorlevel! neq 0 goto :step_error
+
+%stm32tpccli% -pb %oemurot_data_init_xml% >> %provisioning_log% 2>>&1
+IF !errorlevel! neq 0 goto :step_error
 
 :: ======================================== Step Configure OEMIROT_Boot project as OEMUROT =================================================
 set "command=%python%%applicfg% setdefine -a uncomment -n OEMUROT_ENABLE -v 1 %flash_layout%"
@@ -272,7 +284,7 @@ if [%1] neq [AUTO] pause >nul
 set /p oem2_key=<"%oem2_password%"
 
 set "action=Programming oem2 password"
-%stm32programmercli% %connect_reset% -hardRst -lockRDP2 %oem2_key% >> %provisioning_log% 2>>&1
+call :log_and_run %stm32programmercli% %connect_reset% -hardRst -lockRDP2 %oem2_key% >> %provisioning_log% 2>>&1
 IF !errorlevel! NEQ 0 goto :step_error
 echo    * Provisioning of OEM2 key Done
 echo.
@@ -296,7 +308,7 @@ echo.
 set "action=Setting RDP level %RDP_level%"
 set current_log_file=%provisioning_log%
 echo    * %action%
-%stm32programmercli% %connect_no_reset% -ob RDP=%rdp_value% >> %provisioning_log% 2>>&1
+call :log_and_run %stm32programmercli% %connect_no_reset% -ob RDP=%rdp_value% >> %provisioning_log% 2>>&1
 echo.
 if "%rdp_value%" == "0xAA" ( goto final_execution )
 echo    * Please unplug USB cable and plug it again to recover SWD Connection.
@@ -323,3 +335,13 @@ echo ===== See %current_log_file% for details. Then try again.
 echo =====
 cmd /k
 exit 1
+
+:: Command to log (batch compatible)
+:log_and_run
+:: Usage: call :log_and_run <command>
+:: Log the command as a single string
+echo %* >> %command_log%
+echo %* >> %provisioning_log%
+:: Run the command and append output to provisioning.log
+call %* >> %provisioning_log%
+goto :eof

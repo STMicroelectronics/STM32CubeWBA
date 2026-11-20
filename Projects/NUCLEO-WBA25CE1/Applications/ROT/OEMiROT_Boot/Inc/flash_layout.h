@@ -73,7 +73,7 @@
 #undef MCUBOOT_S_DATA_IMAGE_NUMBER
 #undef MCUBOOT_NS_DATA_IMAGE_NUMBER
 #define MCUBOOT_APP_IMAGE_NUMBER 1      /* App image contains OEMuRoT code. */
-#define MCUBOOT_S_DATA_IMAGE_NUMBER 0   /* No S Data image for OEMuRoT. */
+#define MCUBOOT_S_DATA_IMAGE_NUMBER 1   /* S Data contains OEMuRoT keys. */
 #define MCUBOOT_NS_DATA_IMAGE_NUMBER 0  /* No NS Data image for OEMuRoT. */
 #endif /* OEMIROT_FIRST_BOOT_STAGE */
 
@@ -151,16 +151,20 @@
  * we also need some of them for OEMuROT provisioning.
  */
 #define OEMIROT_AREA_0_SIZE             (0x14000)       /* 80K */
+#define OEMIROT_AREA_4_SIZE             (0x2000)        /* 2K */
 #if defined(OEMIROT_FIRST_BOOT_STAGE_FOR_SWAP)
 #define OEMIROT_AREA_1_SIZE             (0x30000)       /* 192K */
 #else
 #define OEMIROT_AREA_1_SIZE             (0x38000)       /* 224K */
 #endif
 #define OEMIROT_AREA_2_SIZE             (0x14000)       /* 80K */
+#define OEMIROT_AREA_6_SIZE             (0x2000)        /* 2K */
 #if defined (OEMIROT_EXTERNAL_FLASH_ENABLE)
 #define OEMIROT_AREA_2_OFFSET           (0x3EA000)      /* slot 2 address when external flash size: 4 MBytes */
+#define OEMIROT_AREA_6_OFFSET           (0x3FE000)      /* slot 6 address when external flash size: 4 MBytes */
 #else
 #define OEMIROT_AREA_2_OFFSET           (0x6A000)       /* slot 2 address when flash size: 512 KBytes */
+#define OEMIROT_AREA_6_OFFSET           (0x7E000)       /* slot 6 address when flash size: 512 KBytes */
 #endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 
 #define OEMIROT_AREA_BEGIN_OFFSET       (0x18000)
@@ -366,11 +370,11 @@
 #define OEMUROT_PERSO_SIZE              (0x2000)
 #define FLASH_AREA_BEGIN_OFFSET         (FLASH_AREA_BL2_HDP_END_OFFSET + \
                                          OEMUROT_HASH_REF_SIZE + OEMUROT_BL2_NVCNT_SIZE + \
-                                         OEMUROT_SCRATCH_SIZE + OEMUROT_PERSO_SIZE)
+                                         OEMUROT_SCRATCH_SIZE)
 #else /* OEMIROT_FIRST_BOOT_STAGE */
-#define OEMIROT_AREA_0_OFFSET           (OEMIROT_AREA_BEGIN_OFFSET + (FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE +\
-                                                                      FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE +\
+#define OEMIROT_AREA_4_OFFSET           (OEMIROT_AREA_BEGIN_OFFSET + (FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE +\
                                                                       FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE) + FLASH_AREA_SCRATCH_SIZE)
+#define OEMIROT_AREA_0_OFFSET           (OEMIROT_AREA_4_OFFSET + OEMIROT_AREA_4_SIZE)
 #if defined (OEMUROT_ENABLE)
 #define FLASH_AREA_BEGIN_OFFSET         (FLASH_AREA_BL2_HDP_END_OFFSET + BL2_TRAILER_SIZE)
 #else /* OEMUROT_ENABLE */
@@ -523,11 +527,18 @@
 /* Secure data image secondary slot */
 #if defined(FLASH_AREA_6_ID)
 #if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+#if defined(OEMIROT_FIRST_BOOT_STAGE)
+#define FLASH_DEV_NAME_6                 EXT_FLASH_DEV_NAME
+#define FLASH_DEVICE_ID_6               (EXT_FLASH_DEVICE_ID)
+#define FLASH_AREA_6_OFFSET             (OEMIROT_AREA_6_OFFSET)
+#define FLASH_AREA_6_SIZE               (OEMIROT_AREA_6_SIZE)
+#else
 #define FLASH_DEV_NAME_6                 EXT_FLASH_DEV_NAME
 #define FLASH_DEVICE_ID_6               (EXT_FLASH_DEVICE_ID)
 #define FLASH_AREA_6_OFFSET             (EXT_FLASH_BASE_OFFSET + FLASH_AREA_2_SIZE + \
                                          FLASH_AREA_3_SIZE)
 #define FLASH_AREA_6_SIZE               (FLASH_S_DATA_PARTITION_SIZE)
+#endif /* OEMIROT_FIRST_BOOT_STAGE */
 #else /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 #define FLASH_DEV_NAME_6                 FLASH_DEV_NAME
 #define FLASH_DEVICE_ID_6               (FLASH_AREAS_DEVICE_ID)

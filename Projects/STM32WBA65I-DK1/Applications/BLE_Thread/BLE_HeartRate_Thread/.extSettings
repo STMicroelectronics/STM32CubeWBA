@@ -4,5 +4,6 @@ HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1;..\..\..\..\..\..\Drive
 
 [Groups]
 Doc=../README.md;
+Application/User/STM32_WPAN/App=../STM32_WPAN/App/app_tests_commands.c;
 Drivers/BSP=../../../../../../Drivers/BSP/STM32WBA65I-DK1/stm32wba65i_discovery.c;
 Common/WPAN/Interface=../../../../../Common/WPAN/Interfaces/app_bsp.c;

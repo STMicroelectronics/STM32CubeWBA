@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -42,6 +42,11 @@
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
+#include "psa_plat_crypto.h"
+#include "mbedtls_threading_alt.h"
+#include "psa/crypto.h"
+#include "entropy_hardware_alt.h"
+#include "storage_interface.h"
 #include "timer_if.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "tx_low_power.h"
@@ -63,8 +68,10 @@
 
 /* Private defines -----------------------------------------------------------*/
 #define RTOS_FLAG_ALL_MASK ((1U << CFG_RTOS_FLAG_LAST) - 1)
+#define HAL_TICK_RTC (1)
 /* USER CODE BEGIN PD */
-
+#undef HAL_TICK_RTC
+#define HAL_TICK_RTC (0)
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -86,6 +93,11 @@ static uint32_t timeDiffRemaining = 0;
 static uint32_t lowPowerTimeDiffRemaining = 0;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
+#if (HAL_TICK_RTC == 1)
+/* Timer for HAL tick declaration */
+static UTIL_TIMER_Object_t TimerHalTick_Id;
+#endif /* HAL_TICK_RTC */
+
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration
  * .verbose_level can be any value of the Log_Verbose_Level_t enum.
@@ -104,6 +116,7 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 
 /* ThreadX objects declaration */
 static TX_THREAD      WpanTaskHandle;
+
 #if (CFG_LPM_LEVEL != 0)
 static TX_THREAD      IdleTaskHandle;
 #endif
@@ -121,6 +134,10 @@ CHAR          * pStack;
 
 TX_EVENT_FLAGS_GROUP WpanEventFlag;
 
+#if (CFG_LPM_LEVEL != 0)
+static UTIL_TIMER_Object_t TimerOSwakeup_Id;
+#endif /* CFG_LPM_LEVEL != 0 */
+
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
@@ -130,20 +147,22 @@ static void System_Init( void );
 static void SystemPower_Config( void );
 static void Config_HSE(void);
 static void APPE_RNG_Init( void );
+static void APPE_PSA_CRYPTO_Init(void);
+void PKA_NOTIF_Trigger(void);
 
 static void Wpan_Task_Entry(ULONG lArgument);
 #if (CFG_LPM_LEVEL != 0)
+void ThreadXLowPowerUserEnter(void);
+void ThreadXLowPowerUserExit(void);
 static void IDLE_Task_Entry(ULONG lArgument);
-#endif
-#ifndef TX_LOW_POWER_USER_ENTER
-void ThreadXLowPowerUserEnter( void );
-#endif
-#ifndef TX_LOW_POWER_USER_EXIT
-void ThreadXLowPowerUserExit( void );
-#endif
-#if ( CFG_LPM_LEVEL != 0)
+static void TX_SetupTimer(void);
+static void TimerOSwakeupCB(void *arg);
 static uint32_t getCurrentTime(void);
 #endif /* CFG_LPM_LEVEL */
+#if (HAL_TICK_RTC == 1)
+static void TimerHalTickCb(void *arg);
+static void HAL_StartTick(void);
+#endif /* HAL_TICK_RTC */
 
 /* USER CODE BEGIN PFP */
 
@@ -152,6 +171,7 @@ static uint32_t getCurrentTime(void);
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
+
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -185,13 +205,7 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_RNG_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
-  /* Initialize Peripherals */
-#if (CFG_LED_SUPPORTED == 1)
-  APP_BSP_LedInit();
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_BUTTON_SUPPORTED == 1)
-  APP_BSP_ButtonInit();
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+  APP_BSP_Init();
 
   /* USER CODE END APPE_Init_1 */
 
@@ -223,8 +237,18 @@ uint32_t MX_APPE_Init(void *p_param)
   }
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
+  /* Initialize PSA crypto subsystem */
+  APPE_PSA_CRYPTO_Init();
+
   /* Thread Initialisation */
   APP_THREAD_Init();
+
+  MBEDTLS_THREADING_ALT_EarlyDeInit();
+  MBEDTLS_THREADING_ALT_Init();
+
+#if (CFG_LPM_LEVEL != 0)
+  TX_SetupTimer();
+#endif /* (CFG_LPM_LEVEL != 0) */
 
   /* USER CODE BEGIN APPE_Init_2 */
 
@@ -276,8 +300,13 @@ static void System_Init( void )
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
+#if (HAL_TICK_RTC == 1)
+  HAL_StartTick();
+#endif /* HAL_TICK_RTC */
   /* USER CODE BEGIN System_Init_1 */
-
+#if ((CFG_RT_DEBUG_DTB == 1) && (CFG_BUTTON_SUPPORTED == 1))
+#warning "DTB signal tx_on may be overwritten by buttons IOs configuration on PA1 pin"
+#endif
   /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -323,15 +352,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -474,7 +496,8 @@ static void APPE_RNG_Init(void)
 {
 
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Start();
+  /* Fill RNG pool */
+  HW_RNG_Process();
 
 }
 
@@ -498,13 +521,43 @@ static void IDLE_Task_Entry(ULONG lArgument)
     tx_thread_relinquish();
   }
 }
+#endif /* ( CFG_LPM_LEVEL != 0) */
 
+#if ( CFG_LPM_LEVEL != 0)
 /* return current time since boot, continue to count in standby low power mode */
 static uint32_t getCurrentTime(void)
 {
   return TIMER_IF_GetTimerValue();
 }
-#endif
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
+#if (HAL_TICK_RTC == 1)
+/* Timer HAL tick callback */
+static void TimerHalTickCb(void *arg)
+{
+  HAL_IncTick();
+  /* USER CODE BEGIN TimerHalTickCb */
+
+  /* USER CODE END TimerHalTickCb */
+  return;
+}
+#endif /* HAL_TICK_RTC */
+
+static void APPE_PSA_CRYPTO_Init(void)
+{
+  /* USER CODE BEGIN PsaCryptoInit */
+
+  /* USER CODE END PsaCryptoInit */
+
+  MBEDTLS_THREADING_ALT_EarlyInit();
+
+  storage_init();
+
+  if (psa_crypto_init() != PSA_SUCCESS)
+  {
+    Error_Handler();
+  }
+}
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
@@ -537,7 +590,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -549,7 +601,6 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -588,14 +639,15 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 
   /* Threat USART Command to simulate button press for instance. */
   (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
-  
+
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
+#if ( CFG_LPM_LEVEL != 0 )
 /**
- * @brief   Enter in LowPower Mode after a ThreadX call
+ * @brief   Enter in LowPower Mode in ThreadX IDLE
  */
 void ThreadXLowPowerUserEnter( void )
 {
@@ -603,8 +655,29 @@ void ThreadXLowPowerUserEnter( void )
 
   /* USER CODE END ThreadXLowPowerUserEnter_1 */
 
-#if ( CFG_LPM_LEVEL != 0 )
   uint32_t lowPowerTimeBeforeSleep, lowPowerTimeAfterSleep, lowPowerTimeDiff, timeDiff;
+  ULONG tx_low_power_next_expiration;
+  ULONG tx_timers_active;
+
+  /* Get the next expiration time of the TX timers */
+  tx_timers_active =  tx_timer_get_next(&tx_low_power_next_expiration);
+  /* Check if there are active TX timers */
+  if (tx_timers_active == TX_TRUE)
+  {
+    /* If there is a not null expiration time, start the a RTC based wakeup timer */
+    if(tx_low_power_next_expiration != 0)
+    {
+      UTIL_TIMER_StartWithPeriod(&TimerOSwakeup_Id, (tx_low_power_next_expiration) * TX_TIMER_TICKS_PERIOD_MS );
+    }
+    else
+    {
+      /* TX timers active but no expiration time, return to avoid entering low power */
+      return;
+    }
+  }
+
+  /* Read the current time from RTC, maintainned in standby */
+  lowPowerTimeBeforeSleep = getCurrentTime();
 
   LL_PWR_ClearFlag_STOP();
 
@@ -623,29 +696,16 @@ void ThreadXLowPowerUserEnter( void )
 
   LL_RCC_ClearResetFlags();
 
-#if defined(STM32WBAXX_SI_CUT1_0)
-  /* Wait until HSE is ready */
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_WaitUntilReady();
-  /* SCM HSE END */
-#else
-  while (LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
-
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
-
-  scm_hserdy_isr();
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* STM32WBAXX_SI_CUT1_0 */
-
   HAL_SuspendTick();
 
   /* Read the current time from RTC, maintainned in standby */
   lowPowerTimeBeforeSleep = getCurrentTime();
 
-  /* Disable SysTick Interrupt */
+  /* Suspend the HAL tick */
+  HAL_SuspendTick();
+  /* Disable SysTick Interrupt used for OS tick */
   SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+
   UTIL_LPM_Enter(0);
 
   lowPowerTimeAfterSleep = getCurrentTime();
@@ -657,10 +717,9 @@ void ThreadXLowPowerUserEnter( void )
   /* Report precision loss */
   timeDiff += timeDiffRemaining;
   /* Store precision loss during OS tick time conversion to report it for next OS tick. */
-  timeDiffRemaining = timeDiff % (1000/TX_TIMER_TICKS_PER_SECOND);
+  timeDiffRemaining = timeDiff % TX_TIMER_TICKS_PERIOD_MS;
 
-  tx_time_increment(timeDiff / (1000/TX_TIMER_TICKS_PER_SECOND));
-#endif /* CFG_LPM_LEVEL */
+  tx_time_increment(timeDiff / TX_TIMER_TICKS_PERIOD_MS);
 
   /* USER CODE BEGIN ThreadXLowPowerUserEnter_2 */
 
@@ -669,7 +728,7 @@ void ThreadXLowPowerUserEnter( void )
 }
 
 /**
- * @brief   Exit of LowPower Mode after a ThreadX call
+ * @brief   Exit of LowPower Mode in ThreadX IDLE
  */
 void ThreadXLowPowerUserExit( void )
 {
@@ -677,21 +736,48 @@ void ThreadXLowPowerUserExit( void )
 
   /* USER CODE END ThreadXLowPowerUserExit_1 */
 
-#if ( CFG_LPM_LEVEL != 0 )
+  /* Enable SysTick Interrupt used for OS tick */
+  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+  /* Resume the HAL tick */
   HAL_ResumeTick();
 
-  /* Enable SysTick Interrupt */
-  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
-  LL_AHB5_GRP1_EnableClock( LL_AHB5_GRP1_PERIPH_RADIO );
-  (void)ll_sys_dp_slp_exit();
+  if( system_startup_done != FALSE )
+  {
+    LL_AHB5_GRP1_EnableClock( LL_AHB5_GRP1_PERIPH_RADIO );
+    (void)ll_sys_dp_slp_exit();
+  }
+
   UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
-#endif /* CFG_LPM_LEVEL */
 
   /* USER CODE BEGIN ThreadXLowPowerUserExit_2 */
 
   /* USER CODE END ThreadXLowPowerUserExit_2 */
   return;
 }
+
+/**
+ * @brief   Setup a timer to wakeup system from low power
+ */
+static void TX_SetupTimer(void)
+{
+  /* create a SW timer based on RTC to wakeup system from low power */
+  UTIL_TIMER_Create(&TimerOSwakeup_Id,
+                    0,
+                    UTIL_TIMER_ONESHOT,
+                    &TimerOSwakeupCB, 0);
+
+  return;
+}
+
+/* Timer OS tick callback */
+static void TimerOSwakeupCB(void *arg)
+{
+  /* USER CODE BEGIN TimerOSwakeupCB */
+
+  /* USER CODE END TimerOSwakeupCB */
+  return;
+}
+#endif /* CFG_LPM_LEVEL */
 
 /**
  * @brief Function Assert AEABI in case of not described on 'libc' libraries.
@@ -701,6 +787,41 @@ __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int i
   Error_Handler();
   __builtin_unreachable();
 }
+
+#if (HAL_TICK_RTC == 1)
+/* Overwrite HAL Tick functions to not use sysTick but RTC */
+HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
+{
+  if(TimerHalTick_Id.Callback == NULL)
+  {
+    /* Create an RTC based timer to trigger HAL tick increment */
+    UTIL_TIMER_Create(&TimerHalTick_Id,
+                      HAL_TICK_FREQ_100HZ,
+                      UTIL_TIMER_PERIODIC,
+                      &TimerHalTickCb, 0);
+    uwTickFreq = HAL_TICK_FREQ_100HZ;
+  }
+  return HAL_OK;
+}
+
+void HAL_SuspendTick(void)
+{
+  UTIL_TIMER_Stop(&TimerHalTick_Id);
+  return;
+}
+
+void HAL_ResumeTick(void)
+{
+  UTIL_TIMER_Start(&TimerHalTick_Id);
+  return;
+}
+
+static void HAL_StartTick(void)
+{
+  UTIL_TIMER_StartWithPeriod(&TimerHalTick_Id, HAL_TICK_FREQ_100HZ);
+  return;
+}
+#endif /* HAL_TICK_RTC */
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 

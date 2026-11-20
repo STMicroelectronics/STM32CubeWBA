@@ -1,5 +1,5 @@
 [ProjectFiles]
-HeaderPath=..\..\..\..\..\..\Drivers\BSP\B-WBA5M-WPAN;
+HeaderPath=../../../../../../Drivers/BSP/B-WBA5M-WPAN;
 
 [Groups]
 Doc=../README.md;

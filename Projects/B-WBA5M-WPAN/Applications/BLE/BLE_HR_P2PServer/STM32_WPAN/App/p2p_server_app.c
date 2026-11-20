@@ -134,7 +134,6 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
         LOG_INFO_APP("-- P2P APPLICATION SERVER : LED1 OFF\n");
         P2P_SERVER_APP_Context.LedControl.Led1 = 0x00; /* LED1 OFF */
       }
-
       /* USER CODE END Service3Char1_WRITE_NO_RESP_EVT */
       break;
 
@@ -142,7 +141,7 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service3Char2_NOTIFY_ENABLED_EVT */
       P2P_SERVER_APP_Context.Switch_c_Notification_Status = Switch_c_NOTIFICATION_ON;
       LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION ENABLED\n");
-      LOG_INFO_APP(" \n\r");
+      LOG_INFO_APP(" \n");
       /* USER CODE END Service3Char2_NOTIFY_ENABLED_EVT */
       break;
 
@@ -150,7 +149,7 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service3Char2_NOTIFY_DISABLED_EVT */
       P2P_SERVER_APP_Context.Switch_c_Notification_Status = Switch_c_NOTIFICATION_OFF;
       LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION DISABLED\n");
-      LOG_INFO_APP(" \n\r");
+      LOG_INFO_APP(" \n");
       /* USER CODE END Service3Char2_NOTIFY_DISABLED_EVT */
       break;
 
@@ -216,7 +215,6 @@ void P2P_SERVER_APP_Init(void)
    */
   P2P_SERVER_APP_Context.Switch_c_Notification_Status= Switch_c_NOTIFICATION_OFF;
   P2P_SERVER_APP_LED_BUTTON_context_Init();
-
   /* USER CODE END Service3_APP_Init */
   return;
 }

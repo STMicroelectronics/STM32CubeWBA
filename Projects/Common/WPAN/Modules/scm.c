@@ -21,9 +21,15 @@
 #include "RTDebug.h"
 #include "utilities_common.h"
 
-#if (CFG_SCM_SUPPORTED == 1)
+#if defined(STM32WBA2xxx)
+    /* Supported series: SCM_HSE_STABILIZATION_SUPPORTED not needed. */
+#elif defined(STM32WBA5xxx) || defined(STM32WBA6xxx)
+#define SCM_HSE_STABILIZATION_SUPPORTED
+#else
+#error "Unsupported STM32WBA series in scm.c"
+#endif
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
 #define SCM_TIMER_COUNT    3200U /* SCM timer loading value */
 #if (CFG_SCM_USE_TIM17 == 1)
 #define SCM_TIMER_INSTANCE TIM17
@@ -34,7 +40,9 @@
 #define SCM_TIMER_IRQ      TIM16_IRQn
 #define SCM_TIMER_CLOCK    LL_APB2_GRP1_PERIPH_TIM16
 #endif /* CFG_SCM_USE_TIM17 == 1 */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
+
+#define ARRAY_SIZE(a)      (sizeof(a) / sizeof((a)[0]))
 
 __weak void SCM_HSI_CLK_ON(void)
 {
@@ -47,8 +55,7 @@ __weak void SCM_HSI_CLK_OFF(void)
 
 }
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-/* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
 __weak void SCM_HSI_SwithSystemClock_Entry(void)
 {
 
@@ -58,8 +65,7 @@ __weak void SCM_HSI_SwithSystemClock_Exit(void)
 {
 
 }
-/* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
 
 /* Private typedef -----------------------------------------------------------*/
 #define PLL_INPUTRANGE0_FREQMAX         8000000u  /* 8 MHz is maximum frequency for VCO input range 0 */
@@ -68,11 +74,9 @@ __weak void SCM_HSI_SwithSystemClock_Exit(void)
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-/* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
 static uint8_t SW_HSERDY = 0;
-/* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
 
 RAMCFG_HandleTypeDef sram1_ns =
 {
@@ -102,14 +106,12 @@ static void SwitchHse16toHse32(void);
 static void SwitchHse32toHse16(void);
 static void SwitchPlltoHse32(void);
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-/* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
 /**
  * @brief Initialize the timer for HSE stabilization
  */
 static void SCM_HSE_TimerInit(void);
-/* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
 
 /* Private functions ---------------------------------------------------------*/
 OPTIMIZED static scm_clockconfig_t scm_getmaxfreq(void)
@@ -117,7 +119,7 @@ OPTIMIZED static scm_clockconfig_t scm_getmaxfreq(void)
   uint8_t idx = 0;
   scm_clockconfig_t max = NO_CLOCK_CONFIG;
 
-  for(idx = 0; idx < sizeof(scm_system_clock_requests) ; idx++)
+  for(idx = 0; idx < ARRAY_SIZE(scm_system_clock_requests) ; idx++)
   {
     if(scm_system_clock_requests[idx] > max)
     {
@@ -215,27 +217,23 @@ OPTIMIZED static void SwitchHsePre(scm_hse_hsepre_t hse_pre)
   /* Start HSI */
   SCM_HSI_CLK_ON();
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-  /* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
   /* Entry hook for HSI switch */
   SCM_HSI_SwithSystemClock_Entry();
-  /* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
   
   /* Set HSI as SYSCLK */
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
   while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI);
 
   /* Enable HSEON */
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-  /* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
   LL_RCC_HSE_Enable();
   SCM_HSE_WaitUntilReady();
   
   /* Exit hook for HSI switch */
   SCM_HSI_SwithSystemClock_Exit();
-  /* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
   
   /* Set/Clear HSEPRE */
   if(hse_pre == HSEPRE_DISABLE)
@@ -387,8 +385,7 @@ static void ConfigHwPll(scm_pll_config_t *p_hw_config)
   scm_system_clock_config.pll.are_pll_params_initialized = 1;
 }
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-/* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
 static void SCM_HSE_TimerInit(void)
 {
   LL_TIM_InitTypeDef TIM_InitStruct = {0};
@@ -417,8 +414,7 @@ static void SCM_HSE_TimerInit(void)
   TIM_InitStruct.RepetitionCounter = 0;
   LL_TIM_Init(SCM_TIMER_INSTANCE, &TIM_InitStruct);
 }
-/* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
 
 /* Public functions ----------------------------------------------------------*/
 
@@ -447,15 +443,13 @@ OPTIMIZED void scm_init()
   /* Enable RAMCFG clock */
   __HAL_RCC_RAMCFG_CLK_ENABLE();
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-  /* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
   /* Init SW HSE Flag */
   SCM_HSE_Set_SW_HSERDY();
   
   /* Init timer for HSE stabilization measurement */
   SCM_HSE_TimerInit ();
-  /* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
   
   /* Reading system core clock configuration from registers */
   switch(LL_RCC_GetSysClkSource())
@@ -602,11 +596,9 @@ OPTIMIZED void scm_setup(void)
       {
         __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))       
-        /* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
         SCM_HSE_StartStabilizationTimer();
-        /* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */      
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */      
       }
       
       /* Enable RCC IRQs */
@@ -729,7 +721,7 @@ OPTIMIZED void scm_setsystemclock(scm_user_id_t user_id, scm_clockconfig_t syscl
 
         scm_setwaitstates(HSE32); /* There is no limitation when in Range1 */
 
-        LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1);
+        LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1); /* divided by 1 */
 
         SCM_HSI_CLK_OFF();
 
@@ -975,33 +967,30 @@ OPTIMIZED void scm_standbyexit(void)
     ConfigHwPll(&scm_system_clock_config.pll);
   }
   
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))  
-  /* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
   /* Init timer for HSE stabilization measurement */
   SCM_HSE_TimerInit ();
-  /* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
   scm_setup();
 }
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-/* SCM HSE BEGIN */
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
 scm_radio_state_t isRadioActive(void)
 {
   return RadioState;
 }
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
 
 OPTIMIZED uint8_t SCM_HSE_Get_SW_HSERDY(void)
 {
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) 
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED 
   return SW_HSERDY;
 #else
   return LL_RCC_HSE_IsReady();
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */  
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */  
 }
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
 OPTIMIZED void SCM_HSE_Set_SW_HSERDY(void)
 {
   UTILS_ENTER_CRITICAL_SECTION();
@@ -1015,11 +1004,11 @@ OPTIMIZED void SCM_HSE_Clear_SW_HSERDY(void)
   SW_HSERDY = 0;
   UTILS_EXIT_CRITICAL_SECTION();
 }
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
 
 OPTIMIZED void SCM_HSE_WaitUntilReady(void)
 {  
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
   /* As we go for polling, disable interrupt */  
   NVIC_DisableIRQ(SCM_TIMER_IRQ);
   
@@ -1057,10 +1046,10 @@ OPTIMIZED void SCM_HSE_WaitUntilReady(void)
   NVIC_EnableIRQ(SCM_TIMER_IRQ);
 #else
   while (LL_RCC_HSE_IsReady() == 0);
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */ 
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */ 
 }
 
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
+#ifdef SCM_HSE_STABILIZATION_SUPPORTED
 OPTIMIZED void SCM_HSE_StartStabilizationTimer(void)
 {  
   if((SCM_HSE_Get_SW_HSERDY() == 0) && (LL_TIM_IsEnabledCounter(SCM_TIMER_INSTANCE) == 0))
@@ -1109,11 +1098,10 @@ OPTIMIZED void SCM_HSE_SW_HSERDY_isr(void)
   
   scm_hserdy_isr();
 }
-/* SCM HSE END */
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+#endif /* SCM_HSE_STABILIZATION_SUPPORTED */
 
-#if (defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-/* empty stubs for HSE workaround */
+#ifndef SCM_HSE_STABILIZATION_SUPPORTED
+/* empty stubs for HSE stabilization */
 void SCM_HSE_StartStabilizationTimer(void)
 {
 }
@@ -1134,9 +1122,4 @@ scm_radio_state_t isRadioActive(void)
 {
   return SCM_RADIO_ACTIVE;
 }
-#endif /* (defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
-
-#else /* CFG_SCM_SUPPORTED */
-__weak void scm_pllrdy_isr(void){/* Intentionally enpty */}
-__weak void scm_hserdy_isr(void){/* Intentionally enpty */}
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* !SCM_HSE_STABILIZATION_SUPPORTED */

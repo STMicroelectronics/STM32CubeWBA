@@ -92,12 +92,6 @@ int main(void)
   BSP_LED_Init(LD1);
   BSP_LED_Init(LD2);
 
-  /* Configure the system Power Supply */
-  if(HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -136,7 +130,7 @@ void SystemClock_Config(void)
 
   /** Supply configuration update enable
   */
-  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+  HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY);
 
   /** Configure the main internal regulator output voltage
   */
@@ -271,8 +265,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

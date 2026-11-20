@@ -235,7 +235,6 @@
           <state>BLE_LL</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA65xx</state>
-          <state>PHY_40nm_3_40_a</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -400,9 +399,7 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
@@ -1240,18 +1237,6 @@
         <group>
           <name>Target</name>
           <file>
-            <name>$PROJ_DIR$\..\STM32_WPAN\Target\ble_audio_plat.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\STM32_WPAN\Target\ble_audio_if.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\STM32_WPAN\Target\ble_codec.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\STM32_WPAN\Target\codec_if.c</name>
-          </file>
-          <file>
             <name>$PROJ_DIR$\..\STM32_WPAN\Target\bleplat.c</name>
           </file>
           <file>
@@ -1407,6 +1392,9 @@
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
@@ -1462,9 +1450,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.c</name>
@@ -1555,6 +1540,24 @@
       <name>WPAN</name>
       <group>
         <name>Interface</name>
+        <group>
+          <name>Audio</name>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/Audio/ble_audio_if.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/Audio/ble_audio_plat.c</name>
+          </file>
+        </group>
+        <group>
+          <name>Codec</name>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/Codec/codec_if.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/Codec/ble_codec.c</name>
+          </file>
+        </group>
         <file>
           <name>$PROJ_DIR$/../../../../../Common/WPAN/Interfaces/app_bsp.c</name>
         </file>
@@ -1633,45 +1636,6 @@
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</name>
           </file>
         </group>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_driver.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_manager.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/rf_timing_synchro.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/simple_nvm_arbiter.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</name>
-        </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/app_sys.c</name>
         </file>

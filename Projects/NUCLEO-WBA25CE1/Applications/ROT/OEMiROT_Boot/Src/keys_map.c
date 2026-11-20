@@ -38,12 +38,17 @@
 #define EC256_PUB_KEY_LENGTH      (91U)
 #endif
 
-#define SECURE_AUTHENTICATION_PUBKEY_ADDRESS      (const uint8_t *)((uint32_t)(PERSO_START))
-#if defined (OEMIROT_FIRST_BOOT_STAGE)
-#define ENCRYPTION_PRIVKEY_ADDRESS                (const uint8_t *)((uint32_t)(PERSO_START | 0x5C))
+#if defined(OEMUROT_ENABLE)
+#define SECURE_AUTHENTICATION_PUBKEY_ADDRESS      ((const uint8_t *)((uint32_t)(PERSO_START | 0x20)))
+#define NONSECURE_AUTHENTICATION_PUBKEY_ADDRESS   ((const uint8_t *)((uint32_t)(PERSO_START | 0x7C)))
+#define ENCRYPTION_PRIVKEY_ADDRESS                ((const uint8_t *)((uint32_t)(PERSO_START | 0xD8)))
+#elif defined(OEMIROT_FIRST_BOOT_STAGE)
+#define SECURE_AUTHENTICATION_PUBKEY_ADDRESS      ((const uint8_t *)((uint32_t)(PERSO_START)))
+#define ENCRYPTION_PRIVKEY_ADDRESS                ((const uint8_t *)((uint32_t)(PERSO_START | 0x5C)))
 #else
-#define NONSECURE_AUTHENTICATION_PUBKEY_ADDRESS   (const uint8_t *)((uint32_t)(PERSO_START | 0x5C))
-#define ENCRYPTION_PRIVKEY_ADDRESS                (const uint8_t *)((uint32_t)(PERSO_START | 0xB8))
+#define SECURE_AUTHENTICATION_PUBKEY_ADDRESS      ((const uint8_t *)((uint32_t)(PERSO_START)))
+#define NONSECURE_AUTHENTICATION_PUBKEY_ADDRESS   ((const uint8_t *)((uint32_t)(PERSO_START | 0x5C)))
+#define ENCRYPTION_PRIVKEY_ADDRESS                ((const uint8_t *)((uint32_t)(PERSO_START | 0xB8)))
 #endif
 
 #if defined(MCUBOOT_SIGN_EC256)

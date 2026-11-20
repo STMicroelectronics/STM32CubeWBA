@@ -44,7 +44,6 @@ fi
 if [ "$OS" == "Windows_NT" ]; then
     stm32programmercli="C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeProgrammer\bin\STM32_Programmer_CLI.exe"
     stm32tpccli="C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeProgrammer\bin\STM32TrustedPackageCreator_CLI.exe"
-    imgtool="C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeProgrammer\bin\Utilities\Windows\imgtool.exe"
     external_loader="C:\Program Files\STMicroelectronics\STM32Cube\bin\ExternalLoader\MX25R3235F_STM32WBA25E-NUCLEO_v0.1.0.stldr"
 else
     stm32programmercli_path=~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/
@@ -52,7 +51,6 @@ else
     PATH=$stm32programmercli_path/Utilities/Linux/:$PATH
     stm32programmercli="STM32_Programmer_CLI"
     stm32tpccli="STM32TrustedPackageCreator_CLI"
-    imgtool="imgtool"
     external_loader="external_loader"
 fi
 

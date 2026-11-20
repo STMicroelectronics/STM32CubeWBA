@@ -58,6 +58,7 @@ typedef struct{
 #define HRS_CNTL_POINT_RESET_ENERGY_EXPENDED      (0x01)
 #define HRS_CNTL_POINT_VALUE_IS_SUPPORTED         (0x00)
 #define HRS_CNTL_POINT_VALUE_NOT_SUPPORTED        (0x80)
+
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -149,7 +150,7 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* USER CODE BEGIN Service1_Char_1 */
-                LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HRS_NOTIFICATION_DISABLED\n");
+            LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HRS_NOTIFICATION_DISABLED\n");
 
             /* USER CODE END Service1_Char_1 */
             switch(p_attribute_modified->Attr_Data[0])
@@ -275,7 +276,6 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
-
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */

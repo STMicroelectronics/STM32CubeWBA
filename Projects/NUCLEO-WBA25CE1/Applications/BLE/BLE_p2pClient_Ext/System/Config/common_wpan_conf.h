@@ -63,18 +63,16 @@ typedef enum {
 #if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
 
 /* Level of the IRQ of SCM TIMER*/
-#define CFG_SCM_TIMER_IRQ_PRIO 1
 #endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
 
 /* USER CODE BEGIN SCM_3 */
 
 /* USER CODE END SCM_3 */
+
 /******************************************************************************
  * Timer Interface configuration
  ******************************************************************************/
-#define RTC_N_PREDIV_S      (10U)
-#define RTC_PREDIV_S        ( ( 1U << RTC_N_PREDIV_S ) - 1U )
-#define RTC_PREDIV_A        ( ( 1U << ( 15U - RTC_N_PREDIV_S ) ) - 1U )
+#define TIMER_IF_RTCCLK_FREQ_HZ      (LSE_VALUE)
 
 /* USER CODE BEGIN TIF_RTC */
 

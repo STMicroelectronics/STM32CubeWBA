@@ -238,7 +238,6 @@
           <state>USE_FULL_LL_DRIVER</state>
           <state>BLE_LL</state>
           <state>BLE_STACK_BASIC_FEATURES</state>
-          <state>PHY_40nm_3_40_a</state>
           <state>OPENTHREAD_MTD</state>
           <state>OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-mtd-config.h&gt;</state>
           <state>OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-mtd-config.h&gt;</state>
@@ -246,6 +245,8 @@
           <state>MAC_LAYER</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA65xx</state>
+          <state>MBEDTLS_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;</state>
+          <state>MBEDTLS_PSA_CRYPTO_CONFIG_FILE=&lt;psa-crypto-config.h&gt;</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -378,17 +379,22 @@
           <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
           <state>$PROJ_DIR$/../STM32_WPAN/App</state>
           <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBA65I-DK1</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/Components/Common</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/Components/ssd1315</state>
+          <state>$PROJ_DIR$/../../../../../../Utilities/LCD</state>
+          <state>$PROJ_DIR$/STM32_WPAN/App</state>
+          <state>$PROJ_DIR$/../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules</state>
-          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash</state>
+          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
-          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/misc</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
@@ -399,9 +405,14 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/mbedtls/inc</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/mbedtls/config</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/library</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/psa</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
@@ -412,21 +423,11 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include/</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM33_NTZ/non_secure/</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/RTOS2/Include/</state>
-          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBA65I-DK1</state>
-          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/Components/Common</state>
-          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/Components/ssd1315</state>
-          <state>$PROJ_DIR$/../../../../../../Utilities/LCD</state>
-          <state>$PROJ_DIR$/STM32_WPAN/App</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/psa</state>
-          <state>$PROJ_DIR$/../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -719,7 +720,6 @@
           <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules</state>
-          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
@@ -729,15 +729,20 @@
           <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN</state>
-          <state>$PROJ_DIR$/../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_basic_15_4</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/mbedtls/inc</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/mbedtls/config</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/library</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/psa</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
@@ -748,10 +753,6 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/psa</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include/</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM33_NTZ/non_secure/</state>
@@ -799,7 +800,7 @@
         </option>
         <option>
           <name>OCOutputOverride</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>OOCOutputFile</name>
@@ -1376,6 +1377,9 @@
         <group>
           <name>App</name>
           <file>
+            <name>$PROJ_DIR$/../STM32_WPAN/App/app_coap.c</name>
+          </file>
+          <file>
             <name>$PROJ_DIR$/../STM32_WPAN/App/app_ble.c</name>
           </file>
           <file>
@@ -1470,9 +1474,6 @@
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_otp.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</name>
-        </file>
-        <file>
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\timer_if.c</name>
         </file>
         <file>
@@ -1482,16 +1483,22 @@
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_aes.c</name>
-        </file>
-        <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_otp.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_rng.c</name>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/timer_if.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/timer_if.c</name>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/mbedtls_threading_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/psa_plat_crypto.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/storage_interface.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/rng_alt.c</name>
         </file>
       </group>
       <group>
@@ -1506,15 +1513,6 @@
           </file>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</name>
           </file>
         </group>
         <group>
@@ -1635,9 +1633,6 @@
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/otp.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</name>
-        </file>
-        <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/scm.c</name>
         </file>
         <file>
@@ -1696,118 +1691,118 @@
     <group>
       <name>STM32WBAxx_HAL_Driver</name>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_pka.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_pka.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rcc.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rcc_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cortex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_flash.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_flash_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gpio.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_exti.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hash.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hash.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_icache.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_gpio.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_icache.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pka.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_ramcfg.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pka.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rng.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_ramcfg.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rng_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_tim.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_dma.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_adc.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</name>
       </file>
     </group>
   </group>
@@ -1847,11 +1842,44 @@
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.c</name>
         </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM33_NTZ/non_secure/portasm.s</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/croutine.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/list.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/queue.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/tasks.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/timers.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM33_NTZ/non_secure/port.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c</name>
+        </file>
       </group>
       <group>
         <name>CMSIS/RTOS2/Heap/Heap_4</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c</name>
         </file>
       </group>
     </group>
@@ -1859,9 +1887,6 @@
       <name>STM32_WPAN</name>
       <group>
         <name>Thread</name>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_mbedtls_mtd_light_no_tcp_lib.a</name>
-        </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_mtd_light_no_tcp_matter_lib.a</name>
         </file>
@@ -1901,8 +1926,35 @@
         <file>
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/openthread_lib/stm32wba_ot_mtd_lib.a</name>
         </file>
+      </group>
+      <group>
+        <name>mbedtls_alt</name>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/openthread_lib/stm32wba_mbedtls_mtd_lib.a</name>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/aes_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/ccm_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/ecdh_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/ecdsa_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/ecp_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/ecp_curves_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/gcm_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/psa_its_alt.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/mbedtls_alt/interfaces/patterns/sha256_alt.c</name>
         </file>
       </group>
       <group>
@@ -1920,7 +1972,16 @@
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
         </file>
         <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/802_15_4_ll_porting/thread_radio_port.c</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Basic_802_15_4_V3_0.a</name>
+        </file>
+      </group>
+      <group>
+        <name>mbedtls</name>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/mbedtls/lib/stm32wba_mbedtls_psa_lib.a</name>
         </file>
       </group>
       <group>
@@ -1940,25 +2001,25 @@
       <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\LCD\stm32_lcd.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\trace\adv_trace\stm32_adv_trace.c</name>
+      <name>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace/stm32_adv_trace.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\misc\stm32_mem.c</name>
+      <name>$PROJ_DIR$/../../../../../../Utilities/misc/stm32_mem.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\misc\stm32_systime.c</name>
+      <name>$PROJ_DIR$/../../../../../../Utilities/misc/stm32_systime.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\misc\stm32_tiny_sscanf.c</name>
+      <name>$PROJ_DIR$/../../../../../../Utilities/misc/stm32_tiny_sscanf.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\misc\stm32_tiny_vsnprintf.c</name>
+      <name>$PROJ_DIR$/../../../../../../Utilities/misc/stm32_tiny_vsnprintf.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\tim_serv\stm32_timer.c</name>
+      <name>$PROJ_DIR$/../../../../../../Utilities/tim_serv/stm32_timer.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\lpm\tiny_lpm\stm32_lpm.c</name>
+      <name>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm/stm32_lpm.c</name>
     </file>
   </group>
 </project>

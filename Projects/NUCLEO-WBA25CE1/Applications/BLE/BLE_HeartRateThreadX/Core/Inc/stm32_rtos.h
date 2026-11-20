@@ -57,6 +57,7 @@ extern "C" {
 
 #define RTOS_MAX_THREAD                         (20u)
 
+#define RTOS_STACK_SIZE_XLARGE                  ( 1024u * 4u )
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
@@ -73,7 +74,7 @@ extern "C" {
 /* USER CODE END TASK_Size_Define */
 
 /* USER CODE BEGIN EC */
-  
+
 /* ADV_TASK related defines */
 #define ADV_TASK_STACK_SIZE                     (RTOS_STACK_SIZE_NORMAL)
 #define ADV_TASK_PRIO                           (15u)
@@ -85,6 +86,7 @@ extern "C" {
 #define MEAS_REQ_TASK_STACK_SIZE                (RTOS_STACK_SIZE_NORMAL)
 #define MEAS_REQ_TASK_PRIO                      (15u)
 #define MEAS_REQ_TASK_PREEM_TRES                (0u)
+
 /* USER CODE END EC */
 
 /* Exported macros -----------------------------------------------------------*/

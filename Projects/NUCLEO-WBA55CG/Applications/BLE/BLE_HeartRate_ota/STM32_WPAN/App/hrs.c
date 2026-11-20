@@ -276,7 +276,6 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
-
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */

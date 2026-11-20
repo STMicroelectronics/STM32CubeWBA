@@ -19,6 +19,13 @@ Two leds LD1 and LD2 are used to monitor the system state as following:
  - LD2 ON: configuration failed (system will go to an infinite loop)
  - LD1 toggling: system in Run mode with SMPS
 
+## <b>Measured Current Consumption</b>
+
+| Mode            | Current Consumption |
+|-----------------|---------------------|
+| Run Mode (SMPS) | 3.0 mA              |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
 
 #### <b>Notes</b>
 

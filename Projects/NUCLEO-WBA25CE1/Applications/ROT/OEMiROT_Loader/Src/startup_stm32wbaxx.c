@@ -230,6 +230,9 @@ extern const pFunc __VECTOR_TABLE[];
  *----------------------------------------------------------------------------*/
 void Reset_Handler(void)
 {
+  /* Configure the Vector Table location -------------------------------------*/
+  SCB->VTOR = (uint32_t) &__VECTOR_TABLE[0];
+
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
   __IO uint32_t tmp;
 
@@ -243,7 +246,7 @@ void Reset_Handler(void)
 #endif
   __set_MSPLIM((uint32_t)(&__STACK_LIMIT));
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-  SCB->VTOR = (uint32_t) &__VECTOR_TABLE[0];
+
   /* Lock Secure Vector Table */
   /* Enable SYSCFG interface clock */
   RCC->APB7ENR |= RCC_APB7ENR_SYSCFGEN;

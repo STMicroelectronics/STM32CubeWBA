@@ -103,6 +103,7 @@ typedef __PACKED_STRUCT
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 
 /* USER CODE END EM */
 

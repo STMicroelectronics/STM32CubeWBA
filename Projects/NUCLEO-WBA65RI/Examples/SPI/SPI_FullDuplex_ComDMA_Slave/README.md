@@ -81,8 +81,8 @@ Connectivity, SPI, Full-duplex, Interrupt, Transmission, Reception, Master, Slav
 
   - This example runs on STM32WBA65RIVx devices.
 
-  - This example has been tested with NUCLEO-WBA65RI board and can be
-    easily tailored to any other supported device and development board.
+  - This example has been tested with NUCLEO-WBA65RI board revision MB2130-WBA65RI-A01
+    and can be easily tailored to any other supported device and development board.
 
   - NUCLEO-WBA65RI Set-up
     - Connect Master board PA.07 (Pin 22 on CN4 connector) to Slave Board PA.07 (Pin 22 on CN4 connector)

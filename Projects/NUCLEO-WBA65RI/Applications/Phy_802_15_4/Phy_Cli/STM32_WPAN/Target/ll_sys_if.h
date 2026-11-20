@@ -22,7 +22,12 @@
 #ifndef LL_SYS_IF_H
 #define LL_SYS_IF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
+#include "stdint.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,10 +54,12 @@
 
 /* USER CODE END EM */
 
-/* Exported functions ---------------------------------------------*/
-/* USER CODE BEGIN EF */
+/* Exported functions prototypes ---------------------------------------------*/
 
-/* USER CODE END EF */
+void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time);
+/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
 
 #ifdef __cplusplus
 }

@@ -7,6 +7,9 @@ The Health Thermometer Sensor is a GATT server:
 
 How to use the Health Thermometer profile as specified by the BLE SIG and described in the<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Health_Thermometer#Health_Thermometer_Profile"> ST wiki.</a>
 
+This application uses LSI2 as low speed clock, LSE external crystal is not used.
+LSI2 Autocalibration is used in this application.
+
 ### __Keywords__
 
 Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.

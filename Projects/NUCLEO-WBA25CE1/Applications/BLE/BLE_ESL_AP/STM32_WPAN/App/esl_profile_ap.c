@@ -140,12 +140,12 @@ static void ESL_AP_SaveKey_Task(void)
     LOG_INFO_APP("Retrieved saved AP sync key\n");
     
     LOG_DEBUG_APP("Session key: ");
-    for(int i = sizeof(ESL_AP_Context.ap_sync_key_material.session_key); i >= 0; i--)
+    for(int i = sizeof(ESL_AP_Context.ap_sync_key_material.session_key) - 1; i >= 0; i--)
     {
       LOG_DEBUG_APP("%02X ", ESL_AP_Context.ap_sync_key_material.session_key[i]);
     }
     LOG_DEBUG_APP("\nIV: ");
-    for(int i = sizeof(ESL_AP_Context.ap_sync_key_material.iv); i >= 0; i--)
+    for(int i = sizeof(ESL_AP_Context.ap_sync_key_material.iv) - 1; i >= 0; i--)
     {
       LOG_DEBUG_APP("%02X ", ESL_AP_Context.ap_sync_key_material.iv[i]);
     }
@@ -169,12 +169,12 @@ static void ESL_AP_SaveKey_Task(void)
     LOG_INFO_APP("Generated new AP Sync key\n");
     
     LOG_DEBUG_APP("Session key: ");
-    for(int i = sizeof(ESL_AP_Context.ap_sync_key_material.session_key); i >= 0; i--)
+    for(int i = sizeof(ESL_AP_Context.ap_sync_key_material.session_key) - 1; i >= 0; i--)
     {
       LOG_DEBUG_APP("%02X ", ESL_AP_Context.ap_sync_key_material.session_key[i]);
     }
     LOG_DEBUG_APP("\nIV: ");
-    for(int i = sizeof(ESL_AP_Context.ap_sync_key_material.iv); i >= 0; i--)
+    for(int i = sizeof(ESL_AP_Context.ap_sync_key_material.iv) - 1; i >= 0; i--)
     {
       LOG_DEBUG_APP("%02X ", ESL_AP_Context.ap_sync_key_material.iv[i]);
     }

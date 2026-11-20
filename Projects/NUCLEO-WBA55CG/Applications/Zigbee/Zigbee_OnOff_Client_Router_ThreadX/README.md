@@ -14,7 +14,7 @@ Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, OnOff cluster
 For this application it is requested to have at least:
 
 * One STM32WBA55xx Nucleo board loaded with application **Zigbee_OnOff_Server_Coord**
-* One or more STM32WBA55xx board loaded with application **Zigbee_OnOff_Client_Router**
+* One or more STM32WBA55xx board loaded with application **Zigbee_OnOff_Client_Router_ThreadX**
 </br>
 
 <pre>

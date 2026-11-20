@@ -35,6 +35,27 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for DIS */
+#define DIS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for DIS (service declaration not counted in attributes)
+  *                + 2 for MANS
+  *                + 2 for MONS
+  *                + 2 for SYID
+  *                = 6
+**/
+#define DIS_NUM_GATT_ATTRIBUTES (6)
+
+/**
+  * Size_Attributes = 0 for DIS (service declaration not counted in attributes)
+  *                 + 5 for MANS declaration + 32 for MANS size
+  *                 + 5 for MONS declaration + 32 for MONS size
+  *                 + 5 for SYID declaration + 8 for SYID size
+  *                 = 87 + 0 * CFG_BLE_NUM_LINK
+**/
+#define DIS_ATT_VALUE_ARRAY_SIZE  (87 + 0 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

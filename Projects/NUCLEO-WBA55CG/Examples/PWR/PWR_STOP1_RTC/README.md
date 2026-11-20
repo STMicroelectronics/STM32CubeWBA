@@ -21,6 +21,14 @@ Two leds LD1 and LD2 are used to monitor the system state as following:
 
 These steps are repeated in an infinite loop.
 
+## <b>Measured Current Consumption</b>
+
+| Mode   | Current Consumption |
+|--------|---------------------|
+| Run    | 6.7 mA              |
+| Stop 1 | 22.1 µA             |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
 
 Note: This example can not be used in DEBUG mode due to the fact 
       that the Cortex-M33 core is no longer clocked during low power mode 

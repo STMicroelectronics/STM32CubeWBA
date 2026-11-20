@@ -58,6 +58,7 @@ extern "C" {
 
 #define RTOS_MAX_THREAD                         (20u)
 
+#define RTOS_STACK_SIZE_XLARGE                  ( 1024u * 4u )
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )

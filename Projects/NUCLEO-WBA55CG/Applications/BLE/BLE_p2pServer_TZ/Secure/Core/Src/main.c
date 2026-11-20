@@ -381,7 +381,6 @@ static void MX_GTZC_S_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN GTZC_S_Init 2 */
 
   /* USER CODE END GTZC_S_Init 2 */
 

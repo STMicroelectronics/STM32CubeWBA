@@ -1,8 +1,7 @@
-/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
   * File Name          : app_tests_commands.c
-  * Description        : CLI COmmands to test Concurrents Modes (BLE/Thread/Zigbee)
+  * Description        : CLI Commands to test Concurrents Modes (BLE/Thread/Zigbee)
   ******************************************************************************
   * @attention
   *
@@ -15,7 +14,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include <assert.h>
@@ -38,9 +36,9 @@
 #include "joiner.h"
 #include "alarm.h"
 #include "stm32_timer.h"
+#include "app_tests_commands.h"
 
 /* Private includes -----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 #include "app_bsp.h"
 
 #ifdef CFG_COAP_MSG
@@ -54,22 +52,11 @@ extern UTIL_TIMER_Object_t  APP_Thread_transmitTimerId;
 extern uint8_t              APP_BLE_AdvChannelMap;
 #endif /* CFG_BLE_ADV_CHANNEL_MAP */
 
-/* USER CODE END Includes */
-
 /* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
 
-/* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
 /* Private macros ------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
 
 /* Private function prototypes -----------------------------------------------*/
 #ifdef CFG_COAP_MSG
@@ -79,18 +66,12 @@ static void  AppTestCommand_CoapMsgRateAction        ( void );
 static void  AppTestCommand_BleAdvChannelMapAction   ( void );
 #endif /* CFG_BLE_ADV_CHANNEL_MAP */
 
-/* USER CODE BEGIN PFP */
-/* USER CODE END PFP */
-
 /* Private variables -----------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-/* USER CODE END PV */
 
 /* Functions Definition ------------------------------------------------------*/
 
 /**
- * @brief   Initialisation of CLI commands tasks.
+ * @brief   Initialisation of CLI Commands tasks.
  */
 void AppTestCommand_Init( void )
 {
@@ -247,9 +228,4 @@ static void AppTestCommand_BleAdvChannelMapAction(void)
 }
 
 #endif /* CFG_BLE_ADV_CHANNEL_MAP */
-
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-
-
-/* USER CODE END FD_LOCAL_FUNCTIONS */
 

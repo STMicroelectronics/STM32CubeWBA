@@ -12,10 +12,19 @@ LD1 is used to monitor the system state as follows:
 
 This example does not implement a wake-up source from any peripheral: to wake-up the device,
 press on Reset button.
+In the associated software, the system clock is configured to use the internal HSI oscillator at 16 MHz as the system clock source.
 
 **Note :** This example can not be used in DEBUG mode due to the fact
 that the Cortex-M33 core is no longer clocked during low power mode
 so debugging features are disabled.
+
+## <b>Measured Current Consumption</b>
+| Mode   | Current Consumption |
+|--------|---------------------|
+| Run    | 0.6 mA              |
+| Stop   | 44 µA               |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
 
 ### <b>Keywords</b>
 

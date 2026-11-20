@@ -68,6 +68,7 @@ void GPDMA1_Channel1_IRQHandler(void);
 void GPDMA1_Channel2_IRQHandler(void);
 void COMP_IRQHandler(void);
 void RCC_AUDIOSYNC_IRQHandler(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

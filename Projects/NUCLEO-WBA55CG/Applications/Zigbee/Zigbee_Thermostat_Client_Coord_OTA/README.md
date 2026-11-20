@@ -30,7 +30,7 @@ In order to make the program work:
 - This demo shows how to use Thermostat cluster:
   - The Thermostat Server update regularly (500 ms) its **`ZCL_THERM_SVR_ATTR_LOCAL_TEMP`** attributes (via the measure of a sensor or by random).
   - The Thermostat Client send a Report Request to obtains regularly the **`ZCL_THERM_SVR_ATTR_LOCAL_TEMP`** attributes.
-  - The Thermostat Server send regularly (5 s) a Report with the latest value of **`ZCL_THERM_SVR_ATTR_LOCAL_TEMP`** attributes.
+  - The Thermostat Server send regularly (10 s) a Report with the latest value of **`ZCL_THERM_SVR_ATTR_LOCAL_TEMP`** attributes.
 - The Firmware Update Over The Air (FUOTA) cluster provides the possibility to receive a new application to be installed while the current application is running. Download is done by Coordinator by the press of `SW3`.
 - 1 read-only attributes is used:
   - Temperature Value (16-bit integer)
@@ -48,17 +48,17 @@ In order to make the program work:
            |            |                                                                |            |      or simulate it with RNG and the Thermostat setting.
            |            |                                                                |            |    * <= ZbZclAttrIntegerWrite(ZCL_THERM_SVR_ATTR_LOCAL_TEMP)
            |            |  After a Router was connected :                                |            |    * Display Local Temperature and Relay State (OPEN or CLOSED
-           |            |  ZbZclAttrReportConfigReq(ZCL_THERM_SVR_ATTR_LOCAL_TEMP, 5sec) |            |      depending on thermostat setting).
+           |            |  ZbZclAttrReportConfigReq(ZCL_THERM_SVR_ATTR_LOCAL_TEMP,10sec) |            |      depending on thermostat setting).
            |            | -------------------------------------------------------------> |            |
            |            | <------------------------------------------------------------- |            |
            |            |                                                                |            |
-           |            | <-------------- Report (every 5 seconds) --------------------- |            |
+           |            | <-------------- Report (every 10 seconds) -------------------- |            |
            |            |                                                                |            |
            |            |                                                                |            | <= PushB SW1/SW2/SW3 : Change a Thermostat setting (see Menu description below)
            |            |                                                                |            |
            |            |                                                                |            |
            |            |                                                                |            |
-           +----------+                                                                  +------------+
+           +------------+                                                                +------------+
 ```
 
 ### __Application Setup__

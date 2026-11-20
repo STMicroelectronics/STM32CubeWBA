@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    DIS.c
+  * @file    dis.c
   * @author  MCD Application Team
-  * @brief   DIS definition.
+  * @brief   dis definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -36,7 +36,6 @@ typedef struct{
   uint16_t  DisSvcHdle;                  /**< Dis Service Handle */
   uint16_t  MansCharHdle;                  /**< MANS Characteristic Handle */
 /* USER CODE BEGIN Context */
-  /* Place holder for Characteristic Descriptors Handle*/
 
 /* USER CODE END Context */
 }DIS_Context_t;
@@ -198,6 +197,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             }
           }
           break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
+
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */
@@ -263,7 +263,6 @@ void DIS_Init(void)
   max_attr_record = 3;
 
   /* USER CODE BEGIN SVCCTL_InitService */
-  /* max_attr_record to be updated if descriptors have been added */
 
   /* USER CODE END SVCCTL_InitService */
 

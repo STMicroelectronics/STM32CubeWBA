@@ -1,10 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ProjectOpt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_optx.xsd">
-
   <SchemaVersion>1.0</SchemaVersion>
-
   <Header>### uVision Project, (C) Keil Software</Header>
-
   <Extensions>
     <cExt>*.c</cExt>
     <aExt>*.s*; *.src; *.a*</aExt>
@@ -15,12 +12,10 @@
     <CppX>*.cpp; *.cc; *.cxx</CppX>
     <nMigrate>0</nMigrate>
   </Extensions>
-
   <DaveTm>
     <dwLowDateTime>0</dwLowDateTime>
     <dwHighDateTime>0</dwHighDateTime>
   </DaveTm>
-
   <Target>
     <TargetName>BLE_HeartRate_Zigbee</TargetName>
     <ToolsetNumber>0x4</ToolsetNumber>
@@ -28,7 +23,7 @@
     <TargetOption>
       <CLKADS>32000000</CLKADS>
       <OPTTT>
-        <gFlags>0</gFlags>
+        <gFlags>1</gFlags>
         <BeepAtEnd>1</BeepAtEnd>
         <RunSim>0</RunSim>
         <RunTarget>1</RunTarget>
@@ -45,7 +40,7 @@
         <PageWidth>79</PageWidth>
         <PageLength>66</PageLength>
         <TabStop>8</TabStop>
-        <ListingPath></ListingPath>
+        <ListingPath />
       </OPTLEX>
       <ListingPage>
         <CreateCListing>1</CreateCListing>
@@ -104,16 +99,16 @@
         <bSchkAxf>0</bSchkAxf>
         <bTchkAxf>0</bTchkAxf>
         <nTsel>6</nTsel>
-        <sDll></sDll>
-        <sDllPa></sDllPa>
-        <sDlgDll></sDlgDll>
-        <sDlgPa></sDlgPa>
-        <sIfile></sIfile>
-        <tDll></tDll>
-        <tDllPa></tDllPa>
-        <tDlgDll></tDlgDll>
-        <tDlgPa></tDlgPa>
-        <tIfile></tIfile>
+        <sDll />
+        <sDllPa />
+        <sDlgDll />
+        <sDlgPa />
+        <sIfile />
+        <tDll />
+        <tDllPa />
+        <tDlgDll />
+        <tDlgPa />
+        <tIfile />
         <pMon>STLink\ST-LINKIII-KEIL_SWO.dll</pMon>
       </DebugOpt>
       <TargetDriverDllRegistry>
@@ -123,7 +118,7 @@
           <Name>UL2V8M(-S0 -C0 -P0 -FD20000000 -FC8000 -FN2 -FF0STM32WBAx_2M_0800 -FS08000000 -FL0200000 -FF1STM32WBAx_2M_0C00 -FS1C000000 -FL1200000 -FP0($$Device:STM32WBA65RIVx$CMSIS\Flash\STM32WBAx_2M_0800.FLM) -FP1($$Device:STM32WBA65RIVx$CMSIS\Flash\STM32WBAx_2M_0C00.FLM))</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint />
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>
@@ -153,19 +148,19 @@
         <newCpu>0</newCpu>
         <uProt>0</uProt>
       </DebugFlag>
-      <LintExecutable></LintExecutable>
-      <LintConfigFile></LintConfigFile>
+      <LintExecutable />
+      <LintConfigFile />
       <bLintAuto>0</bLintAuto>
       <bAutoGenD>0</bAutoGenD>
       <LntExFlags>0</LntExFlags>
-      <pMisraName></pMisraName>
-      <pszMrule></pszMrule>
-      <pSingCmds></pSingCmds>
-      <pMultCmds></pMultCmds>
-      <pMisraNamep></pMisraNamep>
-      <pszMrulep></pszMrulep>
-      <pSingCmdsp></pSingCmdsp>
-      <pMultCmdsp></pMultCmdsp>
+      <pMisraName />
+      <pszMrule />
+      <pSingCmds />
+      <pMultCmds />
+      <pMisraNamep />
+      <pszMrulep />
+      <pSingCmdsp />
+      <pMultCmdsp />
       <DebugDescription>
         <Enable>1</Enable>
         <EnableFlashSeq>1</EnableFlashSeq>
@@ -175,7 +170,6 @@
       </DebugDescription>
     </TargetOption>
   </Target>
-
   <Group>
     <GroupName>Application/MDK-ARM</GroupName>
     <tvExp>0</tvExp>
@@ -195,7 +189,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/Core</GroupName>
     <tvExp>0</tvExp>
@@ -251,7 +244,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Modules</GroupName>
     <tvExp>0</tvExp>
@@ -271,7 +263,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Interfaces</GroupName>
     <tvExp>0</tvExp>
@@ -291,7 +282,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/LowPower</GroupName>
     <tvExp>0</tvExp>
@@ -323,7 +313,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/Flash</GroupName>
     <tvExp>0</tvExp>
@@ -343,7 +332,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/Debug_GPIO</GroupName>
     <tvExp>0</tvExp>
@@ -363,7 +351,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/STM32_WPAN/App</GroupName>
     <tvExp>0</tvExp>
@@ -467,7 +454,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/STM32_WPAN/Target</GroupName>
     <tvExp>0</tvExp>
@@ -571,7 +557,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Doc</GroupName>
     <tvExp>0</tvExp>
@@ -591,7 +576,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Drivers/BSP/STM32WBAxx_Nucleo</GroupName>
     <tvExp>0</tvExp>
@@ -611,7 +595,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
     <tvExp>0</tvExp>
@@ -620,91 +603,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>30</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_i2c.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
       <FileNumber>31</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c_ex.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_i2c_ex.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
-      <FileNumber>32</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_gtzc.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
-      <FileNumber>33</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_icache.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
-      <FileNumber>34</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_hsem.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
-      <FileNumber>35</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_tim.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
-      <FileNumber>36</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_tim_ex.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
-      <FileNumber>37</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -716,7 +615,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>38</FileNumber>
+      <FileNumber>32</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -728,7 +627,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>39</FileNumber>
+      <FileNumber>33</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -740,7 +639,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>40</FileNumber>
+      <FileNumber>34</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -752,7 +651,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>41</FileNumber>
+      <FileNumber>35</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -764,7 +663,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>42</FileNumber>
+      <FileNumber>36</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -776,7 +675,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>43</FileNumber>
+      <FileNumber>37</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -788,7 +687,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>44</FileNumber>
+      <FileNumber>38</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -800,7 +699,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>45</FileNumber>
+      <FileNumber>39</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -812,7 +711,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>46</FileNumber>
+      <FileNumber>40</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -824,7 +723,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>47</FileNumber>
+      <FileNumber>41</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -836,7 +735,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>48</FileNumber>
+      <FileNumber>42</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -848,7 +747,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>49</FileNumber>
+      <FileNumber>43</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -860,7 +759,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>50</FileNumber>
+      <FileNumber>44</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -872,7 +771,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>51</FileNumber>
+      <FileNumber>45</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -884,7 +783,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>52</FileNumber>
+      <FileNumber>46</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -896,7 +795,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>53</FileNumber>
+      <FileNumber>47</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -908,7 +807,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>54</FileNumber>
+      <FileNumber>48</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -920,7 +819,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>55</FileNumber>
+      <FileNumber>49</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -932,7 +831,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>56</FileNumber>
+      <FileNumber>50</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -944,7 +843,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>57</FileNumber>
+      <FileNumber>51</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -956,7 +855,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>58</FileNumber>
+      <FileNumber>52</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -968,7 +867,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>59</FileNumber>
+      <FileNumber>53</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -980,7 +879,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>60</FileNumber>
+      <FileNumber>54</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -992,7 +891,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>61</FileNumber>
+      <FileNumber>55</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1004,7 +903,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>62</FileNumber>
+      <FileNumber>56</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1016,7 +915,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>63</FileNumber>
+      <FileNumber>57</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1028,7 +927,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>64</FileNumber>
+      <FileNumber>58</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1040,7 +939,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>65</FileNumber>
+      <FileNumber>59</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1052,7 +951,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>66</FileNumber>
+      <FileNumber>60</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1064,19 +963,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>67</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_ll_dma.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
-      <FileNumber>68</FileNumber>
+      <FileNumber>62</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1088,7 +975,7 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>69</FileNumber>
+      <FileNumber>63</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1099,7 +986,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Drivers/CMSIS</GroupName>
     <tvExp>0</tvExp>
@@ -1108,7 +994,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>13</GroupNumber>
-      <FileNumber>70</FileNumber>
+      <FileNumber>64</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1119,7 +1005,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN</GroupName>
     <tvExp>0</tvExp>
@@ -1127,7 +1012,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/mac_802_15_4/lib</GroupName>
     <tvExp>0</tvExp>
@@ -1135,7 +1019,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Utilities</GroupName>
     <tvExp>0</tvExp>
@@ -1144,7 +1027,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>16</GroupNumber>
-      <FileNumber>71</FileNumber>
+      <FileNumber>65</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1156,7 +1039,7 @@
     </File>
     <File>
       <GroupNumber>16</GroupNumber>
-      <FileNumber>72</FileNumber>
+      <FileNumber>66</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1168,7 +1051,7 @@
     </File>
     <File>
       <GroupNumber>16</GroupNumber>
-      <FileNumber>73</FileNumber>
+      <FileNumber>67</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1180,7 +1063,7 @@
     </File>
     <File>
       <GroupNumber>16</GroupNumber>
-      <FileNumber>74</FileNumber>
+      <FileNumber>68</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1192,7 +1075,7 @@
     </File>
     <File>
       <GroupNumber>16</GroupNumber>
-      <FileNumber>75</FileNumber>
+      <FileNumber>69</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1204,7 +1087,7 @@
     </File>
     <File>
       <GroupNumber>16</GroupNumber>
-      <FileNumber>76</FileNumber>
+      <FileNumber>70</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1216,7 +1099,7 @@
     </File>
     <File>
       <GroupNumber>16</GroupNumber>
-      <FileNumber>77</FileNumber>
+      <FileNumber>71</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1228,7 +1111,7 @@
     </File>
     <File>
       <GroupNumber>16</GroupNumber>
-      <FileNumber>78</FileNumber>
+      <FileNumber>72</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1239,7 +1122,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/Zigbee/clusters</GroupName>
     <tvExp>0</tvExp>
@@ -1248,7 +1130,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>17</GroupNumber>
-      <FileNumber>79</FileNumber>
+      <FileNumber>73</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1259,7 +1141,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/Zigbee/stack</GroupName>
     <tvExp>0</tvExp>
@@ -1267,7 +1148,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Interface</GroupName>
     <tvExp>0</tvExp>
@@ -1276,19 +1156,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>19</GroupNumber>
-      <FileNumber>80</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</PathWithFileName>
-      <FilenameWithoutPath>adv_trace_usart_if.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>19</GroupNumber>
-      <FileNumber>81</FileNumber>
+      <FileNumber>74</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1300,7 +1168,19 @@
     </File>
     <File>
       <GroupNumber>19</GroupNumber>
-      <FileNumber>82</FileNumber>
+      <FileNumber>75</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>../../../../../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</PathWithFileName>
+      <FilenameWithoutPath>adv_trace_usart_if.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>19</GroupNumber>
+      <FileNumber>76</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1312,7 +1192,7 @@
     </File>
     <File>
       <GroupNumber>19</GroupNumber>
-      <FileNumber>83</FileNumber>
+      <FileNumber>77</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1324,7 +1204,7 @@
     </File>
     <File>
       <GroupNumber>19</GroupNumber>
-      <FileNumber>84</FileNumber>
+      <FileNumber>78</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1336,7 +1216,7 @@
     </File>
     <File>
       <GroupNumber>19</GroupNumber>
-      <FileNumber>85</FileNumber>
+      <FileNumber>79</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1347,7 +1227,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules</GroupName>
     <tvExp>0</tvExp>
@@ -1356,7 +1235,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>86</FileNumber>
+      <FileNumber>80</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1368,7 +1247,7 @@
     </File>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>87</FileNumber>
+      <FileNumber>81</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1380,7 +1259,7 @@
     </File>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>88</FileNumber>
+      <FileNumber>82</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1392,7 +1271,7 @@
     </File>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>89</FileNumber>
+      <FileNumber>83</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1404,7 +1283,7 @@
     </File>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>90</FileNumber>
+      <FileNumber>84</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1416,7 +1295,7 @@
     </File>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>91</FileNumber>
+      <FileNumber>85</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1428,7 +1307,7 @@
     </File>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>92</FileNumber>
+      <FileNumber>86</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1440,7 +1319,7 @@
     </File>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>93</FileNumber>
+      <FileNumber>87</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1452,7 +1331,7 @@
     </File>
     <File>
       <GroupNumber>20</GroupNumber>
-      <FileNumber>94</FileNumber>
+      <FileNumber>88</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1463,7 +1342,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common\WPAN\Modules\BasicAES</GroupName>
     <tvExp>0</tvExp>
@@ -1471,7 +1349,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Common\WPAN\Modules\Flash</GroupName>
     <tvExp>0</tvExp>
@@ -1479,7 +1356,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Common\WPAN\Modules\Log</GroupName>
     <tvExp>0</tvExp>
@@ -1487,7 +1363,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Common\WPAN\Modules\MemoryManager</GroupName>
     <tvExp>0</tvExp>
@@ -1495,27 +1370,13 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Common\WPAN\Modules\RFControl</GroupName>
     <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
-    <File>
-      <GroupNumber>25</GroupNumber>
-      <FileNumber>95</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</PathWithFileName>
-      <FilenameWithoutPath>rf_antenna_switch.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
   </Group>
-
   <Group>
     <GroupName>Common\WPAN\Modules\RTDebug</GroupName>
     <tvExp>0</tvExp>
@@ -1523,7 +1384,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Common\WPAN\Modules\SerialCmdInterpreter</GroupName>
     <tvExp>0</tvExp>
@@ -1531,7 +1391,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/ADC_Ctrl</GroupName>
     <tvExp>0</tvExp>
@@ -1540,7 +1399,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>28</GroupNumber>
-      <FileNumber>96</FileNumber>
+      <FileNumber>90</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1551,7 +1410,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/CRC_Ctrl</GroupName>
     <tvExp>0</tvExp>
@@ -1560,7 +1418,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>29</GroupNumber>
-      <FileNumber>97</FileNumber>
+      <FileNumber>91</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1571,7 +1429,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common\WPAN\Startup</GroupName>
     <tvExp>0</tvExp>
@@ -1579,7 +1436,6 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
     <tvExp>0</tvExp>
@@ -1588,7 +1444,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>31</GroupNumber>
-      <FileNumber>98</FileNumber>
+      <FileNumber>92</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1600,7 +1456,7 @@
     </File>
     <File>
       <GroupNumber>31</GroupNumber>
-      <FileNumber>99</FileNumber>
+      <FileNumber>93</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1612,7 +1468,7 @@
     </File>
     <File>
       <GroupNumber>31</GroupNumber>
-      <FileNumber>100</FileNumber>
+      <FileNumber>94</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1623,7 +1479,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/Flash</GroupName>
     <tvExp>0</tvExp>
@@ -1632,7 +1487,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>32</GroupNumber>
-      <FileNumber>101</FileNumber>
+      <FileNumber>95</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1644,7 +1499,7 @@
     </File>
     <File>
       <GroupNumber>32</GroupNumber>
-      <FileNumber>102</FileNumber>
+      <FileNumber>96</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1656,7 +1511,7 @@
     </File>
     <File>
       <GroupNumber>32</GroupNumber>
-      <FileNumber>103</FileNumber>
+      <FileNumber>97</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1668,7 +1523,7 @@
     </File>
     <File>
       <GroupNumber>32</GroupNumber>
-      <FileNumber>104</FileNumber>
+      <FileNumber>98</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1679,7 +1534,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/MemoryManager</GroupName>
     <tvExp>0</tvExp>
@@ -1688,7 +1542,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>33</GroupNumber>
-      <FileNumber>105</FileNumber>
+      <FileNumber>99</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1700,7 +1554,7 @@
     </File>
     <File>
       <GroupNumber>33</GroupNumber>
-      <FileNumber>106</FileNumber>
+      <FileNumber>100</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1711,7 +1565,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/RTDebug</GroupName>
     <tvExp>0</tvExp>
@@ -1720,7 +1573,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>34</GroupNumber>
-      <FileNumber>107</FileNumber>
+      <FileNumber>101</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1732,7 +1585,7 @@
     </File>
     <File>
       <GroupNumber>34</GroupNumber>
-      <FileNumber>108</FileNumber>
+      <FileNumber>102</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1743,7 +1596,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/SerialCmdInterpreter</GroupName>
     <tvExp>0</tvExp>
@@ -1752,7 +1604,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>35</GroupNumber>
-      <FileNumber>109</FileNumber>
+      <FileNumber>103</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1763,7 +1615,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/Log</GroupName>
     <tvExp>0</tvExp>
@@ -1772,7 +1623,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>36</GroupNumber>
-      <FileNumber>110</FileNumber>
+      <FileNumber>104</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1783,7 +1634,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Startup</GroupName>
     <tvExp>0</tvExp>
@@ -1792,7 +1642,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>37</GroupNumber>
-      <FileNumber>111</FileNumber>
+      <FileNumber>105</FileNumber>
       <FileType>2</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1803,7 +1653,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/LinkLayer</GroupName>
     <tvExp>0</tvExp>
@@ -1812,7 +1661,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>38</GroupNumber>
-      <FileNumber>112</FileNumber>
+      <FileNumber>106</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1824,7 +1673,7 @@
     </File>
     <File>
       <GroupNumber>38</GroupNumber>
-      <FileNumber>113</FileNumber>
+      <FileNumber>107</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1836,7 +1685,7 @@
     </File>
     <File>
       <GroupNumber>38</GroupNumber>
-      <FileNumber>114</FileNumber>
+      <FileNumber>108</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1848,7 +1697,7 @@
     </File>
     <File>
       <GroupNumber>38</GroupNumber>
-      <FileNumber>115</FileNumber>
+      <FileNumber>109</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1860,7 +1709,19 @@
     </File>
     <File>
       <GroupNumber>38</GroupNumber>
-      <FileNumber>116</FileNumber>
+      <FileNumber>110</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/802_15_4_ll_porting/mac_radio_port.c</PathWithFileName>
+      <FilenameWithoutPath>mac_radio_port.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>38</GroupNumber>
+      <FileNumber>111</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1870,8 +1731,19 @@
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
+    <File>
+      <GroupNumber>38</GroupNumber>
+      <FileNumber>112</FileNumber>
+      <FileType>4</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/Mac15_4_Concurrent_BLE_Basic.a</PathWithFileName>
+      <FilenameWithoutPath>Mac15_4_Concurrent_BLE_Basic.a</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/Mac_802_15_4</GroupName>
     <tvExp>0</tvExp>
@@ -1880,7 +1752,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>39</GroupNumber>
-      <FileNumber>117</FileNumber>
+      <FileNumber>113</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1891,7 +1763,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/BLE</GroupName>
     <tvExp>0</tvExp>
@@ -1900,7 +1771,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>40</GroupNumber>
-      <FileNumber>118</FileNumber>
+      <FileNumber>114</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1912,7 +1783,7 @@
     </File>
     <File>
       <GroupNumber>40</GroupNumber>
-      <FileNumber>119</FileNumber>
+      <FileNumber>115</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1923,7 +1794,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/Zigbee</GroupName>
     <tvExp>0</tvExp>
@@ -1932,7 +1802,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>41</GroupNumber>
-      <FileNumber>120</FileNumber>
+      <FileNumber>116</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1944,7 +1814,7 @@
     </File>
     <File>
       <GroupNumber>41</GroupNumber>
-      <FileNumber>121</FileNumber>
+      <FileNumber>117</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1955,7 +1825,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>::CMSIS</GroupName>
     <tvExp>0</tvExp>
@@ -1963,5 +1832,4 @@
     <cbSel>0</cbSel>
     <RteFlg>1</RteFlg>
   </Group>
-
 </ProjectOpt>

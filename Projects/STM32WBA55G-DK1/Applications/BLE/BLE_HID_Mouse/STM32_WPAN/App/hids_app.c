@@ -205,12 +205,14 @@ void HIDS_Notification(HIDS_NotificationEvt_t *p_Notification)
     case HIDS_INPUTREP_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_ENABLED_EVT */
       LOG_INFO_APP("HIDS_REP_NOTIFY_ENABLED_EVT\n");
+      aci_gatt_store_db(); /* Store CCCD value in GATT database: CCCD state restored if reset */
       /* USER CODE END Service1Char1_NOTIFY_ENABLED_EVT */
       break;
 
     case HIDS_INPUTREP_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_DISABLED_EVT */
       LOG_INFO_APP("HIDS_REP_NOTIFY_DISABLED_EVT\n");
+      aci_gatt_store_db(); /* Store CCCD value in GATT database: CCCD state restored if reset */
       /* USER CODE END Service1Char1_NOTIFY_DISABLED_EVT */
       break;
 

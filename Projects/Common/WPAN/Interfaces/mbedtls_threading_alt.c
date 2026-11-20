@@ -7,7 +7,6 @@
   */
 
 #include "mbedtls_threading_alt.h"
-#include "mbedtls/threading.h"
 
 #include "common_wpan_conf.h"
 
@@ -56,7 +55,7 @@ static int MBEDTLS_THREADING_ALT_MutexLock(mbedtls_threading_mutex_t *mutex)
     return MBEDTLS_ERR_THREADING_BAD_INPUT_DATA;
   }
 
-  if(xSemaphoreTake(mutex->mutex, portMAX_DELAY) == pdTRUE)
+  if (xSemaphoreTake(mutex->mutex, portMAX_DELAY) == pdTRUE)
   {
     return 0;
   }
@@ -80,6 +79,7 @@ static int MBEDTLS_THREADING_ALT_MutexUnlock(mbedtls_threading_mutex_t *mutex)
 }
 
 #elif defined(CFG_USE_THREADX)
+extern TX_BYTE_POOL  * pBytePool;
 
 static void MBEDTLS_THREADING_ALT_MutexInit(mbedtls_threading_mutex_t *mutex)
 {
@@ -87,9 +87,21 @@ static void MBEDTLS_THREADING_ALT_MutexInit(mbedtls_threading_mutex_t *mutex)
   {
     mutex->is_valid = 0u;
     
-    if (tx_mutex_create((TX_MUTEX *)&mutex->mutex, "mbedtls", TX_INHERIT) == TX_SUCCESS)
+    if (tx_byte_allocate(pBytePool, (void **)&mutex->mutex, sizeof(TX_MUTEX), TX_NO_WAIT) == TX_SUCCESS)
+    { 
+      if (tx_mutex_create((TX_MUTEX *)mutex->mutex, "mbedtls", TX_INHERIT) == TX_SUCCESS)
+      {
+        mutex->is_valid = 1u;
+      }
+      else
+      {
+        (void)tx_byte_release(mutex->mutex);
+      }
+    }
+    
+    if (mutex->is_valid == 0u)
     {
-      mutex->is_valid = 1u;
+      mutex->mutex = NULL;
     }
   }
 }
@@ -98,8 +110,11 @@ static void MBEDTLS_THREADING_ALT_MutexFree(mbedtls_threading_mutex_t *mutex)
 {
   if ((NULL != mutex) && (mutex->is_valid != 0u))
   {
-    (void) tx_mutex_delete((TX_MUTEX *)&mutex->mutex);
+    (void) tx_mutex_delete((TX_MUTEX *)mutex->mutex);
     mutex->is_valid = 0u;
+    
+    (void)tx_byte_release(mutex->mutex);
+    mutex->mutex = NULL;
   }
 }
 
@@ -110,7 +125,7 @@ static int MBEDTLS_THREADING_ALT_MutexLock(mbedtls_threading_mutex_t *mutex)
     return MBEDTLS_ERR_THREADING_BAD_INPUT_DATA;
   }
 
-  if (tx_mutex_get((TX_MUTEX *)&mutex->mutex, TX_WAIT_FOREVER) == TX_SUCCESS)
+  if (tx_mutex_get((TX_MUTEX *)mutex->mutex, TX_WAIT_FOREVER) == TX_SUCCESS)
   {
     return 0;
   }
@@ -120,13 +135,12 @@ static int MBEDTLS_THREADING_ALT_MutexLock(mbedtls_threading_mutex_t *mutex)
 
 static int MBEDTLS_THREADING_ALT_MutexUnlock(mbedtls_threading_mutex_t *mutex)
 {
-
   if ((mutex == NULL) || (mutex->is_valid == 0u))
   {
     return MBEDTLS_ERR_THREADING_BAD_INPUT_DATA;
   }
   
-  if (tx_mutex_put((TX_MUTEX *)&mutex->mutex) == TX_SUCCESS)
+  if (tx_mutex_put((TX_MUTEX *)mutex->mutex) == TX_SUCCESS)
   {
     return 0;
   }
@@ -215,6 +229,55 @@ static int MBEDTLS_THREADING_ALT_MutexUnlock(mbedtls_threading_mutex_t *mutex)
 
 #endif
 
+void MBEDTLS_THREADING_ALT_EarlyMutexInit(mbedtls_threading_mutex_t *mutex)
+{
+  if (NULL != mutex)
+  {
+    mutex->is_valid = 1u;
+  }
+}
+
+void MBEDTLS_THREADING_ALT_EarlyMutexFree(mbedtls_threading_mutex_t *mutex)
+{
+  if ((NULL != mutex) && (mutex->is_valid != 0u))
+  {
+    mutex->is_valid = 0u;
+  }
+}
+
+int MBEDTLS_THREADING_ALT_EarlyMutexLock(mbedtls_threading_mutex_t *mutex)
+{
+  if ((mutex == NULL) || (mutex->is_valid == 0u))
+  {
+    return MBEDTLS_ERR_THREADING_BAD_INPUT_DATA;
+  }
+
+  return 0;
+}
+
+int MBEDTLS_THREADING_ALT_EarlyMutexUnlock(mbedtls_threading_mutex_t *mutex)
+{
+  if ((mutex == NULL) || (mutex->is_valid == 0u))
+  {
+    return MBEDTLS_ERR_THREADING_BAD_INPUT_DATA;
+  }
+  
+  return 0;
+}
+
+void MBEDTLS_THREADING_ALT_EarlyInit(void)
+{
+  mbedtls_threading_set_alt(MBEDTLS_THREADING_ALT_EarlyMutexInit,
+                            MBEDTLS_THREADING_ALT_EarlyMutexFree,
+                            MBEDTLS_THREADING_ALT_EarlyMutexLock,
+                            MBEDTLS_THREADING_ALT_EarlyMutexUnlock);
+}
+
+void MBEDTLS_THREADING_ALT_EarlyDeInit(void)
+{
+  mbedtls_threading_free_alt();
+}
+
 void MBEDTLS_THREADING_ALT_Init(void)
 {
   mbedtls_threading_set_alt(MBEDTLS_THREADING_ALT_MutexInit,
@@ -235,6 +298,14 @@ void MBEDTLS_THREADING_ALT_Init(void)
 }
 
 void MBEDTLS_THREADING_ALT_DeInit(void)
+{
+}
+
+void MBEDTLS_THREADING_ALT_EarlyInit(void)
+{
+}
+
+void MBEDTLS_THREADING_ALT_EarlyDeInit(void)
 {
 }
 

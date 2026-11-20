@@ -3,11 +3,11 @@
   ******************************************************************************
   * @file    peripheral_init.c
   * @author  MCD Application Team
-  * @brief   tbd module
+  * @brief   peripheral init module
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -35,11 +35,14 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM6;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN EV */
@@ -61,7 +64,6 @@ void MX_StandbyExit_PeripheralInit(void)
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STANDBY_SUPPORTED == 1)
   /* Do not configure sysTick if currently used by wakeup time profiling mechanism */
   if(LPM_is_wakeup_time_profiling_done() != 0)
   {
@@ -74,7 +76,6 @@ void MX_StandbyExit_PeripheralInit(void)
       assert_param(0);
     }
   }
-#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #else
   /* Select SysTick source clock */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
@@ -102,11 +103,14 @@ void MX_StandbyExit_PeripheralInit(void)
 
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hramcfg_SRAM6, 0, sizeof(hramcfg_SRAM6));
+  memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
+  memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
 #if (CFG_LOG_SUPPORTED == 1)
   memset(&huart1, 0, sizeof(huart1));
 #endif
 
   MX_GPIO_Init();
+  MX_GPDMA1_Init();
 #if (CFG_LOG_SUPPORTED == 1)
   MX_USART1_UART_Init();
   UTIL_ADV_TRACE_Init();
@@ -121,6 +125,7 @@ void MX_StandbyExit_PeripheralInit(void)
 
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
   APP_BSP_StandbyExit();
+
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */

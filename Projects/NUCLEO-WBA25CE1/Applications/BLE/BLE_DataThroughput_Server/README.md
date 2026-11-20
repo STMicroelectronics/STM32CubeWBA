@@ -26,7 +26,7 @@ In order to make the program work:
  - Rebuild all files and load your image into target memory.
  - Run the example.
 
- - Two ways for using the application:
+Two ways for using the application:
 
 __1. Use of two nucleo boards__
 
@@ -73,8 +73,8 @@ On the server terminal, the current write without response displays the number o
 
 In app_conf.h :
 
- - if #define CFG_TX_PHY    2 and #define CFG_RX_PHY    2, link is set to 2M at connection
- - if #define CFG_TX_PHY    1 and #define CFG_RX_PHY    1, link stays at 1M
+ - if #define CFG_TX_PHY    2 and #define CFG_RX_PHY    2, link is set to 2M at connection.
+ - if #define CFG_TX_PHY    1 and #define CFG_RX_PHY    1, link stays at 1M.
 
 __2. Use of one nucleo board and a smartphone__
 
@@ -83,7 +83,7 @@ __2. Use of one nucleo board and a smartphone__
    - <a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android.</a>
    - <a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS.</a>
 
-One STM32WBA25 Nucleo board is used as GATT Server and GAP peripheral (flashed with BLE_DataThroughput_Server).
+One STM32WBAxx Nucleo board is used as GATT Server and GAP peripheral (flashed with BLE_DataThroughput_Server).
 
 This board can be connected with a smartphone supporting ST BLE Toolbox application.
 

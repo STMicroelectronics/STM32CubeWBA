@@ -37,9 +37,9 @@ extern "C" {
 /* Types ---------------------------------------------------------------------*/
 /* Types of mask for roles of the Media Control Profile */
 typedef uint8_t PBP_Role_t;
-#define PBP_ROLE_PUBLIC_BROADCAST_SOURCE			  (0x01)
-#define PBP_ROLE_PUBLIC_BROADCAST_SINK			    (0x02)
-#define PBP_ROLE_PUBLIC_BROADCAST_ASSISTANT			(0x04)
+#define PBP_ROLE_PUBLIC_BROADCAST_SOURCE        (0x01)
+#define PBP_ROLE_PUBLIC_BROADCAST_SINK          (0x02)
+#define PBP_ROLE_PUBLIC_BROADCAST_ASSISTANT     (0x04)
 
 typedef uint8_t PBP_PBS_State_t;
 #define PBP_PBS_STATE_IDLE                      (0x00)

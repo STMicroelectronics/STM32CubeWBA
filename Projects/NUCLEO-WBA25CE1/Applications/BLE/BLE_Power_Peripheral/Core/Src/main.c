@@ -60,7 +60,6 @@ DMA_HandleTypeDef handle_LPDMA1_Channel1;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void SystemPower_Config(void);
-static void MX_LPDMA1_Init(void);
 /* USER CODE BEGIN PFP */
 void Standby_Restore_GPIO(void);
 
@@ -363,7 +362,7 @@ void MX_ICACHE_Init(void)
   * @param None
   * @retval None
   */
-static void MX_LPDMA1_Init(void)
+void MX_LPDMA1_Init(void)
 {
 
   /* USER CODE BEGIN LPDMA1_Init 0 */
@@ -534,7 +533,7 @@ void MX_USART1_UART_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
+  if (HAL_UARTEx_EnableFifoMode(&huart1) != HAL_OK)
   {
     Error_Handler();
   }

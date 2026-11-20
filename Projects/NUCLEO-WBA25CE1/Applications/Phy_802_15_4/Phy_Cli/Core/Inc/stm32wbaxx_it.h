@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,7 +22,7 @@
 #define __STM32WBAxx_IT_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Private includes ----------------------------------------------------------*/
@@ -51,6 +51,7 @@ void HardFault_Handler(void);
 void MemManage_Handler(void);
 void BusFault_Handler(void);
 void UsageFault_Handler(void);
+void SecureFault_Handler(void);
 void SVC_Handler(void);
 void DebugMon_Handler(void);
 void PendSV_Handler(void);
@@ -60,9 +61,6 @@ void RCC_IRQHandler(void);
 void LPDMA1_Channel0_IRQHandler(void);
 void LPDMA1_Channel1_IRQHandler(void);
 void USART1_IRQHandler(void);
-void TIM16_IRQHandler(void);
-void RNG_IRQHandler(void);
-void PKA_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void HASH_IRQHandler(void);
 /* USER CODE BEGIN EFP */

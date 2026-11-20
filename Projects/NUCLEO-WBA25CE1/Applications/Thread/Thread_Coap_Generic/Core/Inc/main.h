@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -68,6 +68,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 void MX_GPIO_Init(void);
+void MX_LPDMA1_Init(void);
 void MX_USART1_UART_Init(void);
 void MX_RTC_Init(void);
 void MX_ICACHE_Init(void);

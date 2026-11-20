@@ -28,8 +28,8 @@
  */
 /* USER CODE END Header */
 
-#ifndef FREERTOS_CONFIG_H
-#define FREERTOS_CONFIG_H
+#ifndef __FREERTOS_CONFIG_H
+#define __FREERTOS_CONFIG_H
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -65,8 +65,8 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configRUN_FREERTOS_SECURE_ONLY           0
 #define configENABLE_FPU                         0
 #define configENABLE_MPU                         0
-
 #define configUSE_PREEMPTION                     1
+#define configUSE_TIME_SLICING                   1
 #define configSUPPORT_STATIC_ALLOCATION          1
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
 #define configUSE_IDLE_HOOK                      0
@@ -74,7 +74,7 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configCPU_CLOCK_HZ                       ( SystemCoreClock )
 #define configTICK_RATE_HZ                       ((TickType_t)100)
 #define configMAX_PRIORITIES                     ( 56 )
-#define configMINIMAL_STACK_SIZE                 ((uint16_t)128)
+#define configMINIMAL_STACK_SIZE                 ((uint16_t)256)
 #define configTOTAL_HEAP_SIZE                    ((size_t)32768)
 #define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP 0
 #define configMAX_TASK_NAME_LEN                  ( 32 )
@@ -94,6 +94,13 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configHEAP_CLEAR_MEMORY_ON_FREE          0
 #define configUSE_MINI_LIST_ITEM                 1
 #define configUSE_SB_COMPLETED_CALLBACK          0
+#define configKERNEL_PROVIDED_STATIC_MEMORY      1
+#define configSTATS_BUFFER_MAX_LENGTH            0xFFFF
+#define configENABLE_HEAP_PROTECTOR              0
+#define configUSE_EVENT_GROUPS                   1
+#define configUSE_STREAM_BUFFERS                 1
+#define configCHECK_HANDLER_INSTALLATION         1
+#define configVALIDATE_HEAP_BLOCK_POINTER        0
 /* USER CODE BEGIN MESSAGE_BUFFER_LENGTH_TYPE */
 /* Defaults to size_t for backward compatibility, but can be changed
    if lengths will always be less than the number of bytes in a size_t. */
@@ -102,15 +109,17 @@ extern unsigned long getRunTimeCounterValue(void);
 
 #define configRUN_TIME_COUNTER_TYPE              size_t
 
+#define configSTACK_DEPTH_TYPE                   size_t
+
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                    0
 #define configMAX_CO_ROUTINE_PRIORITIES          ( 2 )
 
 /* Software timer definitions. */
 #define configUSE_TIMERS                         1
-#define configTIMER_TASK_PRIORITY                ( 2 )
+#define configTIMER_TASK_PRIORITY                ( 55 )
 #define configTIMER_QUEUE_LENGTH                 10
-#define configTIMER_TASK_STACK_DEPTH             128
+#define configTIMER_TASK_STACK_DEPTH             256
 
 /* CMSIS-RTOS V2 flags */
 #define configUSE_OS2_THREAD_SUSPEND_RESUME  1
@@ -136,10 +145,11 @@ to exclude the API function. */
 #define INCLUDE_uxTaskGetStackHighWaterMark  1
 #define INCLUDE_xTaskGetCurrentTaskHandle    1
 #define INCLUDE_eTaskGetState                1
+#define INCLUDE_xTaskAbortDelay              1
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS
- /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
+ /* __NVIC_PRIO_BITS will be specified when CMSIS is being used. */
  #define configPRIO_BITS         __NVIC_PRIO_BITS
 #else
  #define configPRIO_BITS         4
@@ -180,4 +190,4 @@ header file. */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
 /* USER CODE END Defines */
 
-#endif /* FREERTOS_CONFIG_H */
+#endif /* __FREERTOS_CONFIG_H */

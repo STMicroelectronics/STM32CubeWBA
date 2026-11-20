@@ -3,11 +3,11 @@
   ******************************************************************************
   * @file    peripheral_init.c
   * @author  MCD Application Team
-  * @brief   tbd module
+  * @brief   peripheral init module
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -34,12 +34,18 @@
 #endif /* (CFG_LOG_SUPPORTED == 1) */
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stm32wba65i_discovery.h"
+#include "app_bsp.h"
 
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RNG_HandleTypeDef hrng;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 
@@ -62,7 +68,6 @@ void MX_StandbyExit_PeripheralInit(void)
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STANDBY_SUPPORTED == 1)
   /* Do not configure sysTick if currently used by wakeup time profiling mechanism */
   if(LPM_is_wakeup_time_profiling_done() != 0)
   {
@@ -75,7 +80,6 @@ void MX_StandbyExit_PeripheralInit(void)
       assert_param(0);
     }
   }
-#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #else
   /* Select SysTick source clock */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
@@ -102,11 +106,16 @@ void MX_StandbyExit_PeripheralInit(void)
 #endif /* CFG_DEBUGGER_LEVEL */
 
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
+  memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
+  memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
+  memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
+  memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
 #if (CFG_LOG_SUPPORTED == 1)
   memset(&huart1, 0, sizeof(huart1));
 #endif
   memset(&huart2, 0, sizeof(huart2));
 
+  MX_GPDMA1_Init();
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
 #if (CFG_LOG_SUPPORTED == 1)
@@ -114,13 +123,16 @@ void MX_StandbyExit_PeripheralInit(void)
   UTIL_ADV_TRACE_Init();
   Serial_CMD_Interpreter_Init();
 #endif
+#if (OT_CLI_USE != 0)
   MX_USART2_UART_Init();
+#endif
   CRCCTRL_Init();
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
+  APP_BSP_StandbyExit();
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
@@ -132,6 +144,8 @@ void MX_Stop2Exit_PeripheralInit(void)
   /* USER CODE BEGIN MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
   /* USER CODE END MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
 
+    memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
+    memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
     memset(&huart2, 0, sizeof(huart2));
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)

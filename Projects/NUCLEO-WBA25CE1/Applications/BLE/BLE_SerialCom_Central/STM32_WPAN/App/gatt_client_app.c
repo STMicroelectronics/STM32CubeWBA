@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -188,7 +188,6 @@ static BleClientAppContext_t a_ClientContext[CFG_BLE_NUM_CLIENT_CONTEXTS];
 static BleClientAppProcContext_t procClientContext;
 
 /* USER CODE BEGIN PV */
-
 static uint8_t a_buffUartRx[BUFFUARTRX_SIZE];
 static uint8_t buffUartRxIndex;
 static uint8_t a_buffCocTx[BUFFCOCTX_SIZE];
@@ -220,7 +219,6 @@ static void gatt_cmd_resp_release(void);
 static uint8_t gatt_cmd_resp_wait(void);
 static uint8_t gatt_procedure(uint8_t index, ProcGattId_t GattProcId);
 /* USER CODE BEGIN PFP */
-
 static void COC_Central_APP_Terminal_UART_RxCpltCallback( uint8_t *pdata, uint16_t size, uint8_t error);
 static void RxUART_Init(void);
 static void RxUART_ValidProcess(uint8_t data);
@@ -277,7 +275,6 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_task);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
-
   UTIL_SEQ_RegTask(1U << CFG_TASK_COC_CENTRAL_TX_REQ_ID, UTIL_SEQ_RFU, CentralSendData);
 
   COC_CENTRAL_APP_Terminal_Init();
@@ -673,17 +670,10 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
       {
         uint16_t charPropVal = 0x0000;
 
-        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000)
+        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000
+            && ((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
         {
-          if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_NOTIFY) == CHAR_PROP_NOTIFY)
-          {
-            charPropVal = 0x0001;
-          }
-          else if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
-          {
-            charPropVal = 0x0002;
-          }
-
+          charPropVal = 0x0002;
           procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
@@ -825,6 +815,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           LOG_INFO_APP(">>== Connection Handle = %d\n",tx_pool_available->Connection_Handle);
           LOG_INFO_APP(">>== Available buffers = %d\n",tx_pool_available->Available_Buffers);
           LOG_INFO_APP("\n");
+
           /* USER CODE END ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
         }
         break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
@@ -841,14 +832,14 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           }
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           tBleStatus result;
-          result = hci_le_set_data_length(a_ClientContext[0].connHdl,251,2120);
+          result = hci_le_set_data_length(a_ClientContext[0].connHdl, 251, 2120);
           if (result != BLE_STATUS_SUCCESS)
           {
-            LOG_INFO_APP("  Fail   : set data length command   : error code: 0x%x \n\r", result);
+            LOG_INFO_APP("  Fail   : set data length command   : error code: 0x%x\n", result);
           }
           else
           {
-            LOG_INFO_APP("  Success: set data length command  \n\r");
+            LOG_INFO_APP("  Success: set data length command\n");
           }
 
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
@@ -1173,6 +1164,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
+          a_ClientContext[index].ServiceChangedCharProperties = CharProperties;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
 /* USER CODE BEGIN gatt_parse_chars_1 */

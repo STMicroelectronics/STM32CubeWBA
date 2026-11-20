@@ -53,7 +53,8 @@ extern "C" {
 #define LC3_48_5                14
 #define LC3_48_6                15
 
-#define NUM_LC3_QoSConf         32
+#define NUM_LC3_BRD_QOSCONF     32
+#define NUM_LC3_UNICAST_QOSCONF 38
 #define LC3_QOS_8_1_1           0
 #define LC3_QOS_8_2_1           1
 #define LC3_QOS_16_1_1          2
@@ -86,6 +87,12 @@ extern "C" {
 #define LC3_QOS_48_4_2          29
 #define LC3_QOS_48_5_2          30
 #define LC3_QOS_48_6_2          31
+#define LC3_QOS_16_1_3          32
+#define LC3_QOS_16_2_3          33
+#define LC3_QOS_24_1_3          34
+#define LC3_QOS_24_2_3          35
+#define LC3_QOS_32_1_3          36
+#define LC3_QOS_32_2_3          37
 
 /*Audio Configuration specified in Basic Audio Profile Specification*/
 #define NUM_USR_AUDIO_CONF      (16u)

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,11 +23,9 @@
 #include "app_conf.h"
 #include "ll_sys.h"
 #include "stm32wbaxx_hal.h"
-#include "scm.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
-#include "pka_ctrl.h"
 
 /* USER CODE END Includes */
 
@@ -91,7 +89,6 @@ void NMI_Handler(void)
   while(1)
   {
   }
-
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -245,18 +242,10 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-#if (CFG_SCM_SUPPORTED == 1)
-    /* SCM HSE BEGIN */
-    SCM_HSE_StartStabilizationTimer();
-    /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-#if (CFG_SCM_SUPPORTED == 1)
-    scm_pllrdy_isr();
-#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -320,53 +309,6 @@ void USART2_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM16 global interrupt.
-  */
-void TIM16_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM16_IRQn 0 */
-
-  /* USER CODE END TIM16_IRQn 0 */
-  /* Check whether update interrupt is pending */
-  if(LL_TIM_IsActiveFlag_UPDATE(TIM16) == 1)
-  {
-    /* Clear the update interrupt flag */
-    LL_TIM_ClearFlag_UPDATE(TIM16);
-
-#if (CFG_SCM_SUPPORTED == 1)
-    /* SCM HSE BEGIN */
-    /* Update interrupt processing */
-    SCM_HSE_SW_HSERDY_isr();
-    /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
-  }
-  /* USER CODE BEGIN TIM16_IRQn 1 */
-
-  /* USER CODE END TIM16_IRQn 1 */
-}
-
-/**
-  * @brief This function handles PKA global interrupt.
-  */
-void PKA_IRQHandler(void)
-{
-  /* USER CODE BEGIN PKA_IRQn 0 */
-  /* Check incoming interrupt */
-  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
-  {
-    /* Clear the interrupt flag */
-    LL_PKA_ClearFlag_PROCEND (PKA);
-
-    /* Call the PKACTRL Callback */
-    PKACTRL_EndOfProcessCb();
-  }
-  /* USER CODE END PKA_IRQn 0 */
-  /* USER CODE BEGIN PKA_IRQn 1 */
-
-  /* USER CODE END PKA_IRQn 1 */
-}
-
-/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
@@ -399,6 +341,7 @@ void WKUP_IRQHandler(void)
   HAL_PWR_WKUP_IRQHandler();
   /* USER CODE BEGIN WKUP_IRQn 1 */
   LL_PWR_ClearFlag_WU( );
+
   /* USER CODE END WKUP_IRQn 1 */
 }
 
@@ -433,8 +376,6 @@ void COMP_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
-
 /* EXTI for Nucleo buttons are managed by 'app_bsp.c' */
 
 /* USER CODE END 1 */

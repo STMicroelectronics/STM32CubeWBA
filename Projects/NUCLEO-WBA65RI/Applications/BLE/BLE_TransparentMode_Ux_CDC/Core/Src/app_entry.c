@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -60,6 +60,7 @@
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
 #include "stm32_adv_trace.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -260,9 +261,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   APP_BLE_Init();
 
-  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
-
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
@@ -423,15 +421,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -568,9 +559,9 @@ static void Button_Init( void )
   BSP_PB_Init(B3, BUTTON_MODE_EXTI);
 
   /* Register tasks associated to buttons */
-  UTIL_SEQ_RegTask(1U << TASK_BUTTON_1, UTIL_SEQ_RFU, APPE_Button1Action);
-  UTIL_SEQ_RegTask(1U << TASK_BUTTON_2, UTIL_SEQ_RFU, APPE_Button2Action);
-  UTIL_SEQ_RegTask(1U << TASK_BUTTON_3, UTIL_SEQ_RFU, APPE_Button3Action);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BSP_BUTTON_B1, UTIL_SEQ_RFU, APPE_Button1Action);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BSP_BUTTON_B2, UTIL_SEQ_RFU, APPE_Button2Action);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BSP_BUTTON_B3, UTIL_SEQ_RFU, APPE_Button3Action);
 
   /* Create timers to detect button long press (one for each button) */
   Button_TypeDef buttonIndex;
@@ -596,13 +587,14 @@ static void Button_TriggerActions(void *arg)
   switch (p_buttonDesc->button)
   {
     case B1:
-      UTIL_SEQ_SetTask(1U << TASK_BUTTON_1, CFG_SEQ_PRIO_0);
+      UTIL_SEQ_SetTask(1U << CFG_TASK_BSP_BUTTON_B1, CFG_SEQ_PRIO_0);
+
       break;
     case B2:
-      UTIL_SEQ_SetTask(1U << TASK_BUTTON_2, CFG_SEQ_PRIO_0);
+      UTIL_SEQ_SetTask(1U << CFG_TASK_BSP_BUTTON_B2, CFG_SEQ_PRIO_0);
       break;
     case B3:
-      UTIL_SEQ_SetTask(1U << TASK_BUTTON_3, CFG_SEQ_PRIO_0);
+      UTIL_SEQ_SetTask(1U << CFG_TASK_BSP_BUTTON_B3, CFG_SEQ_PRIO_0);
       break;
     default:
       break;
@@ -625,11 +617,9 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
-#if (CFG_SCM_SUPPORTED == 1)
   /* SCM HSE BEGIN */
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -657,21 +647,6 @@ void UTIL_SEQ_PreIdle( void )
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
-
-#if defined(STM32WBAXX_SI_CUT1_0)
-  /* Wait until HSE is ready */
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_WaitUntilReady();
-  /* SCM HSE END */
-#else
-  while (LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
-
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
-  scm_hserdy_isr();
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* STM32WBAXX_SI_CUT1_0 */
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
 

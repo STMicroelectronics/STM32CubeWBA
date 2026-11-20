@@ -31,6 +31,21 @@ extern "C" {
 /***************************************************/
 typedef enum {
   APP_APPE_INIT,
+  /* Ready-to-use user debug signals.
+     Enable one in debug_config.h (USE_RT_DEBUG_APP_USERx) and assign its GPIO.
+     A friendly alias can be defined in the application code, e.g.
+       #define My_Debug_GPIO  APP_USER1
+     then used as APP_DEBUG_SIGNAL_SET(My_Debug_GPIO). */
+  APP_USER1,
+  APP_USER2,
+  APP_USER3,
+  APP_USER4,
+  APP_USER5,
+  APP_USER6,
+  APP_USER7,
+  APP_USER8,
+  APP_USER9,
+  APP_USER10,
 } app_debug_signal_t;
 
 #if(CFG_RT_DEBUG_GPIO_MODULE == 1)
@@ -44,6 +59,56 @@ static const rt_debug_signal_t app_debug_table[] = {
 #else
   [APP_APPE_INIT] = RT_DEBUG_SIGNAL_UNUSED,
 #endif /* USE_RT_DEBUG_APP_APPE_INIT */
+#if (USE_RT_DEBUG_APP_USER1 == 1)
+  [APP_USER1] = RT_DEBUG_APP_USER1,
+#else
+  [APP_USER1] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER1 */
+#if (USE_RT_DEBUG_APP_USER2 == 1)
+  [APP_USER2] = RT_DEBUG_APP_USER2,
+#else
+  [APP_USER2] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER2 */
+#if (USE_RT_DEBUG_APP_USER3 == 1)
+  [APP_USER3] = RT_DEBUG_APP_USER3,
+#else
+  [APP_USER3] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER3 */
+#if (USE_RT_DEBUG_APP_USER4 == 1)
+  [APP_USER4] = RT_DEBUG_APP_USER4,
+#else
+  [APP_USER4] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER4 */
+#if (USE_RT_DEBUG_APP_USER5 == 1)
+  [APP_USER5] = RT_DEBUG_APP_USER5,
+#else
+  [APP_USER5] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER5 */
+#if (USE_RT_DEBUG_APP_USER6 == 1)
+  [APP_USER6] = RT_DEBUG_APP_USER6,
+#else
+  [APP_USER6] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER6 */
+#if (USE_RT_DEBUG_APP_USER7 == 1)
+  [APP_USER7] = RT_DEBUG_APP_USER7,
+#else
+  [APP_USER7] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER7 */
+#if (USE_RT_DEBUG_APP_USER8 == 1)
+  [APP_USER8] = RT_DEBUG_APP_USER8,
+#else
+  [APP_USER8] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER8 */
+#if (USE_RT_DEBUG_APP_USER9 == 1)
+  [APP_USER9] = RT_DEBUG_APP_USER9,
+#else
+  [APP_USER9] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER9 */
+#if (USE_RT_DEBUG_APP_USER10 == 1)
+  [APP_USER10] = RT_DEBUG_APP_USER10,
+#else
+  [APP_USER10] = RT_DEBUG_SIGNAL_UNUSED,
+#endif /* USE_RT_DEBUG_APP_USER10 */
 };
 
 #endif /* CFG_RT_DEBUG_GPIO_MODULE */

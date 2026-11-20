@@ -3,11 +3,11 @@
   ******************************************************************************
   * @file    peripheral_init.c
   * @author  MCD Application Team
-  * @brief   tbd module
+  * @brief   peripheral init module
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -58,7 +58,6 @@ void MX_StandbyExit_PeripheralInit(void)
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STANDBY_SUPPORTED == 1)
   /* Do not configure sysTick if currently used by wakeup time profiling mechanism */
   if(LPM_is_wakeup_time_profiling_done() != 0)
   {
@@ -71,7 +70,6 @@ void MX_StandbyExit_PeripheralInit(void)
       assert_param(0);
     }
   }
-#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #else
   /* Select SysTick source clock */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
@@ -104,9 +102,17 @@ void MX_StandbyExit_PeripheralInit(void)
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
 
   MX_GPIO_Init();
+  MX_LPDMA1_Init();
+#if (OT_CLI_USE != 0)
   MX_USART1_UART_Init();
+#endif
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
+#if (CFG_LOG_SUPPORTED == 1)
+  MX_LPUART1_UART_Init();
+  UTIL_ADV_TRACE_Init();
+  Serial_CMD_Interpreter_Init();
+#endif
 
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
   APP_BSP_StandbyExit();

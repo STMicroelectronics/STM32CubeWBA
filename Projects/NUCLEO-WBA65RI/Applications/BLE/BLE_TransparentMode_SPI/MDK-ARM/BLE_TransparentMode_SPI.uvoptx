@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ProjectOpt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_optx.xsd">
-
   <SchemaVersion>1.0</SchemaVersion>
-
   <Header>### uVision Project, (C) Keil Software</Header>
-
   <Extensions>
     <cExt>*.c</cExt>
     <aExt>*.s*; *.src; *.a*</aExt>
@@ -15,12 +12,10 @@
     <CppX>*.cpp</CppX>
     <nMigrate>0</nMigrate>
   </Extensions>
-
   <DaveTm>
     <dwLowDateTime>0</dwLowDateTime>
     <dwHighDateTime>0</dwHighDateTime>
   </DaveTm>
-
   <Target>
     <TargetName>BLE_TransparentMode_SPI</TargetName>
     <ToolsetNumber>0x4</ToolsetNumber>
@@ -180,7 +175,6 @@
       </DebugDescription>
     </TargetOption>
   </Target>
-
   <Group>
     <GroupName>Application/MDK-ARM</GroupName>
     <tvExp>0</tvExp>
@@ -200,7 +194,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/Core</GroupName>
     <tvExp>0</tvExp>
@@ -256,7 +249,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/Flash</GroupName>
     <tvExp>0</tvExp>
@@ -276,7 +268,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/CRC_Ctrl</GroupName>
     <tvExp>0</tvExp>
@@ -296,7 +287,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/ADC_Ctrl</GroupName>
     <tvExp>0</tvExp>
@@ -316,7 +306,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/LowPower</GroupName>
     <tvExp>0</tvExp>
@@ -348,7 +337,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/Debug_GPIO</GroupName>
     <tvExp>0</tvExp>
@@ -368,7 +356,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Interfaces</GroupName>
     <tvExp>0</tvExp>
@@ -388,7 +375,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Modules</GroupName>
     <tvExp>0</tvExp>
@@ -408,7 +394,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/STM32_WPAN/App</GroupName>
     <tvExp>0</tvExp>
@@ -440,7 +425,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/STM32_WPAN/Target</GroupName>
     <tvExp>0</tvExp>
@@ -508,7 +492,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Interface</GroupName>
     <tvExp>0</tvExp>
@@ -564,7 +547,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules</GroupName>
     <tvExp>0</tvExp>
@@ -692,7 +674,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
     <tvExp>0</tvExp>
@@ -736,7 +717,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/Flash</GroupName>
     <tvExp>0</tvExp>
@@ -792,7 +772,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/MemoryManager</GroupName>
     <tvExp>0</tvExp>
@@ -824,25 +803,12 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/RFControl</GroupName>
     <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
-    <File>
-      <GroupNumber>17</GroupNumber>
-      <FileNumber>45</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Projects/Common/WPAN/Modules/RFControl/rf_antenna_switch.c</PathWithFileName>
-      <FilenameWithoutPath>rf_antenna_switch.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
     <File>
       <GroupNumber>17</GroupNumber>
       <FileNumber>46</FileNumber>
@@ -856,7 +822,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/RTDebug</GroupName>
     <tvExp>0</tvExp>
@@ -888,7 +853,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/SerialCmdInterpreter</GroupName>
     <tvExp>0</tvExp>
@@ -908,7 +872,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/Log</GroupName>
     <tvExp>0</tvExp>
@@ -928,7 +891,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Startup</GroupName>
     <tvExp>0</tvExp>
@@ -948,7 +910,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Doc</GroupName>
     <tvExp>0</tvExp>
@@ -968,7 +929,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
     <tvExp>0</tvExp>
@@ -1337,18 +1297,6 @@
     </File>
     <File>
       <GroupNumber>23</GroupNumber>
-      <FileNumber>83</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_ll_dma.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>23</GroupNumber>
       <FileNumber>84</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
@@ -1360,7 +1308,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Drivers/CMSIS</GroupName>
     <tvExp>0</tvExp>
@@ -1380,7 +1327,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/LinkLayer</GroupName>
     <tvExp>0</tvExp>
@@ -1448,7 +1394,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/BLE</GroupName>
     <tvExp>0</tvExp>
@@ -1468,7 +1413,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Utilities</GroupName>
     <tvExp>0</tvExp>
@@ -1572,7 +1516,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>::CMSIS</GroupName>
     <tvExp>0</tvExp>
@@ -1580,5 +1523,4 @@
     <cbSel>0</cbSel>
     <RteFlg>1</RteFlg>
   </Group>
-
 </ProjectOpt>

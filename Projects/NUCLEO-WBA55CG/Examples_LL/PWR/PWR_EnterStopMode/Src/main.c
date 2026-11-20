@@ -137,45 +137,36 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_3);
-  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_3)
+  LL_FLASH_SetLatency(LL_FLASH_LATENCY_1);
+  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_1)
   {
   }
 
-  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
-  LL_RCC_HSE_Enable();
+  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
+  LL_RCC_HSI_Enable();
 
-   /* Wait till HSE is ready */
-  while(LL_RCC_HSE_IsReady() != 1)
+   /* Wait till HSI is ready */
+  while(LL_RCC_HSI_IsReady() != 1)
   {
   }
 
-  LL_RCC_PLL1_ConfigDomain_SYS(LL_RCC_PLL1SOURCE_HSE, 4, 25, 2);
-  LL_RCC_PLL1_EnableDomain_PLL1R();
-  LL_RCC_PLL1_SetVCOInputRange(LL_RCC_PLLINPUTRANGE_8_16);
-  LL_RCC_PLL1_Enable();
-
-   /* Wait till PLL is ready */
-  while(LL_RCC_PLL1_IsReady() != 1)
-  {
-  }
-
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1R);
+  LL_RCC_HSI_SetCalibTrimming(16);
+  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
 
    /* Wait till System clock is ready */
-  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1R)
+  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI)
   {
   }
 
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-  LL_RCC_SetAHB5Prescaler(LL_RCC_AHB5_DIV_4);
+  LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1);
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
   LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
   LL_RCC_SetAPB7Prescaler(LL_RCC_APB7_DIV_1);
 
-  LL_Init1msTick(100000000);
+  LL_Init1msTick(16000000);
 
-  LL_SetSystemCoreClock(100000000);
+  LL_SetSystemCoreClock(16000000);
 }
 
 /**
@@ -243,7 +234,7 @@ static void MX_GPIO_Init(void)
 void LED_Off(void)
 {
   /* Turn LD1 off */
-  LL_GPIO_ResetOutputPin(LD1_GPIO_Port, LD1_Pin);
+  LL_GPIO_SetOutputPin(LD1_GPIO_Port, LD1_Pin);
 }
 
 /**
@@ -308,8 +299,7 @@ void Error_Handler(void)
 
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

@@ -12,6 +12,14 @@ Switching to the SMPS regulator provides lower consumption.
 The JP2 jumper can be remove of the board to current consumption
 measurement Idd with ammeter.
 
+## <b>Measured Current Consumption</b>
+
+| Mode                 | Current Consumption |
+|----------------------|---------------------|
+| Run Mode (SMPS 16MHz)| 0.43 mA             |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
+
 ### <b>Keywords</b>
 
 Power, PWR, LDO, SMPS, Voltage range 2, HSI, 16MHz

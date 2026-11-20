@@ -3,7 +3,7 @@
 This example shows how to enter the system in STOP 2 mode and wake-up from this
 mode using external RESET or wake-up interrupt.
 
-In the associated software, the system clock is set to 100 MHz, an EXTI line
+In the associated software, the system clock is set to HSI16, an EXTI line
 is connected to the user button through PC.13 and configured to generate an 
 interrupt on falling edge upon key press.
 The SysTick is programmed to generate an interrupt each 1 ms and in the SysTick 
@@ -23,6 +23,15 @@ Two leds LD1 and LD3 are used to monitor the system state as following:
  - LD1 off : system in STOP 2 mode
 
 These steps are repeated in an infinite loop.
+
+## <b>Measured Current Consumption</b>
+
+| Mode   | Current Consumption |
+|--------|---------------------|
+| Run    | 1.1 mA              |
+| Stop 2 | 18.7 µA             |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
 
 #### <b>Notes</b>
 	  

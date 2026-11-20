@@ -60,11 +60,6 @@ extern "C" {
                                      /* Undefined: Image encryption disabled. */
 #define MCUBOOT_BOOTSTRAP            /* Allow initial state with images in secondary slots only (empty primary slots) */
 
-#define MCUBOOT_MEASURED_BOOT
-#define MCUBOOT_DATA_SHARING
-#define TFM_PARTITION_FIRMWARE_UPDATE
-#define MAX_BOOT_RECORD_SZ 0x100
-
 /*
  * Cryptographic settings
  */
@@ -75,6 +70,14 @@ extern "C" {
 
 #include "stm32_hal.h"
 #include "flash_layout.h"
+
+#if defined(TFM_COMPATIBILITY)
+#define MCUBOOT_MEASURED_BOOT
+#define MCUBOOT_DATA_SHARING
+#define MAX_BOOT_RECORD_SZ 0x100
+#define TFM_PARTITION_FIRMWARE_UPDATE
+#endif
+
 
 /*
  * Logging

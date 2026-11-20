@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -124,11 +124,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -229,6 +231,7 @@ static void SystemPower_Config(void)
   HAL_NVIC_SetPriority(WKUP_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(WKUP_IRQn);
 /* USER CODE BEGIN PWR */
+
 /* USER CODE END PWR */
 }
 
@@ -591,6 +594,7 @@ void MX_USART2_UART_Init(void)
 void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -599,6 +603,7 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -608,7 +613,7 @@ void ConfigureStandbyWakeupPins(void)
  /* HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);   B1 --> PC13  --> not used to avoid LSE disturbance */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);   /* B2 --> PB6 */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);   /* B3 --> PB7 */
-  
+
   HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_6);
   HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_7);
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);

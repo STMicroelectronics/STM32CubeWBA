@@ -33,8 +33,19 @@ extern "C" {
 #include "app_common.h"
 #include "app_debug.h"
 
-#include "stm32wbaxx_ll_pka.h"
+#include "stm32wbaxx_ll_icache.h"
 #include "stm32wbaxx_ll_tim.h"
+#include "stm32wbaxx_ll_bus.h"
+#include "stm32wbaxx_ll_cortex.h"
+#include "stm32wbaxx_ll_rcc.h"
+#include "stm32wbaxx_ll_system.h"
+#include "stm32wbaxx_ll_utils.h"
+#include "stm32wbaxx_ll_pwr.h"
+#include "stm32wbaxx_ll_gpio.h"
+#include "stm32wbaxx_ll_dma.h"
+
+#include "stm32wbaxx_ll_exti.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -59,13 +70,10 @@ extern "C" {
 void Error_Handler(void);
 void MX_GPIO_Init(void);
 void MX_GPDMA1_Init(void);
-void MX_RAMCFG_Init(void);
-void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
-void MX_ADC4_Init(void);
-void MX_RNG_Init(void);
-void MX_CRC_Init(void);
+void MX_RTC_Init(void);
 void MX_ICACHE_Init(void);
+void MX_RAMCFG_Init(void);
 
 /* USER CODE BEGIN EFP */
 

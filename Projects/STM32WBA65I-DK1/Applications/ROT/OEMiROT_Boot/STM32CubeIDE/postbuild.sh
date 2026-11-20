@@ -53,6 +53,11 @@ if [ "$oemurot_enabled" == "1" ]; then
   bootpath=OEMiRoT_OEMuRoT
 
   source "$provisioningdir/OEMiRoT_OEMuRoT/img_config.sh"
+elif [ "$tfm_enabled" == "1" ]; then
+  project=OEMiROT
+  bootpath=OEMiRoT_TFM
+
+  source "$provisioningdir/OEMiRoT_TFM/img_config.sh"
 else
   project=OEMiROT
   bootpath=OEMiROT
@@ -87,6 +92,8 @@ ns_data_init_xml="$provisioningdir/$bootpath/Images/${project}_NS_Data_Init_Imag
 if [ "$oemurot_enabled" == "1" ]; then
   oemurot_code_xml="$provisioningdir/OEMiRoT_OEMuRoT/Images/OEMiROT_Code_Image.xml"
   oemurot_code_init_xml="$provisioningdir/OEMiRoT_OEMuRoT/Images/OEMiROT_Code_Init_Image.xml"
+  oemurot_data_xml="$provisioningdir/OEMiRoT_OEMuRoT/Images/OEMiROT_Data_Image.xml"
+  oemurot_data_init_xml="$provisioningdir/OEMiRoT_OEMuRoT/Images/OEMiROT_Data_Init_Image.xml"
 fi
 
 #=================================================================================================
@@ -271,18 +278,20 @@ if [ "$oemurot_enabled" == "1" ]; then
 fi
 
 # ============================================================ Update %postbuild_appli% ==============================================================
-if [ "$app_full_secure" == "0" ]; then
-  $python$applicfg flash --layout $preprocess_bl2_file -b image_s_size -m  RE_IMAGE_FLASH_SECURE_IMAGE_SIZE $postbuild_appli --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
+if [ "$tfm_enabled" == "0" ]; then
+  if [ "$app_full_secure" == "0" ]; then
+    $python$applicfg flash --layout $preprocess_bl2_file -b image_s_size -m  RE_IMAGE_FLASH_SECURE_IMAGE_SIZE $postbuild_appli --vb >> $current_log_file 2>&1
+    ret=$?
+    if [ $ret != 0 ]; then error; fi
 
-  $python$applicfg flash --layout $preprocess_bl2_file -b image_ns_size -m  RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE $postbuild_appli --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
+    $python$applicfg flash --layout $preprocess_bl2_file -b image_ns_size -m  RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE $postbuild_appli --vb >> $current_log_file 2>&1
+    ret=$?
+    if [ $ret != 0 ]; then error; fi
 
-  $python$applicfg flash --layout $preprocess_bl2_file -b app_image_number -m  RE_APP_IMAGE_NUMBER --decimal $postbuild_appli --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
+    $python$applicfg flash --layout $preprocess_bl2_file -b app_image_number -m  RE_APP_IMAGE_NUMBER --decimal $postbuild_appli --vb >> $current_log_file 2>&1
+    ret=$?
+    if [ $ret != 0 ]; then error; fi
+  fi
 fi
 
 # ============================================================ Update %ns_code_xml% ==================================================================
@@ -326,191 +335,218 @@ ret=$?
 if [ $ret != 0 ]; then error; fi
 
 # ============================================================ Update %ns_data_xml% ==================================================================
-if [ "$app_full_secure" == "0" ]; then
-  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_DATA_IMAGE_SIZE -c S $ns_data_xml --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
+if [ "$tfm_enabled" == "0" ]; then
+  if [ "$app_full_secure" == "0" ]; then
+    $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_DATA_IMAGE_SIZE -c S $ns_data_xml --vb >> $current_log_file 2>&1
+    ret=$?
+    if [ $ret != 0 ]; then error; fi
 
-  $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_ENCRYPTION -n "Encryption key" -link GetPublic -t File -c -E -h 1 -d "" $ns_data_xml --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
+    $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_ENCRYPTION -n "Encryption key" -link GetPublic -t File -c -E -h 1 -d "" $ns_data_xml --vb >> $current_log_file 2>&1
+    ret=$?
+    if [ $ret != 0 ]; then error; fi
 
-  $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_OVER_WRITE -n "Write Option" -t Data -c --overwrite-only -h 1 -d "" $ns_data_xml --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then  error; fi
+    $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_OVER_WRITE -n "Write Option" -t Data -c --overwrite-only -h 1 -d "" $ns_data_xml --vb >> $current_log_file 2>&1
+    ret=$?
+    if [ $ret != 0 ]; then  error; fi
 
-  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_DATA_IMAGE_SIZE -c S $ns_data_init_xml --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
+    $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_DATA_IMAGE_SIZE -c S $ns_data_init_xml --vb >> $current_log_file 2>&1
+    ret=$?
+    if [ $ret != 0 ]; then error; fi
+  fi
 fi
 
 # ============================================================ Update %s_data_xml% ===================================================================
-$python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -c S $s_data_xml --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_ENCRYPTION -n "Encryption key" -link GetPublic -t File -c -E -h 1 -d "" $s_data_xml --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_OVER_WRITE -n "Write Option" -t Data -c --overwrite-only -h 1 -d "" $s_data_xml --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -c S $s_data_init_xml --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-# ============================================================ Update %appli_flash_layout% ===========================================================
-$python$applicfg setdefine --layout $preprocess_bl2_file -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg setdefine --layout $preprocess_bl2_file -m RE_EXTERNAL_FLASH_ENABLE -n OEMIROT_EXTERNAL_FLASH_ENABLE -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_APP_IMAGE_NUMBER -n MCUBOOT_APP_IMAGE_NUMBER $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_S_DATA_IMAGE_NUMBER -n MCUBOOT_S_DATA_IMAGE_NUMBER $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_NS_DATA_IMAGE_NUMBER -n MCUBOOT_NS_DATA_IMAGE_NUMBER $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_0_OFFSET -n FLASH_AREA_0_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_0_SIZE -n FLASH_AREA_0_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_1_OFFSET -n FLASH_AREA_1_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_1_SIZE -n FLASH_AREA_1_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_2_OFFSET -n FLASH_AREA_2_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_2_SIZE -n FLASH_AREA_2_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_3_OFFSET -n FLASH_AREA_3_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_3_SIZE -n FLASH_AREA_3_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_4_OFFSET -n FLASH_AREA_4_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_4_SIZE -n FLASH_AREA_4_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_5_OFFSET -n FLASH_AREA_5_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_5_SIZE -n FLASH_AREA_5_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_6_OFFSET -n FLASH_AREA_6_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_6_SIZE -n FLASH_AREA_6_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_7_OFFSET -n FLASH_AREA_7_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_7_SIZE -n FLASH_AREA_7_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_S_NS_PARTITION_SIZE -n FLASH_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE -n FLASH_NS_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_IMAGE_SIZE -n FLASH_S_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -n FLASH_S_DATA_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_DATA_IMAGE_SIZE -n FLASH_NS_DATA_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_FLASH_B_SIZE -n FLASH_B_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_0_OFFSET -n OEMIROT_AREA_0_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_0_SIZE -n OEMIROT_AREA_0_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_2_OFFSET -n OEMIROT_AREA_2_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_2_SIZE -n OEMIROT_AREA_2_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
-
-if [ "$oemurot_enabled" == "1" ]; then
-  $python$applicfg setdefine -a uncomment -n OEMUROT_ENABLE -v 1 $appli_flash_layout
+if [ "$tfm_enabled" == "0" ]; then
+  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -c S $s_data_xml --vb >> $current_log_file 2>&1
   ret=$?
-else
-  $python$applicfg setdefine -a comment -n OEMUROT_ENABLE -v 1 $appli_flash_layout
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_ENCRYPTION -n "Encryption key" -link GetPublic -t File -c -E -h 1 -d "" $s_data_xml --vb >> $current_log_file 2>&1
   ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_OVER_WRITE -n "Write Option" -t Data -c --overwrite-only -h 1 -d "" $s_data_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -c S $s_data_init_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
 fi
-if [ $ret != 0 ]; then error; fi
 
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_BOOT_SHARED_DATA_BASE -n BOOT_SHARED_DATA_BASE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
+# ========================================================== Update %oemirot_data_xml% ================================================================
+if [ "$oemurot_enabled" == "1" ]; then
+  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_SIZE -c S $oemurot_data_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
 
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_BOOT_SHARED_DATA_SIZE -n BOOT_SHARED_DATA_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
+  $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_ENCRYPTION -n "Encryption key" -link GetPublic -t File -c -E -h 1 -d "" $oemurot_data_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
 
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_BOOT_RAM_BASE -n BOOT_RAM_BASE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
+  $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_OVER_WRITE -n "Write Option" -t Data -c --overwrite-only -h 1 -d "" $oemurot_data_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then  error; fi
 
-$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_BOOT_RAM_SIZE -n BOOT_RAM_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
-ret=$?
-if [ $ret != 0 ]; then error; fi
+  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_SIZE -c S $oemurot_data_init_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+fi
 
-# ======================================================================== end =======================================================================
+  # ============================================================ Update %appli_flash_layout% ===========================================================
+if [ "$tfm_enabled" == "0" ]; then
+  $python$applicfg setdefine --layout $preprocess_bl2_file -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg setdefine --layout $preprocess_bl2_file -m RE_EXTERNAL_FLASH_ENABLE -n OEMIROT_EXTERNAL_FLASH_ENABLE -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_APP_IMAGE_NUMBER -n MCUBOOT_APP_IMAGE_NUMBER $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_S_DATA_IMAGE_NUMBER -n MCUBOOT_S_DATA_IMAGE_NUMBER $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_NS_DATA_IMAGE_NUMBER -n MCUBOOT_NS_DATA_IMAGE_NUMBER $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_0_OFFSET -n FLASH_AREA_0_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_0_SIZE -n FLASH_AREA_0_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_1_OFFSET -n FLASH_AREA_1_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_1_SIZE -n FLASH_AREA_1_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_2_OFFSET -n FLASH_AREA_2_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_2_SIZE -n FLASH_AREA_2_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_3_OFFSET -n FLASH_AREA_3_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_3_SIZE -n FLASH_AREA_3_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_4_OFFSET -n FLASH_AREA_4_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_4_SIZE -n FLASH_AREA_4_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_5_OFFSET -n FLASH_AREA_5_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_5_SIZE -n FLASH_AREA_5_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_6_OFFSET -n FLASH_AREA_6_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_6_SIZE -n FLASH_AREA_6_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_7_OFFSET -n FLASH_AREA_7_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_AREA_7_SIZE -n FLASH_AREA_7_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_S_NS_PARTITION_SIZE -n FLASH_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE -n FLASH_NS_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_IMAGE_SIZE -n FLASH_S_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -n FLASH_S_DATA_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_DATA_IMAGE_SIZE -n FLASH_NS_DATA_PARTITION_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_FLASH_B_SIZE -n FLASH_B_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_0_OFFSET -n OEMIROT_AREA_0_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_0_SIZE -n OEMIROT_AREA_0_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_2_OFFSET -n OEMIROT_AREA_2_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_2_SIZE -n OEMIROT_AREA_2_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_OFFSET -n OEMIROT_AREA_4_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_SIZE -n OEMIROT_AREA_4_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_OFFSET -n OEMIROT_AREA_6_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_SIZE -n OEMIROT_AREA_6_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  if [ "$oemurot_enabled" == "1" ]; then
+    $python$applicfg setdefine -a uncomment -n OEMUROT_ENABLE -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
+    ret=$?
+  else
+    $python$applicfg setdefine -a comment -n OEMUROT_ENABLE -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
+    ret=$?
+  fi
+  if [ $ret != 0 ]; then error; fi
+
+fi
+# ============================================================ end ============================================================
 exit 0
+
+#
 

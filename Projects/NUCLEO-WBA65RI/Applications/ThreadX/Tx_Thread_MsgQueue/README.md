@@ -7,6 +7,7 @@ The main entry function tx_application_define() is then called by ThreadX during
 priorities and 2 message queues :
 
   - tx_app_thread (Priority : 5; Preemption Threshold : 5)
+  - MsgSenderThreadOne (Priority : 5; Preemption Threshold : 5)
   - MsgSenderThreadTwo (Priority : 5; Preemption Threshold : 5)
   - MsgReceiverThread (Priority : 10; Preemption Threshold : 10)
   - MsgQueueOne (shared by tx_app_thread and MsgReceiverThread)
@@ -22,6 +23,9 @@ priorities and 2 message queues :
 ####  <b>Expected success behavior</b>
 
 <i>GREEN_LED</i> toggles every 200ms and <i>BLUE_LED</i> toggles every 500ms if the application is running successfully.
+- Messages on HyperTerminal :
+  ** Message is available on MsgQueueOne: TOGGLE_GREEN_LED**
+  ** Message is available on MsgQueueTwo: TOGGLE_BLUE_LED**
 
 #### <b>Error behaviors</b>
 
@@ -82,7 +86,13 @@ RTOS, ThreadX, Threading, Message Queue, Event chaining
   - This application runs on STM32WBA65xx devices
   - This application has been tested with STMicroelectronics NUCLEO-WBA65RI revision boards (MB1801-USB-D01 and MB2130-WBA65RI-A01)
     and can be easily tailored to any other supported device and development board.
-
+  - A virtual COM port appears in the HyperTerminal:
+    - Hyperterminal configuration:
+      + Data Length = 8 Bits
+      + One Stop Bit
+      + No parity
+      + BaudRate = 115200 Baud
+      + Flow control: None
 
 ###  <b>How to use it ?</b>
 

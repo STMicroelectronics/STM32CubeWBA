@@ -98,7 +98,6 @@ uint32_t g_phy_cli_frame_wr_idx = 0;   // index of the next byte to be written i
 uint32_t g_phy_cli_frame_to_print = 0; // number of frames to print (in the buffer)
 uint32_t g_phy_cli_frame_idx = 0;      // num of frame since last RX_start
 
-
 /* Private variables ---------------------------------------------------------*/
 uint8_t cliUartRX;
 volatile uint8_t is_rx_pending = FALSE;
@@ -168,7 +167,7 @@ static void app_cli_uartTransmit(uint8_t *pData, uint16_t size );
 
 /* Callbacks for printing infos from PHY dependent CLI */
 void app_phy_cli_print_tx_results_cb();
-void app_phy_cli_print_rx_results_cb(); 
+void app_phy_cli_print_rx_results_cb();
 
 /* CLI Process */
 static void APP_PHY_CLI_Uart_Init(void);
@@ -211,21 +210,28 @@ static void uartRxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
-  /* If ENTER, forward the command if non-empty*/
-  if ( ((cliUartRX == '\r') || (cliUartRX == '\n')) &&
-     (uartRxBuffer_length != 0) )
+  /* A complete command is pending in the sequencer. Keep its buffer intact. */
+  if (cli_cmd_process != 0U)
   {
-    uartRxBuffer[uartRxBuffer_length] = 0; /* Add a \0 for possible use (e.g. strlen) */
-    /* Add echo */
-    UTIL_SEQ_SetTask( 1U << CFG_TASK_PHY_CLI_PROCESS, CFG_SCH_PHY_CLI_PROCESS);
+    return;
   }
-  else
+
+  /* If ENTER, forward the command if non-empty. */
+  if ((cliUartRX == '\r') || (cliUartRX == '\n'))
   {
-    /* Add char to current buffer (only if enough room) */
-    if (uartRxBuffer_length < PHY_CLI_UART_BUFFER_SIZE)
+    if (uartRxBuffer_length != 0U)
     {
-      uartRxBuffer[uartRxBuffer_length++] = cliUartRX;
+      uartRxBuffer[uartRxBuffer_length] = 0; /* Add a \0 for possible use (e.g. strlen) */
+      cli_cmd_process = 1U;
+      UTIL_SEQ_SetTask(1U << CFG_TASK_PHY_CLI_PROCESS, CFG_SCH_PHY_CLI_PROCESS);
     }
+    return;
+  }
+
+  /* Add char to current buffer (only if enough room). */
+  if (uartRxBuffer_length < PHY_CLI_UART_BUFFER_SIZE)
+  {
+    uartRxBuffer[uartRxBuffer_length++] = cliUartRX;
   }
 }
 
@@ -247,6 +253,9 @@ static void APP_PHY_CLI_Uart_Init(void)
   /* register callbacks */
   cli_uart->TxCpltCallback = uartTxCpltCallback;
   cli_uart->RxCpltCallback = uartRxCpltCallback;
+
+  /* The log module (Serial_CMD_Interpreter_Init) already armed a reception on its own buffer: abort it, otherwise the first char is not stored in cliUartRX. */
+  (void)HAL_UART_AbortReceive(CLI_UART);
   HAL_UART_Receive_IT(CLI_UART, &cliUartRX, 1);
 }
 
@@ -260,7 +269,7 @@ void APP_PHY_CLI_Init()
 {
   APP_PHY_CLI_Uart_Init();
   app_cli_ex_init();
-  
+
   cmds_history.index = -1;
   for (uint8_t i = 0; i < CMD_ARCHIVE_SIZE; i++)
   {
@@ -311,18 +320,27 @@ static void app_phy_cli_help(void)
 //####################################
 void app_cli_print(const char *aFormat, ...)
 {
-  uint16_t ret;
-  
+  int ret;
+
   va_list aArguments;
   va_start(aArguments, aFormat);
 
   while(cliUart_DMA_TX_ongoing == TRUE);
   cliUart_DMA_TX_ongoing = TRUE;
 
-  ret = (uint16_t)vsnprintf((char *) &uartTxBuffer[0], PHY_CLI_UART_BUFFER_SIZE
-                                     , aFormat, aArguments);
+  ret = vsnprintf((char *) &uartTxBuffer[0], PHY_CLI_UART_BUFFER_SIZE,
+                  aFormat, aArguments);
+  va_end(aArguments);
+
   if (ret > 0)
-    app_cli_uartTransmit(&uartTxBuffer[0], ret);
+  {
+    uint16_t size = (uint16_t)MIN(ret, (int)(PHY_CLI_UART_BUFFER_SIZE - 1U));
+    app_cli_uartTransmit(&uartTxBuffer[0], size);
+  }
+  else
+  {
+    cliUart_DMA_TX_ongoing = FALSE;
+  }
 }
 
 /**
@@ -340,6 +358,7 @@ static void app_cli_uartTransmit(uint8_t *pData, uint16_t size )
 
   if (result != HAL_OK) {
     /* UART should return in Receiver mode */
+      cliUart_DMA_TX_ongoing = FALSE;
       HAL_UART_Receive_IT(CLI_UART, &verifRx, 1);
   }
 }
@@ -367,7 +386,7 @@ void app_cli_print_payload(const app_cli_single_RX_t *frame)
 // These tasks are scheduled when there is an "asynchronous" result to print from the underlying CLI.
 // As he printing takes too much time to be executed in the link layer task, it cannot be only a callback so it is
 // implemented as a task (but this task can takes too many time to execute ? let's try again a simple callback like for ED)?
-// Each task has an "schedule" associated function so that the the CLI can schedule it without knowing details about the scheduler 
+// Each task has an "schedule" associated function so that the the CLI can schedule it without knowing details about the scheduler
 //####################################
 
 void app_cli_print_tx_results(const uint32_t frm_success, const uint32_t frm_failed,
@@ -400,7 +419,7 @@ void app_cli_print_rx_results(const uint16_t packets_received, const uint16_t pa
     app_cli_print("Last good Frame received:");
     app_cli_print_payload(p_last_received_frame);
     app_cli_print("\r\n");
-    
+
     app_cli_print("Length:[%d]\r\n", p_last_received_frame->payload_len);
 
     app_cli_print("\r\nIn last good Frame received:\r\n");
@@ -438,8 +457,7 @@ static inline void app_cli_printPrompt(void)
 static int app_phy_cli_cmdLookup(const char *cmdStr) {
     for (int i = 0; i < (sizeof(cmdList)/sizeof(cmdList[0])); i++)
     {
-      uint8_t cmp = strcasecmp(cmdList[i]->cmd, cmdStr);
-      if (cmp <= 0)
+      if (strcasecmp(cmdList[i]->cmd, cmdStr) == 0)
         return i;
     }
     return 255;
@@ -462,10 +480,16 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
   }
 
   /* Fill a pointer table with addr of the different arguments of the command */
-  cmdToken = strtok(pCommand, " ");
+  cmdToken = strtok(pCommand, " \r\n");
   while (cmdToken != NULL) {
+    if (argIndex >= (sizeof(cliCmdArray) / sizeof(cliCmdArray[0])))
+    {
+      app_cli_print("Too many command parameters\r\n");
+      app_cli_printPrompt();
+      return;
+    }
     cliCmdArray[argIndex++] = cmdToken;
-    cmdToken = strtok(NULL, " ");
+    cmdToken = strtok(NULL, " \r\n");
     /* Echo command written (e.g. 'TX_start 0x0C,0x01,0x08,0x01,0x22,0x11,0xFF,0xFF,0xB5,0xB6,0xB7') */
     app_cli_print(" %s", cliCmdArray[argIndex-1]);
   }
@@ -480,7 +504,7 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
     app_cli_printPrompt();
     return;
   }
-  
+
   /* Save command in archives */
   cmds_history.index++;
   cmds_history.index %= CMD_ARCHIVE_SIZE;
@@ -586,7 +610,7 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
     rx_frame_printing = (argIndex > 1) ? (uint16_t)atol(cliCmdArray[1]) : 0;
     // parameter (optional) : RX duration
     rx_duration = (argIndex > 2) ? (uint16_t)atol(cliCmdArray[2]) : 0;
-    
+
     /* execute app_802_15_4 CLI */
     res = app_cli_ex_start_rx(rx_frame_printing, rx_duration);
     is_rx_pending = TRUE;
@@ -596,7 +620,7 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
     app_cli_printPrompt();
     break;
 
-  case CMD_RX_STOP: 
+  case CMD_RX_STOP:
     app_cli_ex_stop_rx();
     /* Reset is_rx_pending to FALSE */
     is_rx_pending = FALSE;
@@ -613,7 +637,7 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
     else
       app_cli_print_result(res);
     app_cli_printPrompt();
-    break;  
+    break;
 
   case CMD_SET_CCA_THRESHOLD:
     cca_threshold = (int8_t)atol(cliCmdArray[1]);
@@ -658,7 +682,7 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
     }
     app_cli_print_result(res);
     app_cli_printPrompt();
-    break;    
+    break;
 
   case CMD_GET_RSSI:
     res = app_cli_ex_get_rssi(&rssi);
@@ -669,7 +693,7 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
     }
     app_cli_print_result(res);
     app_cli_printPrompt();
-    break;    
+    break;
 
   case CMD_CW_START:
     channel = (uint8_t)app_phy_cli_strtoul(cliCmdArray[1]);
@@ -682,20 +706,23 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
       res = app_cli_ex_cw_start(channel);
     }
     app_cli_print_result(res);
-    app_cli_printPrompt();   
+    app_cli_printPrompt();
     break;
 
   case CMD_CW_STOP:
     res = app_cli_ex_cw_stop();
     app_cli_print_result(res);
-    app_cli_printPrompt();     
+    app_cli_printPrompt();
     break;
   }
 }
 
 static void app_cli_Process(void)
 {
-  app_phy_cli_Runner(&uartRxBuffer[0], uartRxBuffer_length);
+  if (uartRxBuffer_length != 0U)
+  {
+    app_phy_cli_Runner(&uartRxBuffer[0], uartRxBuffer_length);
+  }
   uartRxBuffer_length = 0U;
   cli_cmd_process = 0U;
 }

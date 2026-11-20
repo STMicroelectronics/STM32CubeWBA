@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -124,7 +124,6 @@ typedef struct
   uint16_t ServiceChangedCharDescHdl;
   uint8_t ServiceChangedCharProperties;
   /* USER CODE BEGIN BleClientAppContext_t */
-
   /* handles of the P2P service */
   uint16_t P2PServiceHdl;
   uint16_t P2PServiceEndHdl;
@@ -192,7 +191,6 @@ static BleClientAppContext_t a_ClientContext[CFG_BLE_NUM_CLIENT_CONTEXTS];
 static BleClientAppProcContext_t procClientContext;
 
 /* USER CODE BEGIN PV */
-
 static uint8_t P2PLedSelection;
 static uint8_t P2PLedLevel;
 static P2PButton_t P2PButtonData;
@@ -219,7 +217,6 @@ static void gatt_cmd_resp_release(void);
 static uint8_t gatt_cmd_resp_wait(void);
 static uint8_t gatt_procedure(uint8_t index, ProcGattId_t GattProcId);
 /* USER CODE BEGIN PFP */
-
 static void P2Pclient_write_char(void);
 
 /* USER CODE END PFP */
@@ -272,7 +269,6 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_task);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
-
   UTIL_SEQ_RegTask(1U << CFG_TASK_P2PC_WRITE_CHAR_ID, UTIL_SEQ_RFU, P2Pclient_write_char);
 
   P2PLedSelection = 0x00;
@@ -669,17 +665,10 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
       {
         uint16_t charPropVal = 0x0000;
 
-        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000)
+        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000
+            && ((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
         {
-          if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_NOTIFY) == CHAR_PROP_NOTIFY)
-          {
-            charPropVal = 0x0001;
-          }
-          else if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
-          {
-            charPropVal = 0x0002;
-          }
-
+          charPropVal = 0x0002;
           procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
@@ -994,6 +983,7 @@ static void gatt_parse_services(aci_att_read_by_group_type_resp_event_rp0 *p_evt
 
         LOG_INFO_APP(", P2P_SERVICE_UUID found\n");
       }
+
         /* USER CODE END gatt_parse_services_2 */
       }
       LOG_INFO_APP("\n");
@@ -1192,27 +1182,10 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
+          a_ClientContext[index].ServiceChangedCharProperties = CharProperties;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
 /* USER CODE BEGIN gatt_parse_chars_1 */
-        else if (uuid == ST_P2P_NOTIFY_CHAR_UUID)
-        {
-          a_ClientContext[index].P2PNotificationCharHdl = CharStartHdl;
-          a_ClientContext[index].P2PNotificationValueHdl = CharValueHdl;
-          LOG_INFO_APP(", ST_P2P_NOTIFY_CHAR_UUID charac found\n");
-        }
-        else if (uuid == ST_P2P_WRITE_CHAR_UUID)
-        {
-          a_ClientContext[index].P2PWriteToServerCharHdl = CharStartHdl;
-          a_ClientContext[index].P2PWriteToServerValueHdl = CharValueHdl;
-          LOG_INFO_APP(", ST_P2P_WRITE_CHAR_UUID charac found\n");
-        }
-        else if (uuid == ST_P2P_WRITE_WITH_RES_CHAR_UUID)
-        {
-          a_ClientContext[0].P2PWriteWithResToServerCharHdl = CharStartHdl;
-          a_ClientContext[0].P2PWriteWithResToServerValueHdl = CharValueHdl;
-          LOG_INFO_APP(", ST_P2P_WRITE_WITH_RES_CHAR_UUID charac found\n");
-        }
 
 /* USER CODE END gatt_parse_chars_1 */
         else
@@ -1356,18 +1329,6 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
           LOG_INFO_APP(", found GATT SERVICE_CHANGED_CHARACTERISTIC_UUID\n");
         }
 /* USER CODE BEGIN gatt_parse_descs_2 */
-        else if (uuid == ST_P2P_WRITE_CHAR_UUID)
-        {
-          LOG_INFO_APP(", found ST_P2P_WRITE_CHAR_UUID\n");
-        }
-        else if (uuid == ST_P2P_NOTIFY_CHAR_UUID)
-        {
-          LOG_INFO_APP(", found ST_P2P_NOTIFY_CHAR_UUID\n");
-        }
-        else if (uuid == ST_P2P_WRITE_WITH_RES_CHAR_UUID)
-        {
-          LOG_INFO_APP(", found ST_P2P_WRITE_WITH_RES_CHAR_UUID\n");
-        }
 
 /* USER CODE END gatt_parse_descs_2 */
         else
@@ -1612,7 +1573,6 @@ tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint1
 }
 
 /* USER CODE BEGIN LF */
-
 static void P2Pclient_write_char(void)
 {
   uint8_t index = 0;

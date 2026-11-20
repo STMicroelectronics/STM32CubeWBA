@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -103,7 +103,8 @@ typedef enum
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-/*L2CAP Error codes */          
+
+/*L2CAP Error codes */
 #define L2CAP_CONN_SUCCESSFUL                           0x0000
 #define L2CAP_CONN_FAIL_SPSM_NOT_SUPPORTED              0x0002
 #define L2CAP_CONN_FAIL_INSUFFICIENT_RESOURCES          0x0004
@@ -118,6 +119,7 @@ typedef enum
 #define L2CAP_CONN_FAIL_NO_INFO                         0x000D
 #define L2CAP_CONN_FAIL_AUTHENTICATION_PENDING          0x000E
 #define L2CAP_CONN_FAIL_AUTHORIZATION_PENDING           0x000F
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
@@ -139,6 +141,7 @@ typedef enum
                     ((hci_le_advertising_report_event_rp0*)(p))-> \
                     Advertising_Report[0].Length_Data))
 /* USER CODE BEGIN EM */
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 /** @brief Macro that returns a 16-bit value from a buffer where the value is stored in Little Endian Format */
 #define LE_TO_HOST_16(ptr)   (uint16_t) ( ((uint16_t)*((uint8_t *)(ptr))) | \
                                           ((uint16_t)*((uint8_t *)(ptr) + 1) << 8) )
@@ -209,6 +212,7 @@ uint8_t Scan_proc(void);
 void set_bleAppContext_address(uint8_t address_type, const uint8_t p_address[6]);
 uint8_t* get_bleAppContext_address(void);
 void periodic_sync_info_transfer(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

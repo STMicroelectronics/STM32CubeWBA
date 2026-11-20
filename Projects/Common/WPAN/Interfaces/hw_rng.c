@@ -161,19 +161,19 @@ void HW_RNG_DisableClock( uint8_t user_mask )
 static void HW_RNG_WaitingClockSynchronization( void )
 {
   /* RNG busy flag is not available in STM32WBA5xxx */
-#if defined(STM32WBA50xx) || defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx)  
+#if defined(RNG_SR_BUSY)
+  /* wait until RNG_SR_BUSY (bit 4) is cleared */
+  while(RNG->SR & (1 << 4));
+#else
   volatile unsigned int cpt;
   
   for(cpt = 178 ; cpt!=0 ; --cpt);
-#else
-  /* wait until RNG_SR_BUSY (bit 4) is cleared */
-  while(RNG->SR & (1 << 4));
-#endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx) */  
+#endif /* defined(RNG_SR_BUSY) */
 }
 
 /*****************************************************************************/
 /* HAL_RNGEx_RecoverSeedError() adaptation */
-#if defined(STM32WBA50xx) || defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx)    
+#if defined(STM32WBA5xxx)
 static int HW_RNG_RecoverSeedError(void)
 {
   volatile uint32_t count = 0U;
@@ -224,7 +224,7 @@ static int HW_RNG_RecoverSeedError(void)
   return HW_OK;
 }
 
-#else /* defined(STM32WBA50xx) || defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx) */
+#elif defined(STM32WBA2xxx) || defined(STM32WBA6xxx)
 
 static int HW_RNG_RecoverSeedError(void)
 {
@@ -381,7 +381,10 @@ static int HW_RNG_RecoverSeedError(void)
 
   return HW_OK;  
 }
-#endif /* defined(STM32WBA50xx) || defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx) */
+
+#else
+#error "Unsupported STM32WBA series for hw_rng.c"
+#endif
 
 /*
  * HW_RNG_Run: this function must be called in loop.
@@ -576,8 +579,10 @@ void HW_RNG_Init(void)
   LL_RNG_DisableClkErrorDetect(RNG);
   LL_RNG_DisableCondReset(RNG);
 
-#if !(defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx)) 
-  while((RNG->SR & (1 << 4)));
+/* RNG busy flag is not available in STM32WBA5xxx */
+#if defined(RNG_SR_BUSY)
+  /* wait until RNG_SR_BUSY (bit 4) is cleared */
+  while(RNG->SR & (1 << 4));
 #endif 
   
   while(LL_RNG_IsEnabledCondReset(RNG));

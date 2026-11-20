@@ -37,7 +37,7 @@
 typedef struct StorageTrackers
 {
   uint32_t BaseAddress;   /* Base address of the storage zone */
-  uint32_t CurrentBankId; /* Bank 0 or Bank 1 */
+  uint32_t CurrentBankId; /* Active bank index */
   uint32_t UsedSlots;     /* Physical slots written in active bank */
   uint32_t ValidSlots;    /* Non-invalidated slots in active bank */
 } StorageTrackers_t;
@@ -49,29 +49,49 @@ typedef struct StorageBankStats
 } StorageBankStats_t;
 
 /* Private define ------------------------------------------------------------*/
+#if defined(FLASH_DOUBLEWORD_SUPPORT)
+#define FLASH_IF_WRITE_GRANULARITY_BYTES (8U) /* STM32WBA doubleword programming */
+#define FLASH_WRITE_MODE FLASH_TYPEPROGRAM_DOUBLEWORD
+#else
 #define FLASH_IF_WRITE_GRANULARITY_BYTES (16U) /* STM32WBA quadword programming */
+#define FLASH_WRITE_MODE FLASH_TYPEPROGRAM_QUADWORD
+#endif
 #define NB_PAGE_SECTOR_PER_ERASE         (1U)  /* Nb page erased per erase */
 
 /*
- * Each storage area uses 2 banks x 16 slots x 512 bytes = 16 KiB.
- * If encrypted ITS is enabled, reserve 32 KiB at the end of a 1 MiB flash.
+ * Storage footprint per area is:
+ * ITS_BANK_MAX_NUMBER x ITS_SLOT_MAX_NUMBER x ITS_SLOT_SIZE_BYTES.
  * The linker script must reserve the selected pages.
  */
-#if defined(PSA_USE_ENCRYPTED_ITS)
-#define ITS_LOCATION                     0x080F8000U
-#define ITS_ENCRYPTION_KEY_LOCATION      0x080FC000U
-#else
-#define ITS_LOCATION                     0x080FC000U
-#endif /* PSA_USE_ENCRYPTED_ITS */
-
 #define ITS_SLOT_OFFSET_WORDS            (0x00000080U) /* 128 words */
+#define ITS_INVALID_BANK_ID              (0xFFU)
+
+#if defined (STM32WBA5xxx)
 #define ITS_SLOT_MAX_NUMBER              (16U)
 #define ITS_BANK_MAX_NUMBER              (2U)
-#define ITS_INVALID_BANK_ID              (0xFFU)
+#elif defined (STM32WBA6xxx)
+#define ITS_SLOT_MAX_NUMBER              (16U)
+#define ITS_BANK_MAX_NUMBER              (2U)
+#elif defined (STM32WBA2xxx)
+#define ITS_SLOT_MAX_NUMBER              (8U)
+#define ITS_BANK_MAX_NUMBER              (2U)   
+#endif /* STM32WBAxxxx */
+
+#ifdef __ARMCC_VERSION
+extern uint32_t Image$$ER_ITS$$Base;
+#define ITS_LOCATION  ((uint32_t)&Image$$ER_ITS$$Base)
+#else
+extern uint32_t __its_start__;
+#define ITS_LOCATION   ((uint32_t)&__its_start__)
+#endif /* __ARMCC_VERSION */
 
 #define ITS_SLOT_SIZE_BYTES              (ITS_SLOT_OFFSET_WORDS * sizeof(uint32_t))
 #define ITS_BANK_SIZE_BYTES              (ITS_SLOT_SIZE_BYTES * ITS_SLOT_MAX_NUMBER)
+#if defined(PSA_USE_ENCRYPTED_ITS)
+#define ITS_MAX_SIZE                     (ITS_BANK_SIZE_BYTES * ITS_BANK_MAX_NUMBER * 2)
+#else
 #define ITS_MAX_SIZE                     (ITS_BANK_SIZE_BYTES * ITS_BANK_MAX_NUMBER)
+#endif /* PSA_USE_ENCRYPTED_ITS */
 #define ITS_SLOT_HEADER_SIZE             (sizeof(its_obj_info_t))
 #define ITS_SLOT_PAYLOAD_SIZE            (ITS_SLOT_SIZE_BYTES - ITS_SLOT_HEADER_SIZE)
 
@@ -88,6 +108,12 @@ static StorageTrackers_t StorageTrackersEncrypted = {ITS_ENCRYPTION_KEY_LOCATION
                                                      0U};
 #endif /* PSA_USE_ENCRYPTED_ITS */
 static uint32_t StorageInitialized = 0U;
+
+#if defined(__ICCARM__)
+  __root __no_init const uint8_t its_storage_reserved[ITS_MAX_SIZE] @ "ITS_RESERVED";
+#else
+  __attribute__((used, section("ITS_RESERVED"))) const uint8_t its_storage_reserved[ITS_MAX_SIZE];
+#endif
 
 /* Private function prototypes -----------------------------------------------*/
 static uint32_t FLASH_If_GetPage(uint32_t uAddr);
@@ -106,8 +132,6 @@ static uint32_t Storage_IsSlotUidMatching(const uint32_t *p_slot_address,
                                           uint64_t obj_uid);
 static void Storage_ScanBank(uint32_t base_address, uint32_t bank_id,
                              StorageBankStats_t *p_stats);
-static uint32_t Storage_SelectActiveBank(const StorageBankStats_t *p_bank0,
-                                         const StorageBankStats_t *p_bank1);
 static psa_status_t Storage_InitTrackers(StorageTrackers_t *p_trackers);
 static int32_t Storage_FindLatestSlot(const StorageTrackers_t *p_trackers,
                                       uint64_t obj_uid);
@@ -130,6 +154,7 @@ static uint32_t FLASH_If_GetPage(uint32_t uAddr)
 {
   uint32_t page = 0U;
 
+#if defined(FLASH_DBANK_SUPPORT)
   if (uAddr < (FLASH_BASE + FLASH_BANK_SIZE))
   {
     page = (uAddr - FLASH_BASE) / FLASH_PAGE_SIZE;
@@ -138,6 +163,9 @@ static uint32_t FLASH_If_GetPage(uint32_t uAddr)
   {
     page = (uAddr - (FLASH_BASE + FLASH_BANK_SIZE)) / FLASH_PAGE_SIZE;
   }
+#else
+  page = (uAddr - FLASH_BASE) / FLASH_PAGE_SIZE;
+#endif /* FLASH_DBANK_SUPPORT */
 
   return page;
 }
@@ -207,8 +235,9 @@ static HAL_StatusTypeDef FLASH_If_Erase_Size(void *pStart, uint32_t uLength)
       nb_pages = FLASH_If_GetPage(uStart + uLength - 1U) - first_page + 1U;
 
       EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+#if defined(FLASH_DBANK_SUPPORT)      
       EraseInitStruct.Banks = ((uStart - FLASH_BASE) >= FLASH_BANK_SIZE) ? FLASH_BANK_2 : FLASH_BANK_1;
-
+#endif
       do
       {
         chunk_nb_pages = (nb_pages >= NB_PAGE_SECTOR_PER_ERASE) ? NB_PAGE_SECTOR_PER_ERASE : nb_pages;
@@ -250,14 +279,15 @@ static HAL_StatusTypeDef FLASH_If_Erase_Size(void *pStart, uint32_t uLength)
 
 /**
   * @brief  This function writes a data buffer in flash.
-  * @note   STM32WBA flash is programmed by 128-bit quadword.
+  * @note   STM32WBA flash is programmed by 64-bit doubleword or 128-bit
+  *         quadword depending on the selected device support.
   * @retval HAL_OK if success, an error code otherwise.
   */
 static HAL_StatusTypeDef FLASH_If_Write(void *pDestination, const void *pSource, uint32_t uLength)
 {
   HAL_StatusTypeDef e_ret_status = HAL_ERROR;
   const uint8_t *p_src = (const uint8_t *)pSource;
-  uint32_t quadword[4];
+  uint32_t quadword[FLASH_IF_WRITE_GRANULARITY_BYTES / sizeof(uint32_t)];
   uint32_t i;
   uint32_t remaining;
   uint32_t copy_len;
@@ -282,15 +312,12 @@ static HAL_StatusTypeDef FLASH_If_Write(void *pDestination, const void *pSource,
       copy_len = (remaining >= FLASH_IF_WRITE_GRANULARITY_BYTES) ?
                  FLASH_IF_WRITE_GRANULARITY_BYTES : remaining;
 
-      quadword[0] = 0xFFFFFFFFU;
-      quadword[1] = 0xFFFFFFFFU;
-      quadword[2] = 0xFFFFFFFFU;
-      quadword[3] = 0xFFFFFFFFU;
+      (void)memset(quadword, 0xFFU, FLASH_IF_WRITE_GRANULARITY_BYTES);
       (void)memcpy(quadword, &p_src[i], copy_len);
 
-      if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD,
+      if (HAL_FLASH_Program(FLASH_WRITE_MODE,
                             (uint32_t)pDestination,
-                            (uint32_t)quadword) == HAL_OK)
+                            (uint32_t)quadword) == HAL_OK)       
       {
         if (1U == LL_ICACHE_IsEnabled())
         {
@@ -360,16 +387,18 @@ static uint32_t *Storage_GetSlotAddress(uint32_t base_address, uint32_t bank_id,
 
 static uint32_t Storage_IsSlotErased(const uint32_t *p_slot_address)
 {
-  const uint32_t erased_quadword[4] = {0xFFFFFFFFU, 0xFFFFFFFFU, 0xFFFFFFFFU, 0xFFFFFFFFU};
+  uint32_t erased_unit[FLASH_IF_WRITE_GRANULARITY_BYTES / sizeof(uint32_t)];
 
-  return (memcmp(p_slot_address, erased_quadword, sizeof(erased_quadword)) == 0) ? 1U : 0U;
+  (void)memset(erased_unit, 0xFFU, FLASH_IF_WRITE_GRANULARITY_BYTES);
+  return (memcmp(p_slot_address, erased_unit, sizeof(erased_unit)) == 0) ? 1U : 0U;
 }
 
 static uint32_t Storage_IsSlotInvalid(const uint32_t *p_slot_address)
 {
-  const uint32_t invalid_quadword[4] = {0U, 0U, 0U, 0U};
+  uint32_t invalid_unit[FLASH_IF_WRITE_GRANULARITY_BYTES / sizeof(uint32_t)];
 
-  return (memcmp(p_slot_address, invalid_quadword, sizeof(invalid_quadword)) == 0) ? 1U : 0U;
+  (void)memset(invalid_unit, 0x00U, FLASH_IF_WRITE_GRANULARITY_BYTES);
+  return (memcmp(p_slot_address, invalid_unit, sizeof(invalid_unit)) == 0) ? 1U : 0U;
 }
 
 static uint32_t Storage_IsSlotValid(const uint32_t *p_slot_address)
@@ -428,57 +457,53 @@ static void Storage_ScanBank(uint32_t base_address, uint32_t bank_id,
 }
 
 /**
-  * @brief  Select active bank according to scan statistics.
-  * @param  p_bank0: Bank 0 stats.
-  * @param  p_bank1: Bank 1 stats.
-  * @retval Selected bank identifier.
-  */
-static uint32_t Storage_SelectActiveBank(const StorageBankStats_t *p_bank0,
-                                         const StorageBankStats_t *p_bank1)
-{
-  if (p_bank1->UsedSlots > p_bank0->UsedSlots)
-  {
-    return 1U;
-  }
-
-  if (p_bank0->UsedSlots > p_bank1->UsedSlots)
-  {
-    return 0U;
-  }
-
-  if (p_bank1->ValidSlots > p_bank0->ValidSlots)
-  {
-    return 1U;
-  }
-
-  return 0U;
-}
-
-/**
-  * @brief  Initialize one zone trackers by scanning both banks.
+  * @brief  Initialize one zone trackers by scanning configured banks.
   * @param  p_trackers: Zone trackers to initialize.
   * @retval PSA_SUCCESS if success, an error code otherwise.
   */
 static psa_status_t Storage_InitTrackers(StorageTrackers_t *p_trackers)
 {
+  uint32_t bank_id;
   uint32_t selected_bank;
   StorageBankStats_t bank_stats[ITS_BANK_MAX_NUMBER];
 
-  Storage_ScanBank(p_trackers->BaseAddress, 0U, &bank_stats[0]);
-  Storage_ScanBank(p_trackers->BaseAddress, 1U, &bank_stats[1]);
+  for (bank_id = 0U; bank_id < ITS_BANK_MAX_NUMBER; bank_id++)
+  {
+    Storage_ScanBank(p_trackers->BaseAddress, bank_id, &bank_stats[bank_id]);
+  }
 
-  selected_bank = Storage_SelectActiveBank(&bank_stats[0], &bank_stats[1]);
+  selected_bank = 0U;
+  for (bank_id = 1U; bank_id < ITS_BANK_MAX_NUMBER; bank_id++)
+  {
+    if ((bank_stats[bank_id].UsedSlots > bank_stats[selected_bank].UsedSlots) ||
+        ((bank_stats[bank_id].UsedSlots == bank_stats[selected_bank].UsedSlots) &&
+         (bank_stats[bank_id].ValidSlots > bank_stats[selected_bank].ValidSlots)))
+    {
+      selected_bank = bank_id;
+    }
+  }
+
+  if (ITS_BANK_MAX_NUMBER > 1U)
+  {
+    for (bank_id = 0U; bank_id < ITS_BANK_MAX_NUMBER; bank_id++)
+    {
+      if (bank_id == selected_bank)
+      {
+        continue;
+      }
+
+      if (FLASH_If_Erase_Size((void *)(p_trackers->BaseAddress +
+                                       (bank_id * ITS_BANK_SIZE_BYTES)),
+                              ITS_BANK_SIZE_BYTES) != HAL_OK)
+      {
+        return PSA_ERROR_STORAGE_FAILURE;
+      }
+    }
+  }
 
   p_trackers->CurrentBankId = selected_bank;
   p_trackers->UsedSlots = bank_stats[selected_bank].UsedSlots;
   p_trackers->ValidSlots = bank_stats[selected_bank].ValidSlots;
-
-  if (FLASH_If_Erase_Size((void *)(p_trackers->BaseAddress +
-                                   ((1U - selected_bank) * ITS_BANK_SIZE_BYTES)),
-                          ITS_BANK_SIZE_BYTES) != HAL_OK)
-  {
-    return PSA_ERROR_STORAGE_FAILURE;
-  }
 
   return PSA_SUCCESS;
 }
@@ -503,21 +528,21 @@ static int32_t Storage_FindLatestSlot(const StorageTrackers_t *p_trackers, uint6
 }
 
 /**
-  * @brief  Invalidate a slot by programming its first quadword with zeros.
+  * @brief  Invalidate a slot by programming its first write unit with zeros.
   * @param  p_slot_address: Slot start address.
   * @retval HAL_OK if success, HAL_ERROR otherwise.
   */
 static HAL_StatusTypeDef Storage_InvalidateSlot(uint32_t *p_slot_address)
 {
-  uint32_t invalidation_quadword[4] = {0U, 0U, 0U, 0U};
+  uint32_t invalidation_unit[FLASH_IF_WRITE_GRANULARITY_BYTES / sizeof(uint32_t)] = {0U};
 
   if (Storage_IsSlotValid(p_slot_address) == 0U)
   {
     return HAL_OK;
   }
 
-  if (FLASH_If_Write((void *)p_slot_address, invalidation_quadword,
-                     sizeof(invalidation_quadword)) != HAL_OK)
+  if (FLASH_If_Write((void *)p_slot_address, invalidation_unit,
+                     sizeof(invalidation_unit)) != HAL_OK)
   {
     return HAL_ERROR;
   }
@@ -568,6 +593,10 @@ static HAL_StatusTypeDef Storage_InvalidateMatchingSlots(StorageTrackers_t *p_tr
   */
 static HAL_StatusTypeDef Storage_Swap(StorageTrackers_t *p_trackers)
 {
+#if (ITS_BANK_MAX_NUMBER <= 1U)
+  (void)p_trackers;
+  return HAL_ERROR;
+#else
   uint32_t slot_id;
   uint32_t copied_slots = 0U;
   uint32_t next_bank = (p_trackers->CurrentBankId + 1U) % ITS_BANK_MAX_NUMBER;
@@ -608,6 +637,7 @@ static HAL_StatusTypeDef Storage_Swap(StorageTrackers_t *p_trackers)
   p_trackers->ValidSlots = copied_slots;
 
   return HAL_OK;
+#endif /* ITS_BANK_MAX_NUMBER <= 1U */
 }
 
 /**
@@ -695,7 +725,11 @@ psa_status_t storage_set(uint64_t obj_uid,
 
     if (Storage_Swap(p_trackers) != HAL_OK)
     {
+#if (ITS_BANK_MAX_NUMBER <= 1U)
+      return PSA_ERROR_INSUFFICIENT_STORAGE;
+#else
       return PSA_ERROR_STORAGE_FAILURE;
+#endif /* ITS_BANK_MAX_NUMBER <= 1U */
     }
 
     old_slot = -1;

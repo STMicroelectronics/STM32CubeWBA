@@ -2,6 +2,8 @@
 
 The Heart Rate Profile, widely used in fitness applications, defines the communication process between a GATT-server of a Heart Rate Sensor device, such as a wrist band, and a GATT-client Collector device, such as a smartphone or tablet.
 
+In this application, the System Clock Module (SCM) is disabled, and the new Clock_Switching strategy is used. Clock_Switching preserves the system clock configuration set by the application throughout the active phase. The same configuration is restored upon wake-up from power save.
+
 How to use the Heart Rate profile as specified by the BLE SIG and described in the<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> ST wiki.</a>
 
 ### __Keywords__
@@ -14,7 +16,7 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.
 
   - Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).
   - This application is configured to support low power mode (No traces - No debugger).
-  - Traces and debugger could be acivated by setting the following in app_conf.h.
+  - Traces and debugger could be activated by setting the following in app_conf.h.
     - CFG_LPM_LEVEL to 0
     - CFG_DEBUGGER_LEVEL to 1
     - CFG_LOG_SUPPORTED to 1

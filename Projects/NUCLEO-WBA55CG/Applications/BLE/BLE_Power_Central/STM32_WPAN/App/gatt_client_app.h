@@ -71,7 +71,6 @@ typedef enum
 /* Exported constants --------------------------------------------------------*/
 
 /* USER CODE BEGIN EC */
-
 #define ST_LPWR_CO_SERVICE_UUID                                       (0xFF10)
 #define ST_LPWR_CO_WRITE_CHAR_UUID                                    (0xFF11)
 #define ST_LPWR_CO_NOTIFY_CHAR_UUID                                   (0xFF12)

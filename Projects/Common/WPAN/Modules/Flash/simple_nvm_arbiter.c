@@ -268,7 +268,7 @@ SNVMA_Cmd_Status_t SNVMA_Init (const uint32_t * p_NvmStartAddress)
   /* Check that configuration will not overlap flash */
   else if ((SNVMA_NUMBER_OF_SECTOR_NEEDED > FLASH_PAGE_NB) ||
            ((uint32_t)p_NvmStartAddress + (SNVMA_NUMBER_OF_SECTOR_NEEDED * FLASH_PAGE_SIZE) >
-            (FLASH_BASE_NS + FLASH_SIZE)))
+            (FLASH_BASE + FLASH_SIZE)))
   {
     error = SNVMA_ERROR_NVM_OVERLAP_FLASH;
   }
@@ -291,7 +291,7 @@ SNVMA_Cmd_Status_t SNVMA_Init (const uint32_t * p_NvmStartAddress)
       SNVMA_FlashCallback.Callback = SNVMA_FlashManagerCallback;
 
       /* Compute nvm implantation offset */
-      nvmOffset = (uint32_t)p_NvmStartAddress - FLASH_BASE_NS;
+      nvmOffset = (uint32_t)p_NvmStartAddress - FLASH_BASE;
 
       /* Ensure all variable are initialized: Banks */
       memset ((void *)SNVMA_BankConfiguration,
@@ -383,7 +383,7 @@ SNVMA_Cmd_Status_t SNVMA_Init (const uint32_t * p_NvmStartAddress)
                   else
                   {
                     /* Erase p_currentRestoreBank */
-                    while (EraseSector ((((uint32_t)p_currentRestoreBank->p_StartAddr - FLASH_BASE_NS) / FLASH_PAGE_SIZE),
+                    while (EraseSector ((((uint32_t)p_currentRestoreBank->p_StartAddr - FLASH_BASE) / FLASH_PAGE_SIZE),
                                         SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
                   }
                 }
@@ -824,7 +824,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
 
           flashFunRet = FM_Erase ((((uint32_t)
                                     SNVMA_NvmConfiguration[SNVMA_FlashInfo.NvmId].
-                                      p_BankForWrite->p_StartAddr - FLASH_BASE_NS) / FLASH_PAGE_SIZE),
+                                      p_BankForWrite->p_StartAddr - FLASH_BASE) / FLASH_PAGE_SIZE),
                                     SNVMA_NvmConfiguration[SNVMA_FlashInfo.NvmId].BankSize,
                                     &SNVMA_FlashCallback);
 
@@ -997,7 +997,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
 
             flashFunRet = FM_Erase ((((uint32_t)
                                       SNVMA_NvmConfiguration[SNVMA_FlashInfo.NvmId].p_BankForWrite->p_StartAddr -
-                                        FLASH_BASE_NS) / FLASH_PAGE_SIZE),
+                                        FLASH_BASE) / FLASH_PAGE_SIZE),
                                       SNVMA_NvmConfiguration[SNVMA_FlashInfo.NvmId].BankSize,
                                       &SNVMA_FlashCallback);
 
@@ -1074,7 +1074,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
               /* Leave critical section */
               UTILS_EXIT_CRITICAL_SECTION ();
               
-              flashFunRet = FM_Erase ((((uint32_t)tmpBank->p_StartAddr - FLASH_BASE_NS) / FLASH_PAGE_SIZE),
+              flashFunRet = FM_Erase ((((uint32_t)tmpBank->p_StartAddr - FLASH_BASE) / FLASH_PAGE_SIZE),
                                                   SNVMA_NvmConfiguration[SNVMA_FlashInfo.NvmId].BankSize,
                                                   &SNVMA_FlashCallback);
 

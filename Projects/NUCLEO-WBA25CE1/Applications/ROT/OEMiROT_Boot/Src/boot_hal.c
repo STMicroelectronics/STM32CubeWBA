@@ -107,6 +107,7 @@ __attribute__((naked)) void boot_jump_to_RSS(uint32_t boot_jump_addr1, uint32_t 
 #endif  /* OEMUROT_ENABLE */
 
 void icache_init(void);
+static void SetSysClock(void);
 /**
   * @}
   */
@@ -321,9 +322,6 @@ void boot_platform_quit(struct boot_arm_vector_table *vector)
 #endif /* ICACHE_ENABLED */
   /* Update run time protections for application execution */
   LL_SECU_UpdateRunTimeProtections();
-
-  /* set the secure vector */
-  SCB->VTOR = (uint32_t)vector;
 
   vt = (struct boot_arm_vector_table *)vector;
   /* Check Flow control state */
@@ -550,6 +548,8 @@ int32_t boot_platform_init(void)
        */
     HAL_Init();
 
+    SetSysClock();
+
 #ifdef MCUBOOT_HAVE_LOGGING
     /* Init for log */
     stdio_init();
@@ -607,6 +607,80 @@ int32_t boot_platform_init(void)
 #endif
 
     return 0;
+}
+
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follows :
+  *            System Clock source            = PLL (HSI)
+  *            SYSCLK(Hz)                     = 100000000
+  *            HCLK(Hz)                       = 100000000
+  *            AHB Prescaler                  = 1
+  *            AHB5 Prescaler                 = 4
+  *            APB1 Prescaler                 = 1
+  *            APB2 Prescaler                 = 1
+  *            APB7 Prescaler                 = 1
+  *            HSI Frequency(Hz)              = 16000000
+  *            PLL_M                          = 2
+  *            PLL_N                          = 25
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 2
+  *            PLL_R                          = 2
+  *            Flash Latency(WS)              = 3
+  *            Voltage range                  = 1
+  * @retval None
+  */
+static void SetSysClock(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  __HAL_RCC_PWR_CLK_ENABLE();
+  /** At reset, the regulator is the LDO, in range 2
+     Need to move to range 1 to reach 100 MHz
+  */
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    /* Initialization error */
+    Error_Handler();
+  }
+
+  /** Activate PLL with HSI as source
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.PLL1.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL1.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL1.PLLFractional = 0U;
+  RCC_OscInitStruct.PLL1.PLLM = 2U;
+  RCC_OscInitStruct.PLL1.PLLN = 25U;   /* VCO = HSI/M * N = 16 / 2 * 25 = 200 MHz */
+  RCC_OscInitStruct.PLL1.PLLR = 2U;    /* PLLSYS = 200 MHz / 2 = 100 MHz */
+  RCC_OscInitStruct.PLL1.PLLP = 2U;
+  RCC_OscInitStruct.PLL1.PLLQ = 2U;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    /* Initialization error */
+    Error_Handler();
+  }
+
+  /** Select PLL as system clock source and configure the HCLK, PCLK1, PCLK2 and PCLK7
+     clocks dividers
+  */
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 \
+                               | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_PCLK7 | RCC_CLOCKTYPE_HCLK5);
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB7CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV4;
+  RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  {
+    /* Initialization error */
+    Error_Handler();
+  }
 }
 
 /**

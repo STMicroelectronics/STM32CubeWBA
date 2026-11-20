@@ -52,6 +52,7 @@ extern "C" {
 /* USER CODE BEGIN EC */
 #define DRIFT_TIME_OPTIMIZED                    (14)
 #define EXEC_TIME_OPTIMIZED                     (24)
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

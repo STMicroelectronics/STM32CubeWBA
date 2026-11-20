@@ -31,7 +31,6 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-
 /* USER CODE BEGIN User CRC configurations */
 
 /* USER CODE END User CRC configurations */

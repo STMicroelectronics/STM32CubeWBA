@@ -26,6 +26,10 @@ oem2_password="./Keys/oem2_password.txt"
 # Log files
 ob_flash_log="ob_flash_programming.log"
 provisioning_log="provisioning.log"
+export command_log="command.log"
+
+# Remove all log files (*.log)
+rm -rf *.log
 
 # Check if Python is installed
 if ! python3 --version > /dev/null 2>&1; then
@@ -88,8 +92,10 @@ s_code_image_file="$projectdir/Images/OEMuROT_S_Code_Image.xml"
 ns_code_image_file="$projectdir/Images/OEMuROT_NS_Code_Image.xml"
 s_data_xml="$projectdir/Images/OEMuROT_S_Data_Image.xml"
 ns_data_xml="$projectdir/Images/OEMuROT_NS_Data_Image.xml"
+oemurot_data_xml="$projectdir/Images/OEMiROT_Data_Image.xml"
 s_data_init_xml="$projectdir/Images/OEMuROT_S_Data_Init_Image.xml"
 ns_data_init_xml="$projectdir/Images/OEMuROT_NS_Data_Init_Image.xml"
+oemurot_data_init_xml="$projectdir/Images/OEMiROT_Data_Init_Image.xml"
 ns_app_enc_sign_bin="../$appli_dir/Binary/$oemurot_appli_non_secure"
 s_app_enc_sign_bin="../$appli_dir/Binary/$oemurot_appli_secure"
 
@@ -171,6 +177,15 @@ binary_keys_generation()
     if [ "$mode" != "AUTO" ]; then read -p "" -n1 -s; fi
 
     "$stm32tpccli" -obk $oemurot_config_xml >> $provisioning_log 2>&1
+    if [ $? != 0 ]; then step_error; fi
+
+    echo "       Generate the OEMuRoT_Keys_enc_sign.bin and OEMuRoT_Keys_init_sign.bin files from OEMuRoT_Keys.bin"
+    echo
+
+    "$stm32tpccli" -pb $oemurot_data_xml >> $provisioning_log 2>&1
+    if [ $? != 0 ]; then step_error; fi
+
+    "$stm32tpccli" -pb $oemurot_data_init_xml >> $provisioning_log 2>&1
     if [ $? != 0 ]; then step_error; fi
 }
 
@@ -270,7 +285,7 @@ oem2_key_provisioning()
     # Get OEM2 key
     read -r oem2_key < "$oem2_password"
 
-    "$stm32programmercli" $connect_reset -hardRst -lockRDP2 $oem2_key >> $provisioning_log 2>&1
+    log_and_run "$stm32programmercli" $connect_reset -hardRst -lockRDP2 $oem2_key >> $provisioning_log 2>&1
     if [ $? != 0 ]; then step_error; fi
     echo "   * Provisioning of OEM2 key Done"
     echo
@@ -299,7 +314,7 @@ set_rdp_level()
     action="Setting RDP level $RDP_level"
     current_log_file=$provisioning_log
     echo "   * $action"
-    "$stm32programmercli" $connect_no_reset -ob RDP=$rdp_value >> $provisioning_log 2>&1
+    log_and_run "$stm32programmercli" $connect_no_reset -ob RDP=$rdp_value >> $provisioning_log 2>&1
     echo
     if [ $? -ne 0 ]; then step_error; fi
     if [ "$rdp_value" != "0xAA" ]; then
@@ -320,6 +335,13 @@ step_error()
   echo "====="
   if [ "$mode" != "AUTO" ]; then $SHELL; fi
   exit 1
+}
+
+# =============================================== log_and_run <command> [args...] =========================================================
+log_and_run() {
+  echo "$*" >> "$command_log"
+  echo "$*" >> "$provisioning_log"
+  "$@" >> "$provisioning_log"
 }
 
 # ============================================================== Script start =============================================================

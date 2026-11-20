@@ -34,7 +34,6 @@ extern "C" {
 #include "app_debug.h"
 
 #include "stm32wbaxx_ll_icache.h"
-#include "stm32wbaxx_ll_tim.h"
 #include "stm32wbaxx_ll_bus.h"
 #include "stm32wbaxx_ll_cortex.h"
 #include "stm32wbaxx_ll_rcc.h"

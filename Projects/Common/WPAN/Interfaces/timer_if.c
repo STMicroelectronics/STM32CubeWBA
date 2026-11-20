@@ -33,7 +33,7 @@
 /**
   * @brief Minimum timeout delay of Alarm in ticks
   */
-#define MIN_ALARM_DELAY    3
+#define MIN_ALARM_DELAY    1
 
 /**
   * @brief Backup seconds register
@@ -94,6 +94,17 @@ const UTIL_SYSTIM_Driver_s UTIL_SYSTIMDriver =
   * @brief RTC handle
   */
 extern RTC_HandleTypeDef hrtc;
+
+/**
+  * @brief Runtime RTC clock source hook.
+  * @note  Can be overridden by the application to provide a measured runtime
+  *        RTC clock frequency. Default implementation uses static config.
+  * @retval RTC kernel clock in Hz
+  */
+__WEAK uint32_t TIMER_IF_GetRuntimeRtcClockHz(void)
+{
+  return TIMER_IF_RTCCLK_FREQ_HZ;
+}
 
 /* Private variables ---------------------------------------------------------*/
 /**
@@ -175,7 +186,7 @@ UTIL_TIMER_Status_t TIMER_IF_StartTimer(uint32_t timeout)
   /* Starts timer */
   sAlarm.BinaryAutoClr        = RTC_ALARMSUBSECONDBIN_AUTOCLR_NO;
   sAlarm.AlarmTime.SubSeconds = UINT32_MAX - timeout;
-  sAlarm.AlarmMask            = RTC_ALARMMASK_NONE;
+  sAlarm.AlarmMask            = RTC_ALARMMASK_ALL;
   sAlarm.AlarmSubSecondMask   = RTC_ALARMSUBSECONDBINMASK_NONE;
   sAlarm.Alarm                = RTC_ALARM_A;
 
@@ -244,12 +255,24 @@ uint32_t TIMER_IF_GetMinimumTimeout(void)
 
 uint32_t TIMER_IF_Convert_ms2Tick(uint32_t timeMilliSec)
 {
-  return ((uint32_t)( ( ( (uint64_t) timeMilliSec ) << RTC_N_PREDIV_S ) / 1000U ) );
+  uint32_t rtcClkHz = TIMER_IF_GetRuntimeRtcClockHz();
+  if (rtcClkHz == 0U)
+  {
+    rtcClkHz = TIMER_IF_RTCCLK_FREQ_HZ;
+  }
+
+  return (uint32_t)(((uint64_t)timeMilliSec * rtcClkHz) / (1000U * (hrtc.Init.AsynchPrediv + 1U)));
 }
 
 uint32_t TIMER_IF_Convert_Tick2ms(uint32_t tick)
 {
-  return ((uint32_t)( ( ( ( int64_t)( tick ) ) * 1000U ) >> RTC_N_PREDIV_S ) );
+  uint32_t rtcClkHz = TIMER_IF_GetRuntimeRtcClockHz();
+  if (rtcClkHz == 0U)
+  {
+    rtcClkHz = TIMER_IF_RTCCLK_FREQ_HZ;
+  }
+
+  return (uint32_t)(((uint64_t)tick * 1000U * (hrtc.Init.AsynchPrediv + 1U)) / rtcClkHz);
 }
 
 void TIMER_IF_DelayMs(uint32_t delay)
@@ -287,11 +310,21 @@ uint32_t TIMER_IF_GetTime(uint16_t *mSeconds)
 
   ticks = (((uint64_t) timerValueMSB) << 32) + timerValueLsb;
 
-  uint32_t seconds = (uint32_t)(ticks >> RTC_N_PREDIV_S);
+  uint32_t rtcClkHz = TIMER_IF_GetRuntimeRtcClockHz();
+  if (rtcClkHz == 0U)
+  {
+    rtcClkHz = TIMER_IF_RTCCLK_FREQ_HZ;
+  }
 
-  ticks = (uint32_t) ticks & RTC_PREDIV_S;
+  uint32_t tickRate = rtcClkHz / (hrtc.Init.AsynchPrediv + 1U);
+  if (tickRate == 0U)
+  {
+    tickRate = 1U;
+  }
+  uint32_t seconds  = (uint32_t)(ticks / tickRate);
+  uint32_t subTicks = (uint32_t)(ticks % tickRate);
 
-  *mSeconds = TIMER_IF_Convert_Tick2ms(ticks);
+  *mSeconds = TIMER_IF_Convert_Tick2ms(subTicks);
 
   return seconds;
 }

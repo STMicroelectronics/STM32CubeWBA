@@ -331,6 +331,7 @@ static void APP_THREAD_DeviceConfig(void)
   otCoapAddResource(PtOpenThreadInstance, &OT_Ressource);
 
   APP_THREAD_InitPayloadWrite();
+
   /* USER CODE END DEVICECONFIG */
 }
 
@@ -370,11 +371,11 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
   
   while(1U == 1U)
   {
-    APP_LED_TOGGLE(LD1);
+    APP_BSP_LED_Toggle(LD1);
     HAL_Delay(500U);
-    APP_LED_TOGGLE(LD2);
+    APP_BSP_LED_Toggle(LD2);
     HAL_Delay(500U);
-    APP_LED_TOGGLE(LD3);
+    APP_BSP_LED_Toggle(LD3);
     HAL_Delay(500U);
   }
 
@@ -497,8 +498,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
     {
       case OT_DEVICE_ROLE_DISABLED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
-      	  APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+      	  APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
           /* Stop timer for periodic CoAp msg transmission */
           UTIL_TIMER_Stop(&APP_Thread_transmitTimerId);
@@ -511,8 +512,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
       case OT_DEVICE_ROLE_DETACHED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DETACHED */
-          APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
           /* Stop timer for periodic CoAp msg transmission */
           UTIL_TIMER_Stop(&APP_Thread_transmitTimerId);
@@ -525,8 +526,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
       case OT_DEVICE_ROLE_CHILD:
           /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
-          APP_LED_OFF(LD2);
-          APP_LED_ON(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_On(LD3);
 #ifdef APP_THREAD_PERIODIC_TRANSMIT  
           /* If timer for periodic CoAp msg transmission NOT running */
           if (UTIL_TIMER_IsRunning(&APP_Thread_transmitTimerId) == 0U)
@@ -543,8 +544,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
       case OT_DEVICE_ROLE_ROUTER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
-          APP_LED_OFF(LD2);
-          APP_LED_ON(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_On(LD3);
 #ifdef APP_THREAD_PERIODIC_TRANSMIT  
           /* If timer for periodic CoAp msg transmission NOT running */
           if (UTIL_TIMER_IsRunning(&APP_Thread_transmitTimerId) == 0U)
@@ -561,8 +562,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
       case OT_DEVICE_ROLE_LEADER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
-          APP_LED_ON(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_On(LD2);
+          APP_BSP_LED_Off(LD3);
 #ifdef APP_THREAD_PERIODIC_TRANSMIT  
           /* If timer for periodic CoAp msg transmission NOT running */
           if (UTIL_TIMER_IsRunning(&APP_Thread_transmitTimerId) == 0U)
@@ -579,8 +580,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
       default:
           /* USER CODE BEGIN DEFAULT */
-          APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END DEFAULT */
           break;
     }
@@ -748,7 +749,7 @@ static void APP_THREAD_CoapRequestHandler(void                 * pContext,
 
   if (APP_THREAD_CheckMsgValidity() == true)
   {
-    APP_LED_TOGGLE(LD1);
+    APP_BSP_LED_Toggle(LD1);
   }
   
   /* If Message is Confirmable, send response */

@@ -233,16 +233,11 @@ void Reset_Handler(void)
   __IO uint32_t tmp;
 
 #endif
-#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-  /* disable IRQ is removed */
-  /*__disable_irq();*/
-  /* Tamp IRQ prio is set to highest , and IRQ is enabled */
-  NVIC_SetPriority(TAMP_IRQn, 0);
-  NVIC_EnableIRQ(TAMP_IRQn);
-#endif
+  /* Configure the Vector Table location -------------------------------------*/
+  SCB->VTOR = (uint32_t) &__VECTOR_TABLE[0];
+
   __set_MSPLIM((uint32_t)(&__STACK_LIMIT));
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-  SCB->VTOR = (uint32_t) &__VECTOR_TABLE[0];
   /* Lock Secure Vector Table */
   /* Enable SYSCFG interface clock */
   RCC->APB7ENR |= RCC_APB7ENR_SYSCFGEN;

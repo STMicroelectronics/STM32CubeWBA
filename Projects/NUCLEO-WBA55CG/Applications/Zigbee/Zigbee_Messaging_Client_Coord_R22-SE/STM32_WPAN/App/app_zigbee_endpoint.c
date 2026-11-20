@@ -52,6 +52,11 @@
 
 /* USER CODE END PI */
 
+/* Global variables -----------------------------------------------------------*/
+/* USER CODE BEGIN GV */
+
+/* USER CODE END GV */
+
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
@@ -137,7 +142,7 @@ void APP_ZIGBEE_ApplicationInit(void)
   /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */
   stZigbeeAppInfo.eStartupControl = ZbStartTypeForm;
   stZigbeeAppInfo.bPersistNotification = false;
-  stZigbeeAppInfo.bNwkStartup = true;
+  stZigbeeAppInfo.bNwkStartupDone = false;
   stZigbeeAppInfo.dlExtendedAddress = dlMyExtendedAdress;
 
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
@@ -148,6 +153,20 @@ void APP_ZIGBEE_ApplicationInit(void)
 
   /* Initialize Zigbee stack layers */
   APP_ZIGBEE_StackLayersInit();
+
+  /* Launch the Startup to Join/Form Network */
+  if ( stZigbeeAppInfo.bWaitUserActionToJoin == false )
+  {
+    UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
+  }
+  else
+  {
+    LOG_INFO_APP( "Wait User action to start a 'Join' ..." );
+
+    /* In this case, the 'User Code' (by example button management) must launch
+     * UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
+     * to start the Join process. */
+  }
 }
 
 /**
@@ -219,20 +238,6 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
 }
 
 /**
- *
- */
-static bool APP_ZIGBEE_TcsoNotifyCallback( enum ZbTcsoStatusT eStatus, void *arg )
-{
-  bool  bReturn = true;
-  /* USER CODE BEGIN APP_ZIGBEE_TcsoNotifyCallback */
-
-  LOG_INFO_APP( "[TCSO] Notification Callback. Status = (0x%02X)", eStatus );
-
-  /* USER CODE END APP_ZIGBEE_TcsoNotifyCallback */
-  return bReturn;
-}
-
-/**
  * @brief  Set the CBKE Key Configuration
  * @param  pstConfig    Configuration structure.
  * @retval None
@@ -253,15 +258,34 @@ static void APP_ZIGBEE_GetCbkeConfig( struct ZbStartupT * pstConfig )
 }
 
 /**
- *
+ * @brief TCSO Callback that occurs if a device is not responding to keepalive messages.
+ * @param eStatus Status of the TCSO event
+ * @param arg     User-defined argument (not used in this example)
+ * @retval None
+ */
+static bool APP_ZIGBEE_TcsoNotifyCallback( enum ZbTcsoStatusT eStatus, void *arg )
+{
+  bool  bReturn = true;
+  /* USER CODE BEGIN APP_ZIGBEE_TcsoNotifyCallback */
+
+  LOG_INFO_APP( "[TCSO] Notification Callback. Status = (0x%02X)", eStatus );
+
+  /* USER CODE END APP_ZIGBEE_TcsoNotifyCallback */
+  return bReturn;
+}
+
+/**
+ * @brief Configure the Trust Center parameters for the Zigbee stack
+ * @param pstConfig  Configuration structure to fill
+ * @retval None
  */
 static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
 {
-  uint8_t     cTempVal;
+  uint8_t             cTempVal;
   enum ZbStatusCodeT  eStatus;
 
   /* Update Trust Center Server */
-  pstConfig->security.trustCenterAddress = dlMyExtendedAdress;
+  pstConfig->security.trustCenterAddress = stZigbeeAppInfo.dlExtendedAddress;
 
   pstConfig->security.keepalive.enabled = true;
   pstConfig->security.keepalive.server_enable = true;
@@ -270,18 +294,18 @@ static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
   pstConfig->security.keepalive.tcso_callback = APP_ZIGBEE_TcsoNotifyCallback;
   pstConfig->cb_arg = NULL;
 
-  cTempVal = 0;
-  eStatus = ZbBdbSet( stZigbeeAppInfo.pstZigbee, ZB_BDB_TCLinkKeyExchangeMethod, &cTempVal, sizeof( cTempVal ) );
-  if ( eStatus != ZB_STATUS_SUCCESS )
-  {
-    LOG_ERROR_APP( "Error : ZbBdbSet : Change 'TC LinkKey Exchange Method' failed. (0x%02X) \n", eStatus);
-  }
-
-  cTempVal = 0;
+  cTempVal = 1;
   eStatus = ZbBdbSet( stZigbeeAppInfo.pstZigbee, ZB_BDB_TrustCenterRequiresKeyExchange, &cTempVal, sizeof( cTempVal ) );
   if ( eStatus != ZB_STATUS_SUCCESS )
   {
-    LOG_ERROR_APP( "Error : ZbBdbSet : Change 'Trust Center Requires Key Exchange' failed. (0x%02X) \n", eStatus);
+    LOG_ERROR_APP( "Error : ZbBdbSet : 'Trust Center Requires Key Exchange' failed. (0x%02X) \n", eStatus);
+  }
+
+  cTempVal = BDB_LINKKEY_EXCHANGE_METHOD_CBKE;
+  eStatus = ZbBdbSet( stZigbeeAppInfo.pstZigbee, ZB_BDB_TCLinkKeyExchangeMethod, &cTempVal, sizeof( cTempVal ) );
+  if ( eStatus != ZB_STATUS_SUCCESS )
+  {
+    LOG_ERROR_APP( "Error : ZbBdbSet 'TC LinkKey Exchange Method' failed. (0x%02X) \n", eStatus);
   }
 
   /* USER CODE BEGIN APP_ZIGBEE_GetTrustCenterConfig */
@@ -296,7 +320,7 @@ static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
  */
 void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
-  /* Attempt to join a zigbee network */
+  /* Setting to join a zigbee network */
   ZbStartupConfigGetProSeDefaults( pstConfig );
 
   APP_ZIGBEE_GetCbkeConfig( pstConfig );
@@ -327,16 +351,45 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
  * @brief  Manage a New Device on Network (called only if Coord or Router).
  * @param  iShortAddress      Short Address of new Device
  * @param  dlExtendedAddress  Extended Address of new Device
- * @param  cCapability        Capability of new Device
- * @retval Group Address
+ * @retval None
  */
-void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
+void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
 {
-  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+  LOG_INFO_APP( "New Device on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
 
   /* USER CODE END APP_ZIGBEE_SetNewDevice */
+}
+
+/**
+ * @brief  Manage a Device on Network that Rejoin Network.
+ * @param  iShortAddress      Short Address of Device
+ * @param  dlExtendedAddress  Extended Address of Device
+ * @retval None
+ */
+void APP_ZIGBEE_SetRejoinDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
+{
+  LOG_INFO_APP( "Device Rejoin Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+
+  /* USER CODE BEGIN APP_ZIGBEE_SetRejoinDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetRejoinDevice */
+}
+
+/**
+ * @brief  Manage a Device on Network that Leave Network.
+ * @param  iShortAddress      Short Address of Device
+ * @param  dlExtendedAddress  Extended Address of Device
+ * @retval None
+ */
+void APP_ZIGBEE_SetLeaveDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
+{
+  LOG_INFO_APP( "Device Leave Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+
+  /* USER CODE BEGIN APP_ZIGBEE_SetLeaveDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetLeaveDevice */
 }
 
 /**

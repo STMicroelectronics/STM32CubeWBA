@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -79,6 +79,7 @@ void ll_sys_reset(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
 
 /**
   * @brief  Link Layer background process initialization
@@ -86,6 +87,15 @@ void ll_sys_reset(void);
   * @retval None
   */
 void ll_sys_bg_process_init(void)
+{
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
 {
 }
 
@@ -236,7 +246,7 @@ void ll_sys_reset(void)
   if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
   {
     /* Configure RCO calibration */
-    ll_intf_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
+    ll_intf_cmn_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
   }
 
   /* Update link layer timings depending on selected configuration */

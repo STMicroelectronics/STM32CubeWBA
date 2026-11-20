@@ -90,7 +90,10 @@ UINT MX_USBX_Device_Init(VOID)
 }
 
 /**
-  * @brief  Application USBX Device Initialization.
+  * @brief  MX_USBX_Device_Stack_Init
+  *         Initialization of the USB Device.
+  *         Initialize the device stack, register the device class stack
+  *         register the USB device controller.
   * @param  None
   * @retval ret
   */
@@ -183,11 +186,12 @@ UINT MX_USBX_Device_Stack_Init(void)
 }
 
 /**
-  * @brief MX_USBX_Device_Stack_DeInit
-  *        Unitialization of USB Device.
-  * uninitialize the device stack, unregister of device class stack
-  * unregister of the usb device controller
-  * @retval None
+  * @brief  MX_USBX_Device_Stack_DeInit
+  *         Uninitialization of the USB Device.
+  *         Uninitialize the device stack, unregister the device class stack
+  *         unregister the USB device controller.
+  * @param  None
+  * @retval ret
   */
 UINT MX_USBX_Device_Stack_DeInit(void)
 {
@@ -197,7 +201,6 @@ UINT MX_USBX_Device_Stack_DeInit(void)
   /* USER CODE END MX_USBX_Device_Stack_DeInit_PreTreatment_0 */
 
   /* Unregister USB device controller. */
-
   if (ux_dcd_stm32_uninitialize((ULONG)USB_DRD_FS, (ULONG)&hpcd_USB_DRD_FS) != UX_SUCCESS)
   {
     return UX_ERROR;

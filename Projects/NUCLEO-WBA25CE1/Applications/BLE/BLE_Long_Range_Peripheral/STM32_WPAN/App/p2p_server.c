@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -37,8 +37,6 @@ typedef struct{
   uint16_t  Led_CCharHdle;                  /**< LED_C Characteristic Handle */
   uint16_t  Switch_CCharHdle;                  /**< SWITCH_C Characteristic Handle */
 /* USER CODE BEGIN Context */
-  /* Place holder for Characteristic Descriptors Handle*/
-
 /* USER CODE END Context */
 }P2P_SERVER_Context_t;
 
@@ -201,7 +199,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
 
             notification.EvtOpcode = P2P_SERVER_LED_C_WRITE_NO_RESP_EVT;
             /* USER CODE BEGIN Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-            APP_DBG_MSG("-- GATT : LED CONFIGURATION RECEIVED\n");
+            LOG_INFO_APP("-- GATT : LED CONFIGURATION RECEIVED\n");
             notification.DataTransfered.Length = p_attribute_modified->Attr_Data_Length;
             notification.DataTransfered.p_Payload = p_attribute_modified->Attr_Data;
             /* USER CODE END Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
@@ -258,7 +256,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
-        /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */   
+        /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */
         case ACI_GATT_INDICATION_VSEVT_CODE:
           {
             tBleStatus status = BLE_STATUS_FAILED;
@@ -266,14 +264,15 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
             status = aci_gatt_confirm_indication(pr->Connection_Handle);
             if (status != BLE_STATUS_SUCCESS)
             {
-              APP_DBG_MSG("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
+              LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
             }
             else
             {
-              APP_DBG_MSG("  Success: aci_gatt_confirm_indication command\n");
-            }   
+              LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+            }
           }
           break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
+
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */
@@ -341,7 +340,6 @@ void P2P_SERVER_Init(void)
   max_attr_record = 6;
 
   /* USER CODE BEGIN SVCCTL_InitService */
-  /* max_attr_record to be updated if descriptors have been added */
 
   /* USER CODE END SVCCTL_InitService */
 

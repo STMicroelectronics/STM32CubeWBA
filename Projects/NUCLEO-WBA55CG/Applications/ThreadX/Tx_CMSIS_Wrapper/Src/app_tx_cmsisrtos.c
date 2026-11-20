@@ -204,7 +204,8 @@ static void ThreadTwo_Entry(void *argument)
 
 /**
   * @brief Critical section function that needs acquiring SyncObject.
-  * @param  led: LED to toggle
+  * @param  GPIOx: Pointer to GPIO port where the LED is connected
+  * @param  GPIO_Pin: GPIO pin number corresponding to the LED
   * @param  iter: Number of iterations
   * @retval None
   */

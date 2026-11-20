@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,6 +27,11 @@ extern "C" {
 #endif
 
 #include "stm32_adv_trace.h"
+
+/******************************************************************************
+ * Operating System configuration
+ ******************************************************************************/
+ #define CFG_USE_SEQUENCER 1
 
 /******************************************************************************
  * System Clock Manager (SCM) configuration
@@ -55,12 +60,19 @@ typedef enum {
 #define SCM_DBG_PRINTF(...)
 #endif /* SCM_DEBUG */
 
+#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
+
+/* Level of the IRQ of SCM TIMER*/
+#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+
+/* USER CODE BEGIN SCM_3 */
+
+/* USER CODE END SCM_3 */
+
 /******************************************************************************
  * Timer Interface configuration
  ******************************************************************************/
-#define RTC_N_PREDIV_S      (10U)
-#define RTC_PREDIV_S        ( ( 1U << RTC_N_PREDIV_S ) - 1U )
-#define RTC_PREDIV_A        ( ( 1U << ( 15U - RTC_N_PREDIV_S ) ) - 1U )
+#define TIMER_IF_RTCCLK_FREQ_HZ      (LSE_VALUE)
 
 /* USER CODE BEGIN TIF_RTC */
 
@@ -79,6 +91,19 @@ typedef enum {
 #else
 #define TIMER_IF_DBG_PRINTF(...)
 #endif /* TIF_DEBUG */
+
+/******************************************************************************
+ * Application System configuration (app_sys)
+ ******************************************************************************/
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
+
+/* USER CODE BEGIN AS_C */
+
+/* USER CODE END AS_C */
 
 #ifdef __cplusplus
 }

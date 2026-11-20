@@ -144,7 +144,10 @@ UINT MX_USBX_Device_Init(VOID *memory_ptr)
 }
 
 /**
-  * @brief  Application USBX Device Initialization.
+  * @brief  MX_USBX_Device_Stack_Init
+  *         Initialization of the USB Device.
+  *         Initialize the device stack, register the device class stack
+  *         register the USB device controller.
   * @param  None
   * @retval ret
   */
@@ -239,31 +242,34 @@ UINT MX_USBX_Device_Stack_Init(void)
   */
 static VOID app_ux_device_thread_entry(ULONG thread_input)
 {
-  /* USER CODE BEGIN app_ux_device_thread_entry */
+  /* USER CODE BEGIN app_ux_device_thread_entry 0*/
 
   /* USB_OTG_HS init function */
   MX_USB_OTG_HS_PCD_Init();
+  /* USER CODE END app_ux_device_thread_entry 0*/
 
   /* Initialize the Stack USB Device*/
   if (MX_USBX_Device_Stack_Init() != UX_SUCCESS)
   {
-    /* USER CODE BEGIN MAIN_INITIALIZE_STACK_ERROR */
+   /* USER CODE BEGIN MAIN_INITIALIZE_DEVICE_STACK_ERROR */
     Error_Handler();
-    /* USER CODE END MAIN_INITIALIZE_STACK_ERROR */
+   /* USER CODE END MAIN_INITIALIZE_DEVICE_STACK_ERROR */
   }
+  /* USER CODE BEGIN app_ux_device_thread_entry 1*/
 
   /* Start the USB device */
   HAL_PCD_Start(&hpcd_USB_OTG_HS);
 
-  /* USER CODE END app_ux_device_thread_entry */
+  /* USER CODE END app_ux_device_thread_entry 1*/
 }
 
 /**
-  * @brief MX_USBX_Device_Stack_DeInit
-  *        Unitialization of USB Device.
-  * uninitialize the device stack, unregister of device class stack
-  * unregister of the usb device controller
-  * @retval None
+  * @brief  MX_USBX_Device_Stack_DeInit
+  *         Uninitialization of the USB Device.
+  *         Uninitialize the device stack, unregister the device class stack
+  *         unregister the USB device controller.
+  * @param  None
+  * @retval ret
   */
 UINT MX_USBX_Device_Stack_DeInit(void)
 {

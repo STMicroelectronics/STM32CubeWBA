@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -79,7 +79,7 @@ void MX_RNG_Init(void);
 void MX_ICACHE_Init(void);
 
 /* USER CODE BEGIN EFP */
-uint8_t connection_update(void);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

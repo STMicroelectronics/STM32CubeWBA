@@ -24,8 +24,6 @@
 /* USER CODE END Includes */
 extern DMA_HandleTypeDef handle_LPDMA1_Channel0;
 
-extern DMA_HandleTypeDef handle_LPDMA1_Channel1;
-
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 
@@ -258,30 +256,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
       Error_Handler();
     }
 
-    /* LPDMA1_REQUEST_USART1_RX Init */
-    handle_LPDMA1_Channel1.Instance = LPDMA1_Channel1;
-    handle_LPDMA1_Channel1.Init.Request = LPDMA1_REQUEST_USART1_RX;
-    handle_LPDMA1_Channel1.Init.BlkHWRequest = DMA_BREQ_SINGLE_BURST;
-    handle_LPDMA1_Channel1.Init.Direction = DMA_PERIPH_TO_MEMORY;
-    handle_LPDMA1_Channel1.Init.SrcInc = DMA_SINC_FIXED;
-    handle_LPDMA1_Channel1.Init.DestInc = DMA_DINC_INCREMENTED;
-    handle_LPDMA1_Channel1.Init.SrcDataWidth = DMA_SRC_DATAWIDTH_BYTE;
-    handle_LPDMA1_Channel1.Init.DestDataWidth = DMA_DEST_DATAWIDTH_BYTE;
-    handle_LPDMA1_Channel1.Init.Priority = DMA_LOW_PRIORITY_LOW_WEIGHT;
-    handle_LPDMA1_Channel1.Init.TransferEventMode = DMA_TCEM_BLOCK_TRANSFER;
-    handle_LPDMA1_Channel1.Init.Mode = DMA_NORMAL;
-    if (HAL_DMA_Init(&handle_LPDMA1_Channel1) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
-    __HAL_LINKDMA(huart, hdmarx, handle_LPDMA1_Channel1);
-
-    if (HAL_DMA_ConfigChannelAttributes(&handle_LPDMA1_Channel1, DMA_CHANNEL_NPRIV) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
     /* USART1 interrupt Init */
     HAL_NVIC_SetPriority(USART1_IRQn, 7, 0);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
@@ -317,7 +291,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 
     /* USART1 DMA DeInit */
     HAL_DMA_DeInit(huart->hdmatx);
-    HAL_DMA_DeInit(huart->hdmarx);
 
     /* USART1 interrupt DeInit */
     HAL_NVIC_DisableIRQ(USART1_IRQn);

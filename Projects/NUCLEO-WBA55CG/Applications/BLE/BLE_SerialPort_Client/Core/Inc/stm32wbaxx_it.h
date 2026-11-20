@@ -28,6 +28,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_ll_usart.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -69,6 +70,7 @@ void HASH_IRQHandler(void);
 void EXTI1_IRQHandler(void);
 void EXTI2_IRQHandler(void);
 void EXTI13_IRQHandler(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

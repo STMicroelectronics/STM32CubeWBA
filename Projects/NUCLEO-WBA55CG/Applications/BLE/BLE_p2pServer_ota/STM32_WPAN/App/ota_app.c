@@ -234,9 +234,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 /* Download address is in the user configuration area */
                 /* End download address fit in the download area */
 
-                /* Clear events before start testing */
-                UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
-
                 /* Erase targeted sectors */
                 while(error != FM_OK)
                 {
@@ -255,9 +252,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
-                    /* Clear events before start testing */
-                    UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
-
                     /* Check status of Erase status. */
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
                     {
@@ -269,9 +263,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   {
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
-
-                    /* Clear events before start testing */
-                    UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                   }
                   else
                   {
@@ -329,8 +320,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 /* Download address is in the download area */
                 /* End download address fit in the download area */
                 /* Erase the sectors */
-                /* Clear events before start testing */
-                UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                 while(error != FM_OK)
                 {
@@ -349,9 +338,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
-                    /* Clear events before start testing */
-                    UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
-
                     /* Check status of Erase. */
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
                     {
@@ -363,9 +349,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   {
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
-
-                    /* Clear events before start testing */
-                    UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                   }
                   else
                   {
@@ -451,9 +434,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 ((OTA_Raw_Data_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Raw_Data,
                 size_left );
 
-        /* Clear events before start testing */
-        UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
-
         while(error != FM_OK)
         {
           /* Flash manager Write */
@@ -468,9 +448,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
             /* Wait for Write callback to be invoked */
             UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
-            /* Clear events before start testing */
-            UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
-
             /* Check status of Write op. */
             if (FM_WriteStatus != FM_OPERATION_COMPLETE)
             {
@@ -482,9 +459,6 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
           {
             /* Wait for Write callback to be invoked */
             UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
-
-            /* Clear events before start testing */
-            UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
           }
           else
           {

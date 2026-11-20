@@ -405,11 +405,11 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
   
   while (1)
   {
-    APP_LED_TOGGLE(LD1);
+    APP_BSP_LED_Toggle(LD1);
     HAL_Delay(500U);
-    APP_LED_TOGGLE(LD2);
+    APP_BSP_LED_Toggle(LD2);
     HAL_Delay(500U);
-    APP_LED_TOGGLE(LD3);
+    APP_BSP_LED_Toggle(LD3);
     HAL_Delay(500U);
   }
 
@@ -532,8 +532,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
     {
       case OT_DEVICE_ROLE_DISABLED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
-      	  APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+      	  APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END OT_DEVICE_ROLE_DISABLED */
           break;
 
@@ -543,37 +543,37 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           {
             UTIL_TIMER_Stop(&coapSendTimer);
           }
-          APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END OT_DEVICE_ROLE_DETACHED */
           break;
 
       case OT_DEVICE_ROLE_CHILD:
           /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
           APP_THREAD_Child_Role_Handler();
-          APP_LED_OFF(LD2);
-          APP_LED_ON(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_On(LD3);
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
 
       case OT_DEVICE_ROLE_ROUTER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
-          APP_LED_OFF(LD2);
-          APP_LED_ON(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_On(LD3);
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
 
       case OT_DEVICE_ROLE_LEADER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
-          APP_LED_ON(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_On(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END OT_DEVICE_ROLE_LEADER */
           break;
 
       default:
           /* USER CODE BEGIN DEFAULT */
-          APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END DEFAULT */
           break;
     }
@@ -741,7 +741,7 @@ static void APP_THREAD_CoapRequestHandler(void                 * pContext,
 
   if (APP_THREAD_CheckMsgValidity() == true)
   {
-    APP_LED_TOGGLE(LD1);
+    APP_BSP_LED_Toggle(LD1);
   }
   
   /* If Message is Confirmable, send response */
@@ -838,10 +838,10 @@ static bool APP_THREAD_CheckMsgValidity(void)
  */
 void APP_BSP_Button1Action(void)
 {
-  LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
+  LOG_INFO_APP("Send a CoAP CONFIRMABLE PUT Request");
   
-  /* Send a NON-CONFIRMABLE PUT Request */
-  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_NON_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
+  /* Send a CONFIRMABLE PUT Request */
+  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
                               NULL, PayloadWrite, sizeof(PayloadWrite), NULL, NULL);
 
 }

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,7 +27,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
-#include "pka_ctrl.h"
 
 /* USER CODE END Includes */
 
@@ -68,7 +67,6 @@ extern void (*low_isr_callback)(void);
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern RTC_HandleTypeDef hrtc;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
@@ -87,7 +85,7 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
+  while(1)
   {
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
@@ -104,6 +102,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
@@ -119,6 +118,7 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
@@ -134,6 +134,7 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
@@ -149,6 +150,7 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
@@ -240,18 +242,14 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-#if (CFG_SCM_SUPPORTED == 1)
     /* SCM HSE BEGIN */
     SCM_HSE_StartStabilizationTimer();
     /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-#if (CFG_SCM_SUPPORTED == 1)
     scm_pllrdy_isr();
-#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -270,20 +268,6 @@ void GPDMA1_Channel0_IRQHandler(void)
   /* USER CODE BEGIN GPDMA1_Channel0_IRQn 1 */
 
   /* USER CODE END GPDMA1_Channel0_IRQn 1 */
-}
-
-/**
-  * @brief This function handles GPDMA1 Channel 1 global interrupt.
-  */
-void GPDMA1_Channel1_IRQHandler(void)
-{
-  /* USER CODE BEGIN GPDMA1_Channel1_IRQn 0 */
-
-  /* USER CODE END GPDMA1_Channel1_IRQn 0 */
-  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel1);
-  /* USER CODE BEGIN GPDMA1_Channel1_IRQn 1 */
-
-  /* USER CODE END GPDMA1_Channel1_IRQn 1 */
 }
 
 /**
@@ -314,12 +298,10 @@ void TIM16_IRQHandler(void)
     /* Clear the update interrupt flag */
     LL_TIM_ClearFlag_UPDATE(TIM16);
 
-#if (CFG_SCM_SUPPORTED == 1)
     /* SCM HSE BEGIN */
     /* Update interrupt processing */
     SCM_HSE_SW_HSERDY_isr();
     /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
@@ -379,7 +361,6 @@ void ADC4_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
 /**
   * @brief This function handles WKUP global interrupt.
   */
@@ -387,7 +368,6 @@ void WKUP_IRQHandler(void)
 {
   HAL_PWR_WKUP_IRQHandler();
 }
-
 
 /* EXTI for Nucleo buttons are managed by 'app_bsp.c' */
 

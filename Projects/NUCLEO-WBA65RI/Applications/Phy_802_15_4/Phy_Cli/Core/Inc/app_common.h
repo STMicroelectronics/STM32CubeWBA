@@ -30,10 +30,12 @@ extern "C"{
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <inttypes.h>
 
 #include "app_conf.h"
 #include "hw.h"
 #include "ll_sys.h"
+#include "wpan_utils.h"
 
 /* -------------------------------- *
  *  Basic definitions               *

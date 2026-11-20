@@ -133,164 +133,14 @@
 #define PS_WRITE_FAILURE_LIMIT 20u
 
 /**
- * @brief Mask for Presence bitmask checking
+ * @brief Number of data-ID bits stored in one presence-bitmask word.
  */
-#define PS_DATA_ID_0_MASK   (1u << PS_DATA_ID_0)
+#define PS_DATA_ID_BITS_PER_WORD  32u
 
 /**
- * @brief Mask for Presence bitmask checking
+ * @brief Number of words needed to track every configured data ID.
  */
-#define PS_DATA_ID_1_MASK   (1u << PS_DATA_ID_1)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_2_MASK   (1u << PS_DATA_ID_2)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_3_MASK   (1u << PS_DATA_ID_3)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_4_MASK   (1u << PS_DATA_ID_4)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_5_MASK   (1u << PS_DATA_ID_5)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_6_MASK   (1u << PS_DATA_ID_6)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_7_MASK   (1u << PS_DATA_ID_7)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_8_MASK   (1u << PS_DATA_ID_8)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_9_MASK   (1u << PS_DATA_ID_9)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_10_MASK  (1u << PS_DATA_ID_10)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_11_MASK  (1u << PS_DATA_ID_11)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_12_MASK  (1u << PS_DATA_ID_12)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_13_MASK  (1u << PS_DATA_ID_13)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_14_MASK  (1u << PS_DATA_ID_14)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_15_MASK  (1u << PS_DATA_ID_15)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_16_MASK  (1u << PS_DATA_ID_16)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_17_MASK  (1u << PS_DATA_ID_17)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_18_MASK  (1u << PS_DATA_ID_18)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_19_MASK  (1u << PS_DATA_ID_19)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_20_MASK  (1u << PS_DATA_ID_20)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_21_MASK  (1u << PS_DATA_ID_21)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_22_MASK  (1u << PS_DATA_ID_22)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_23_MASK  (1u << PS_DATA_ID_23)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_24_MASK  (1u << PS_DATA_ID_24)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_25_MASK  (1u << PS_DATA_ID_25)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_26_MASK  (1u << PS_DATA_ID_26)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_27_MASK  (1u << PS_DATA_ID_27)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_28_MASK  (1u << PS_DATA_ID_28)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_29_MASK  (1u << PS_DATA_ID_29)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_30_MASK  (1u << PS_DATA_ID_30)
-
-/**
- * @brief Mask for Presence bitmask checking
- */
-#define PS_DATA_ID_31_MASK  (1u << PS_DATA_ID_31)
+#define PS_DATA_ID_BITMASK_WORDS  ((PS_DATA_ID_MAX + PS_DATA_ID_BITS_PER_WORD - 1u) / PS_DATA_ID_BITS_PER_WORD)
 
 /* Private macros ------------------------------------------------------------*/
 /**
@@ -321,7 +171,7 @@
  * @brief Macro to set the Data Information of the PS_DataHeader_t::DataInfo field
  */
 #define PS_MERGE_DATA_INFO(DataId, DataLength)                                        \
-  (((DataId << PS_HEADER_DATA_ID_POS) & PS_HEADER_DATA_ID_MASK) |             \
+  (((((uint32_t)(DataId)) << PS_HEADER_DATA_ID_POS) & PS_HEADER_DATA_ID_MASK) | \
    ((DataLength << PS_HEADER_DATA_LENGTH_POS) & PS_HEADER_DATA_LENGTH_MASK))
 
 /**
@@ -548,7 +398,7 @@ typedef __PACKED_STRUCT __ALIGNED(8u) PS_BankHeader
  */
 typedef __PACKED_STRUCT PS_BankInformation
 {
-  uint32_t PresenceBitmask;       /* Bitmask to track the presence of a valid data - Each bit represent a data ID */
+  uint32_t PresenceBitmask[PS_DATA_ID_BITMASK_WORDS]; /* Bitset tracking the presence of valid data IDs */
   uint32_t RemainingSpace;        /* Remaining space available in the bank - Bank header excluded */
   uint32_t * p_StartAddress;      /* Start address of the bank */
   uint32_t * p_NextWriteAddress;  /* Address of the next flash line to write */
@@ -650,6 +500,35 @@ static inline void ResetContextKeeping (const PS_FunctionId_e FunctionId);
  * @return True if the context has to be kept
  */
 static inline uint8_t IsContextToBeKept (const PS_FunctionId_e FunctionId);
+
+/**
+ * @brief Test whether a data ID is present in a bank information bitset.
+ */
+static inline uint8_t IsDataPresent (const PS_BankInformation_t * const p_BankInfo,
+                                     const uint32_t DataID);
+
+/**
+ * @brief Mark a data ID as present in a bank information bitset.
+ */
+static inline void SetDataPresent (PS_BankInformation_t * const p_BankInfo,
+                                   const uint32_t DataID);
+
+/**
+ * @brief Mark a data ID as absent in a bank information bitset.
+ */
+static inline void ClearDataPresent (PS_BankInformation_t * const p_BankInfo,
+                                     const uint32_t DataID);
+
+/**
+ * @brief Clear a bank information bitset.
+ */
+static inline void ClearDataPresence (PS_BankInformation_t * const p_BankInfo);
+
+/**
+ * @brief Resolve the physical bank ID from an in-memory bank record.
+ */
+static inline PS_Cmd_Status_e GetBankIdFromBankInformation (const PS_BankInformation_t * const p_BankInfo,
+                                                            uint8_t * const p_BankId);
 
 /**
  * @brief Indicate if the amount of valid data is too much
@@ -797,7 +676,7 @@ static PS_Cmd_Status_e FindLocation (const uint32_t * const p_PSStartAddress,
  * @return State of the operation
  */
 static PS_Cmd_Status_e RecoverValidData (const uint32_t StartingIdx,
-                                                 const uint32_t MissingDataBitmask);
+                                                 const uint32_t MissingDataBitmask[]);
 
 /**
  * @brief Confirm the validity of a potential valid data
@@ -1548,6 +1427,63 @@ uint8_t IsContextToBeKept (const PS_FunctionId_e FunctionId)
   return error;
 }
 
+static inline uint8_t IsDataPresent (const PS_BankInformation_t * const p_BankInfo,
+                                     const uint32_t DataID)
+{
+  return (0u != (p_BankInfo->PresenceBitmask[DataID / PS_DATA_ID_BITS_PER_WORD] &
+                 (1u << (DataID % PS_DATA_ID_BITS_PER_WORD)))) ? TRUE : FALSE;
+}
+
+static inline void SetDataPresent (PS_BankInformation_t * const p_BankInfo,
+                                   const uint32_t DataID)
+{
+  p_BankInfo->PresenceBitmask[DataID / PS_DATA_ID_BITS_PER_WORD] |=
+    (1u << (DataID % PS_DATA_ID_BITS_PER_WORD));
+}
+
+static inline void ClearDataPresent (PS_BankInformation_t * const p_BankInfo,
+                                     const uint32_t DataID)
+{
+  p_BankInfo->PresenceBitmask[DataID / PS_DATA_ID_BITS_PER_WORD] &=
+    ~(1u << (DataID % PS_DATA_ID_BITS_PER_WORD));
+}
+
+static inline void ClearDataPresence (PS_BankInformation_t * const p_BankInfo)
+{
+  for (uint32_t bitmaskIdx = 0x00;
+       PS_DATA_ID_BITMASK_WORDS > bitmaskIdx;
+       bitmaskIdx++)
+  {
+    p_BankInfo->PresenceBitmask[bitmaskIdx] = 0x00u;
+  }
+}
+
+static inline PS_Cmd_Status_e GetBankIdFromBankInformation (const PS_BankInformation_t * const p_BankInfo,
+                                                            uint8_t * const p_BankId)
+{
+  PS_Cmd_Status_e error = PS_ERROR_INVALID;
+
+  if ((NULL != p_BankInfo) &&
+      (NULL != p_BankId))
+  {
+    *p_BankId = 0xFFu;
+
+    for (uint32_t bankIdx = 0x00;
+         PS_BANK_NUMBER_MAX > bankIdx;
+         bankIdx++)
+    {
+      if (p_BankInfo == &a_PSBanksInfo[bankIdx])
+      {
+        *p_BankId = (uint8_t)bankIdx;
+        error = PS_OK;
+        break;
+      }
+    }
+  }
+
+  return error;
+}
+
 uint8_t IsValidDataOccupationTooMuch (const PS_Data_ID_e DataID,
                                       const uint32_t potentialDataSize)
 {
@@ -1576,7 +1512,7 @@ uint8_t IsValidDataOccupationTooMuch (const PS_Data_ID_e DataID,
          PS_DATA_ID_MAX > dataIdx;
          dataIdx++)
     {
-      if ((ap_BankList[bankIdx]->PresenceBitmask & (1u << dataIdx)) &&
+      if ((TRUE == IsDataPresent (ap_BankList[bankIdx], dataIdx)) &&
           (DataID != dataIdx))
       {
         validDataAmount += a_OccupationTable[dataIdx];
@@ -1644,11 +1580,11 @@ void UpdateBankInformation (const PS_Data_ID_e DataID,
   if ((NewBankIdx != hostingBankIdx) && (0xFF != hostingBankIdx))
   {
     /* Clear the old hosting bank presence bitmask */
-    ap_BankList[hostingBankIdx]->PresenceBitmask = ap_BankList[hostingBankIdx]->PresenceBitmask & ~(1u << DataID);
+    ClearDataPresent (ap_BankList[hostingBankIdx], DataID);
   }
 
   /* Update presence bitmask */
-  ap_BankList[NewBankIdx]->PresenceBitmask = ap_BankList[NewBankIdx]->PresenceBitmask | (1u << DataID);
+  SetDataPresent (ap_BankList[NewBankIdx], DataID);
 
   /* Update bank remaining space */
   ap_BankList[NewBankIdx]->RemainingSpace = ap_BankList[NewBankIdx]->RemainingSpace - DataOccupation;
@@ -1669,7 +1605,7 @@ void GetHostingBank (const PS_Data_ID_e DataID,
        cnt++)
   {
     /* Check if last data was here before */
-    if (0x00 != (ap_BankList[bankIdx]->PresenceBitmask & (1u << DataID)))
+    if (TRUE == IsDataPresent (ap_BankList[bankIdx], DataID))
     {
       *p_HostingBankIdx = bankIdx;
 
@@ -1702,140 +1638,14 @@ void GetFutureSpareBank (uint32_t * const p_FutureSpareBankIdx)
     /* Reset amount before computation */
     validDataAmount = 0x00;
 
-    /* Data ID 0-9 */
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_0_MASK)
+    for (uint32_t dataIdx = 0x00;
+         PS_DATA_ID_MAX > dataIdx;
+         dataIdx++)
     {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_0];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_1_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_1];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_2_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_2];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_3_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_3];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_4_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_4];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_5_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_5];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_6_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_6];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_7_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_7];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_8_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_8];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_9_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_9];
-    }
-
-    /* Data ID 10-19 */
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_10_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_10];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_11_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_11];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_12_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_12];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_13_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_13];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_14_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_14];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_15_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_15];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_16_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_16];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_17_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_17];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_18_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_18];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_19_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_19];
-    }
-
-    /* Data ID 20-29 */
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_20_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_20];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_21_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_21];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_22_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_22];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_23_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_23];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_24_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_24];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_25_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_25];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_26_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_26];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_27_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_27];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_28_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_28];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_29_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_29];
-    }
-
-    /* Data ID 30-31 */
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_30_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_30];
-    }
-    if (ap_BankList[cnt]->PresenceBitmask & PS_DATA_ID_31_MASK)
-    {
-      validDataAmount += a_OccupationTable[PS_DATA_ID_31];
+      if (TRUE == IsDataPresent (ap_BankList[cnt], dataIdx))
+      {
+        validDataAmount += a_OccupationTable[dataIdx];
+      }
     }
 
     /* Check if there is less or more valid data inside this bank */
@@ -2279,7 +2089,7 @@ PS_Cmd_Status_e SearchData (const PS_Data_ID_e DataID,
 }
 
 PS_Cmd_Status_e RecoverValidData (const uint32_t StartingIdx,
-                                          const uint32_t MissingDataBitmask)
+                                          const uint32_t MissingDataBitmask[])
 {
   PS_Cmd_Status_e error = PS_OK;
 
@@ -2292,12 +2102,20 @@ PS_Cmd_Status_e RecoverValidData (const uint32_t StartingIdx,
   PS_DataHeader_t tmpDataHeader = {0xFF};
 
   static int32_t bankCnt = 0x00;
-  static uint32_t dataFoundMask = 0x00;
+  static uint32_t a_TargetDataBitmask[PS_DATA_ID_BITMASK_WORDS] = {0};
+  static uint32_t a_DataFoundBitmask[PS_DATA_ID_BITMASK_WORDS] = {0};
 
   if (FALSE == IsContextToBeKept (PS_RECOVERVALIDDATA_ID))
   {
+    /* Keep the target set in static context so a paused recovery can resume. */
+    memcpy (a_TargetDataBitmask,
+            MissingDataBitmask,
+            sizeof (a_TargetDataBitmask));
+
     /* Reset found flags */
-    dataFoundMask = 0x00;
+    memset (a_DataFoundBitmask,
+            0x00,
+            sizeof (a_DataFoundBitmask));
 
     /* Starting from the most recent bank */
     bankCnt = StartingIdx;
@@ -2308,7 +2126,9 @@ PS_Cmd_Status_e RecoverValidData (const uint32_t StartingIdx,
     ResetContextKeeping (PS_RECOVERVALIDDATA_ID);
   }
 
-  while ((0x00 <= bankCnt) && (MissingDataBitmask != dataFoundMask) && (PS_OK == error))
+  while ((0x00 <= bankCnt) && (0 != memcmp (a_TargetDataBitmask,
+                                             a_DataFoundBitmask,
+                                             sizeof (a_DataFoundBitmask))) && (PS_OK == error))
   {
     /* Set bonding pointers */
     p_tmpAddress = (uint32_t *)((uint32_t)ap_BankList[bankCnt]->p_StartAddress +
@@ -2379,13 +2199,15 @@ PS_Cmd_Status_e RecoverValidData (const uint32_t StartingIdx,
           if (PS_OK == error)
           {
             /* Data valid - Check if not already found */
-            if (0x00 == (dataFoundMask & (1u << currentDataId)))
+            if (0x00 == (a_DataFoundBitmask[currentDataId / PS_DATA_ID_BITS_PER_WORD] &
+                         (1u << (currentDataId % PS_DATA_ID_BITS_PER_WORD))))
             {
               /* New valid data found */
-              dataFoundMask |= (1u << currentDataId);
+              a_DataFoundBitmask[currentDataId / PS_DATA_ID_BITS_PER_WORD] |=
+                (1u << (currentDataId % PS_DATA_ID_BITS_PER_WORD));
 
               /* Set the bank presence bitmask */
-              ap_BankList[bankCnt]->PresenceBitmask |= (1u << currentDataId);
+              SetDataPresent (ap_BankList[bankCnt], currentDataId);
             }
 
             /* Update occupation table - header and padding included */
@@ -2553,6 +2375,12 @@ PS_Cmd_Status_e WriteBankHeader (const uint8_t BankId,
 
   static PS_BankHeader_t tmpBankHeader = {0xFF};
 
+  /* Never index the bank table with an erased or corrupt bank ID. */
+  if (CurrentConfiguration.BankNumber <= BankId)
+  {
+    return PS_ERROR_CONFIG;
+  }
+
   if (FALSE == IsContextToBeKept (PS_WRITEBANKHEADER_ID))
   {
     /* Reset the header */
@@ -2612,7 +2440,7 @@ PS_Cmd_Status_e WriteBankHeader (const uint8_t BankId,
                                                                               PS_FLASH_LINE_LENGTH);
 
         /* Update presence bitmask */
-        a_PSBanksInfo[BankId].PresenceBitmask = 0x00;
+        ClearDataPresence (&a_PSBanksInfo[BankId]);
 
         /* Update remaining space */
         a_PSBanksInfo[BankId].RemainingSpace = (CurrentConfiguration.BankSize * PS_SECTOR_SIZE) -
@@ -3295,10 +3123,19 @@ PS_Cmd_Status_e CreateBankList (const uint32_t StartingIndex)
 PS_Cmd_Status_e BuildDataMap (void)
 {
   PS_Cmd_Status_e error = PS_OK;
+  uint32_t a_AllDataPresentBitmask[PS_DATA_ID_BITMASK_WORDS] = {0};
 
   /* Recover all the data on all the whole Persistent Storage memory */
+  for (uint32_t dataIdx = 0x00;
+       PS_DATA_ID_MAX > dataIdx;
+       dataIdx++)
+  {
+    a_AllDataPresentBitmask[dataIdx / PS_DATA_ID_BITS_PER_WORD] |=
+      (1u << (dataIdx % PS_DATA_ID_BITS_PER_WORD));
+  }
+
   error = RecoverValidData ((CurrentConfiguration.BankNumber - 1u),
-                            0xFFFFFFFF);
+                            a_AllDataPresentBitmask);
 
   if (PS_OPERATION_PAUSED == error)
   {
@@ -3355,7 +3192,7 @@ PS_Cmd_Status_e SwapBank (const uint32_t NewSpareBankIdx)
          ((PS_OK == error) || (PS_DATA_NOT_FOUND == error)))
   {
     /* Check which valid data is present in the future spare bank */
-    if (ap_BankList[NewSpareBankIdx]->PresenceBitmask & (1u << bitmaskIdx))
+    if (TRUE == IsDataPresent (ap_BankList[NewSpareBankIdx], bitmaskIdx))
     {
       while ((PS_SWAPBANK_OP_OVER != currentState) &&
              ((PS_OK == error) || (PS_DATA_NOT_FOUND == error)))
@@ -3440,7 +3277,7 @@ PS_Cmd_Status_e SwapBank (const uint32_t NewSpareBankIdx)
             else if (PS_DATA_NOT_FOUND == error)
             {
               /* Update presence bitmask */
-              ap_BankList[NewSpareBankIdx]->PresenceBitmask &= ~(1u << bitmaskIdx);
+              ClearDataPresent (ap_BankList[NewSpareBankIdx], bitmaskIdx);
 
               /* Update current state to search the missing data */
               currentState = PS_SWAPBANK_SEARCH_MISSING_DATA;
@@ -3478,10 +3315,10 @@ PS_Cmd_Status_e SwapBank (const uint32_t NewSpareBankIdx)
             if (PS_OK == error)
             {
               /* Clear the old hosting bank presence bitmask */
-              ap_BankList[NewSpareBankIdx]->PresenceBitmask &= ~(1u << bitmaskIdx);
+              ClearDataPresent (ap_BankList[NewSpareBankIdx], bitmaskIdx);
 
               /* Update presence bitmask */
-              ap_BankList[(CurrentConfiguration.BankNumber - 1u)]->PresenceBitmask |= (1u << bitmaskIdx);
+              SetDataPresent (ap_BankList[(CurrentConfiguration.BankNumber - 1u)], bitmaskIdx);
 
               /* Update bank remaining space */
               ap_BankList[(CurrentConfiguration.BankNumber - 1u)]->RemainingSpace -= writtenBytes;
@@ -3518,8 +3355,12 @@ PS_Cmd_Status_e SwapBank (const uint32_t NewSpareBankIdx)
           case PS_SWAPBANK_SEARCH_MISSING_DATA:
           {
             /* Search for the missing data - In others banks */
+            uint32_t a_MissingDataBitmask[PS_DATA_ID_BITMASK_WORDS] = {0};
+
+            a_MissingDataBitmask[bitmaskIdx / PS_DATA_ID_BITS_PER_WORD] =
+              (1u << (bitmaskIdx % PS_DATA_ID_BITS_PER_WORD));
             error = RecoverValidData (NewSpareBankIdx,
-                                      (1u << bitmaskIdx));
+                                      a_MissingDataBitmask);
 
             if (PS_OK == error)
             {
@@ -3545,17 +3386,20 @@ PS_Cmd_Status_e SwapBank (const uint32_t NewSpareBankIdx)
             if ((0xFF == bankId) &&
                 (0x00 == eraseCounterValue))
             {
-              /* First get the erase counter */
-              error = ReadFlashLine (ap_BankList[(CurrentConfiguration.BankNumber - 1u)]->p_StartAddress,
-                                     (uint32_t *)&currentBankHeader);
+              /* Resolve the physical bank ID from the in-memory bank mapping. */
+              error = GetBankIdFromBankInformation (ap_BankList[(CurrentConfiguration.BankNumber - 1u)],
+                                                    &bankId);
 
               if (PS_OK == error)
               {
-                /* Before erasing the bank, recover the bank id ... */
-                bankId = currentBankHeader.BankId;
+                /* Read the erase counter from the current bank header. */
+                error = ReadFlashLine (ap_BankList[(CurrentConfiguration.BankNumber - 1u)]->p_StartAddress,
+                                       (uint32_t *)&currentBankHeader);
 
-                /* ... and the erase counter value */
-                eraseCounterValue = PS_GET_ERASE_COUNTER (currentBankHeader.BankInfo);
+                if (PS_OK == error)
+                {
+                  eraseCounterValue = PS_GET_ERASE_COUNTER (currentBankHeader.BankInfo);
+                }
               }
             }
 
@@ -3570,7 +3414,7 @@ PS_Cmd_Status_e SwapBank (const uint32_t NewSpareBankIdx)
                 eraseCounterValue++;
 
                 /* Update trackers */
-                ap_BankList[(CurrentConfiguration.BankNumber - 1u)]->PresenceBitmask = 0x00;
+                ClearDataPresence (ap_BankList[(CurrentConfiguration.BankNumber - 1u)]);
 
                 /* Invalid write happened, ask user to restart write process */
                 currentState = PS_SWAPBANK_ERROR_SPARE_BANK_WRITE_HEADER;
@@ -3902,7 +3746,25 @@ PS_Cmd_Status_e WriteOp (const PS_Data_ID_e DataID,
         }
         else
         {
-          currentState = PS_WRITE_DATA;
+          uint32_t dataOccupation = (uint32_t)PS_ALIGN_FLASH_LINE (DataSize +
+                                                                    sizeof (PS_DataHeader_t) -
+                                                                    PS_HEADER_DATA_NUMBER);
+          uint32_t * p_BankEndAddress = (uint32_t *)((uint32_t)ap_BankList[writeBankIndex]->p_StartAddress +
+                                                     (CurrentConfiguration.BankSize * PS_SECTOR_SIZE));
+          uint64_t writeEndAddress = (uint64_t)(uint32_t)writeAddress + dataOccupation;
+
+          if (((uint32_t)writeAddress < (uint32_t)ap_BankList[writeBankIndex]->p_StartAddress) ||
+              ((uint32_t)writeAddress >= (uint32_t)p_BankEndAddress) ||
+              (writeEndAddress > (uint64_t)(uint32_t)p_BankEndAddress) ||
+              ((uint32_t)writeAddress > (uint32_t)CurrentConfiguration.p_SearchLimit) ||
+              (writeEndAddress > (uint64_t)(uint32_t)CurrentConfiguration.p_SearchLimit))
+          {
+            error = PS_ERROR_NO_WRITE_TARGET;
+          }
+          else
+          {
+            currentState = PS_WRITE_DATA;
+          }
         }
 
         break;
@@ -4002,17 +3864,20 @@ PS_Cmd_Status_e WriteOp (const PS_Data_ID_e DataID,
         if ((0xFF == bankId) &&
             (0x00 == eraseCounterValue))
         {
-          /* First get the erase counter */
-          error = ReadFlashLine (ap_BankList[writeBankIndex]->p_StartAddress,
-                                (uint32_t *)&currentBankHeader);
+          /* Resolve the physical bank ID from the in-memory bank mapping. */
+          error = GetBankIdFromBankInformation (ap_BankList[writeBankIndex],
+                                                &bankId);
 
           if (PS_OK == error)
           {
-            /* Before erasing the bank, recover the bank id ... */
-            bankId = currentBankHeader.BankId;
+            /* Read the erase counter from the current bank header. */
+            error = ReadFlashLine (ap_BankList[writeBankIndex]->p_StartAddress,
+                                   (uint32_t *)&currentBankHeader);
 
-            /* ... and the erase counter value */
-            eraseCounterValue = PS_GET_ERASE_COUNTER (currentBankHeader.BankInfo);
+            if (PS_OK == error)
+            {
+              eraseCounterValue = PS_GET_ERASE_COUNTER (currentBankHeader.BankInfo);
+            }
           }
         }
 
@@ -4118,7 +3983,7 @@ PS_Cmd_Status_e RestoreOp (const PS_Data_ID_e DataID,
 
   static int32_t currentBankIdx = 0xFF;
   static uint32_t hostingBankIndex = 0xFF;
-  static uint32_t missingDataMask = 0x00;
+  static uint32_t a_MissingDataBitmask[PS_DATA_ID_BITMASK_WORDS] = {0};
   static uint32_t * p_dataAddr = NULL;
   static uint32_t * a_possibleDataAddr [3u] = {NULL, NULL, NULL};
   static PS_RestoreStates_e currentState = PS_RESTORE_GET_BANK;
@@ -4135,7 +4000,9 @@ PS_Cmd_Status_e RestoreOp (const PS_Data_ID_e DataID,
     hostingBankIndex = 0xFF;
 
     /* Reset missing data mask */
-    missingDataMask = 0x00;
+    memset (a_MissingDataBitmask,
+            0x00,
+            sizeof (a_MissingDataBitmask));
 
     /* Reset valid data address */
     p_dataAddr = NULL;
@@ -4249,7 +4116,7 @@ PS_Cmd_Status_e RestoreOp (const PS_Data_ID_e DataID,
         if ((PS_DATA_NOT_FOUND == error) && (FALSE == validDataFound))
         {
           /* Clean the presence bitmask */
-          ap_BankList[currentBankIdx]->PresenceBitmask &= ~(1u << dataId);
+          ClearDataPresent (ap_BankList[currentBankIdx], dataId);
 
           /* Search the data in another bank */
           currentBankIdx--;
@@ -4292,7 +4159,7 @@ PS_Cmd_Status_e RestoreOp (const PS_Data_ID_e DataID,
                                                                               PS_HEADER_DATA_NUMBER);
 
           /* Update the information regarding the valid data location */
-          ap_BankList[currentBankIdx]->PresenceBitmask |= (1u << dataId);
+          SetDataPresent (ap_BankList[currentBankIdx], dataId);
         }
         else if (PS_CRC_ERROR == error)
         {
@@ -4327,14 +4194,20 @@ PS_Cmd_Status_e RestoreOp (const PS_Data_ID_e DataID,
       case PS_RESTORE_SEARCH_MISSING_DATA:
       {
         /* Setup the missing data mask */
-        missingDataMask = ap_BankList[currentBankIdx]->PresenceBitmask;
+        for (uint32_t bitmaskIdx = 0x00;
+             PS_DATA_ID_BITMASK_WORDS > bitmaskIdx;
+             bitmaskIdx++)
+        {
+          a_MissingDataBitmask[bitmaskIdx] =
+            ap_BankList[currentBankIdx]->PresenceBitmask[bitmaskIdx];
+        }
 
         /* Reset the presence bitmask as we might have lost some data */
-        ap_BankList[currentBankIdx]->PresenceBitmask = 0x00;
+        ClearDataPresence (ap_BankList[currentBankIdx]);
 
         /* Search for missing data */
         error = RecoverValidData (currentBankIdx,
-                                  missingDataMask);
+                                  a_MissingDataBitmask);
 
         if (PS_OK == error)
         {
@@ -4342,7 +4215,9 @@ PS_Cmd_Status_e RestoreOp (const PS_Data_ID_e DataID,
           hostingBankIndex = 0xFF;
 
           /* Reset missing data bitmask */
-          missingDataMask = 0x00;
+            memset (a_MissingDataBitmask,
+              0x00,
+              sizeof (a_MissingDataBitmask));
 
           /* Keep on searching */
           currentState = PS_RESTORE_GET_BANK;
@@ -4462,17 +4337,20 @@ PS_Cmd_Status_e CleanUpOp (const uint8_t AgingLimitTriggerFlag)
         if ((0xFF == bankId) &&
             (0x00 == eraseCounterValue))
         {
-          /* Information shall be updated, read the bank header */
-          error = ReadFlashLine(ap_BankList[futureSpareBankIdx]->p_StartAddress,
-                                (uint32_t *)&currentBankHeader);
+          /* Resolve the physical bank ID from the in-memory bank mapping. */
+          error = GetBankIdFromBankInformation (ap_BankList[futureSpareBankIdx],
+                                                &bankId);
 
           if (PS_OK == error)
           {
-            /* Before erasing the bank, recover the bank id ... */
-            bankId = currentBankHeader.BankId;
+            /* Read the erase counter from the current bank header. */
+            error = ReadFlashLine (ap_BankList[futureSpareBankIdx]->p_StartAddress,
+                                   (uint32_t *)&currentBankHeader);
 
-            /* ... and the erase counter value */
-            eraseCounterValue = PS_GET_ERASE_COUNTER (currentBankHeader.BankInfo);
+            if (PS_OK == error)
+            {
+              eraseCounterValue = PS_GET_ERASE_COUNTER (currentBankHeader.BankInfo);
+            }
           }
         }
 

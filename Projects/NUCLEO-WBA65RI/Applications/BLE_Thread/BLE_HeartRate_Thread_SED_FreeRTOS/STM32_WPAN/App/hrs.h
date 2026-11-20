@@ -35,6 +35,29 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for HRS */
+#define HRS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for HRS (service declaration not counted in attributes)
+  *                + 2 for HRME
+  *                + 2 for BSL
+  *                + 2 for HRCP
+  *                + 1 for HRME CCCD
+  *                = 7
+**/
+#define HRS_NUM_GATT_ATTRIBUTES (7)
+
+/**
+  * Size_Attributes = 0 for HRS (service declaration not counted in attributes)
+  *                 + 5 for HRME declaration + 23 for HRME size
+  *                 + 5 for BSL declaration + 1 for BSL size
+  *                 + 5 for HRCP declaration + 1 for HRCP size
+  *                 + 2 for HRME CCCD * CFG_BLE_NUM_LINK
+  *                 = 40 + 2 * CFG_BLE_NUM_LINK
+**/
+#define HRS_ATT_VALUE_ARRAY_SIZE  (40 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 #define HRS_MAX_NBR_RR_INTERVAL_VALUES                     (9)
 /* USER CODE END ED */
@@ -59,6 +82,7 @@ typedef enum
   HRS_HRCP_WRITE_EVT,
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
   HRS_RESET_ENERGY_EXPENDED_EVT,
+
   /* USER CODE END Service1_OpcodeEvt_t */
   HRS_BOOT_REQUEST_EVT
 } HRS_OpcodeEvt_t;
@@ -93,6 +117,7 @@ typedef struct{
     uint8_t     NbreOfValidRRIntervalValues;
     uint8_t     Flags;
 }HRS_MeasVal_t;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -116,6 +141,7 @@ typedef enum
   HRS_BODY_SENSOR_LOCATION_EAR_LOBE = 5,
   HRS_BODY_SENSOR_LOCATION_FOOT = 6
 }HRS_BodySensorLocation_t;
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

@@ -262,7 +262,7 @@ UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *current_class, VOID *cur
   * @param  system_level: system level parameter.
   * @param  system_context: system context code.
   * @param  error_code: error event code.
-  * @retval Status
+  * @retval None
   */
 VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code)
 {
@@ -308,10 +308,11 @@ VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_c
 }
 
 /**
-  * @brief MX_USBX_Host_Stack_Init
-  *        Initialization of USB host stack.
-  *        Init USB Host stack, add register the host class stack
-  * @retval None
+  * @brief  MX_USBX_Host_Stack_Init
+  *         Initialization of the USB Host stack.
+  *         Initialize the host stack, register the host class stack.
+  * @param  None
+  * @retval ret
   */
 UINT MX_USBX_Host_Stack_Init(void)
 {
@@ -374,10 +375,11 @@ UINT MX_USBX_Host_Stack_Init(void)
 
 /**
   * @brief  MX_USBX_Host_Stack_DeInit
-  *         Uninitialize of USB Host stack.
-  *         Uninitialize the host stack, unregister of host class stack and
-  *         unregister of the usb host controllers
-  * @retval None
+  *         Uninitialization of the USB Host stack.
+  *         Uninitialize the host stack, unregister the host class stack and
+  *         unregister the USB host controllers.
+  * @param  None
+  * @retval ret
   */
 UINT MX_USBX_Host_Stack_DeInit(void)
 {
@@ -389,8 +391,8 @@ UINT MX_USBX_Host_Stack_DeInit(void)
 
   /* Unregister all the USB host controllers available in this system. */
   if (ux_host_stack_hcd_unregister(_ux_system_host_hcd_stm32_name,
-                                  USB_OTG_HS_BASE,
-                                  (ULONG)&hhcd_USB_OTG_HS) != UX_SUCCESS)
+                                   USB_OTG_HS_BASE,
+                                   (ULONG)&hhcd_USB_OTG_HS) != UX_SUCCESS)
   {
     return UX_ERROR;
   }

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -72,6 +72,7 @@ static void ll_sys_sleep_clock_source_selection(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
 
 /**
   * @brief  Link Layer background process initialization
@@ -82,6 +83,16 @@ void ll_sys_bg_process_init(void)
 {
   /* Register Link Layer task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER, UTIL_SEQ_RFU, ll_sys_bg_process);
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
+{
+  /* no background process de-initialization required */
 }
 
 /**

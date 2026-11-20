@@ -3,11 +3,11 @@
   ******************************************************************************
   * @file    power_table.c
   * @author  MCD Application Team
-  * @brief   This file contains supported power tables
+  * @brief   This file contains supported TX power tables (see BLE Wireless Interface Annex, TX Power Level)
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "app_conf.h"
 #include "power_table.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -29,7 +28,8 @@
  * g_vdd_ldo_value_2 : is to be set in PHY register address 0xEA. */
 
 typedef enum _vdd_ldo_value_e {
-  VDD_LDO_VALUE_1_ID_0  = 0x70,
+  VDD_LDO_VALUE_MAX_POWER  = 0x70,
+  VDD_LDO_VALUE_LOW_POWER  = 0x20,
   VDD_LDO_VALUE_2_ID_0  = 0x00,
 } vdd_ldo_value_e;
 
@@ -37,6 +37,7 @@ typedef enum _vdd_ldo_value_e {
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
+/* Table ID 0: max power table, output range up to +10 dBm. */
 const power_table_entry ll_tx_power_table_max_power[] = {
   {0x02, 0x02, 0x01, -20}, /* Actual_Power = -20.4 dBm */
   {0x02, 0x03, 0x01, -19}, /* Actual_Power = -19.4 dBm */
@@ -71,6 +72,7 @@ const power_table_entry ll_tx_power_table_max_power[] = {
   {0x0D, 0x19, 0x01, 10},  /* Actual_Power = 10 dBm */
 };
 
+/* Table ID 1: low power table, output range up to +2.6 dBm. */
 const power_table_entry ll_tx_power_table_low_power[] = {
   {0x02, 0x02, 0x01, -20}, /* Actual_Power = -20.5 dBm */
   {0x02, 0x03, 0x01, -19}, /* Actual_Power = -19.5 dBm */
@@ -98,13 +100,17 @@ const power_table_entry ll_tx_power_table_low_power[] = {
   {0x02, 0x19, 0x01, 3},   /* Actual_Power = 2.6 dBm */
 };
 
+/* USER CODE BEGIN ll_tx_power_table */
+
+/* USER CODE END ll_tx_power_table */
+
 /* Supported TX_Power tables. */
 const power_table_id_t ll_tx_power_tables[] = {
-  {ll_tx_power_table_max_power, sizeof(ll_tx_power_table_max_power)/sizeof(ll_tx_power_table_max_power[0]), VDD_LDO_VALUE_1_ID_0, VDD_LDO_VALUE_2_ID_0, 0},
-  {ll_tx_power_table_low_power, sizeof(ll_tx_power_table_low_power)/sizeof(ll_tx_power_table_low_power[0]), VDD_LDO_VALUE_1_ID_0, VDD_LDO_VALUE_2_ID_0, 1},
+  {ll_tx_power_table_max_power, sizeof(ll_tx_power_table_max_power)/sizeof(ll_tx_power_table_max_power[0]), VDD_LDO_VALUE_MAX_POWER, VDD_LDO_VALUE_2_ID_0, 0},
+  {ll_tx_power_table_low_power, sizeof(ll_tx_power_table_low_power)/sizeof(ll_tx_power_table_low_power[0]), VDD_LDO_VALUE_LOW_POWER, VDD_LDO_VALUE_2_ID_0, 1},
   /* USER CODE BEGIN ll_tx_power_tables */
 
-  /* USER CODE END ll_tx_power_tables  */
+  /* USER CODE END ll_tx_power_tables */
 };
 
 /* Number of supported TX_Power tables. */

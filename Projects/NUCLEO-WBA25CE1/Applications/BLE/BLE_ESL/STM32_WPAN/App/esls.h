@@ -35,6 +35,41 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for ESLS */
+#define ESLS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for ESLS (service declaration not counted in attributes)
+  *                + 2 for ESL_Addr
+  *                + 2 for AP_Sync_Key_Material
+  *                + 2 for ESL_Resp_Key_Material
+  *                + 2 for ESL_Curr_Abs_Time
+  *                + 2 for ESL_Display_Info
+  *                + 2 for ESL_Image_Info
+  *                + 2 for ESL_Sensor_Info
+  *                + 2 for ESL_Led_Info
+  *                + 2 for ESL_Control_Point
+  *                + 1 for ESL_Control_Point CCCD
+  *                = 19
+**/
+#define ESLS_NUM_GATT_ATTRIBUTES (19)
+
+/**
+  * Size_Attributes = 0 for ESLS (service declaration not counted in attributes)
+  *                 + 5 for ESL_Addr declaration + 2 for ESL_Addr size
+  *                 + 5 for AP_Sync_Key_Material declaration + 24 for AP_Sync_Key_Material size
+  *                 + 5 for ESL_Resp_Key_Material declaration + 24 for ESL_Resp_Key_Material size
+  *                 + 5 for ESL_Curr_Abs_Time declaration + 4 for ESL_Curr_Abs_Time size
+  *                 + 5 for ESL_Display_Info declaration + 10 for ESL_Display_Info size
+  *                 + 5 for ESL_Image_Info declaration + 1 for ESL_Image_Info size
+  *                 + 5 for ESL_Sensor_Info declaration + 10 for ESL_Sensor_Info size
+  *                 + 5 for ESL_Led_Info declaration + 8 for ESL_Led_Info size
+  *                 + 5 for ESL_Control_Point declaration + 17 for ESL_Control_Point size
+  *                 + 2 for ESL_Control_Point CCCD * CFG_BLE_NUM_LINK
+  *                 = 145 + 2 * CFG_BLE_NUM_LINK
+**/
+#define ESLS_ATT_VALUE_ARRAY_SIZE  (145 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

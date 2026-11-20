@@ -38,7 +38,7 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 
-_Min_Heap_Size = 0x3000; /* required amount of heap */
+_Min_Heap_Size = 0x1200;     /* required amount of heap */
 _Min_Stack_Size = 0x1000; /* required amount of stack */
 
 /* Memories definition */
@@ -46,13 +46,16 @@ MEMORY
 {
   RAM      (rw)     : ORIGIN = 0x20000000,   LENGTH = 96K
 
-  NVM      (r)      : ORIGIN = 0x0807C000,   LENGTH = 16K
-  FLASH    (rx)     : ORIGIN = 0x08000000,   LENGTH = (512K - 16K)
+  ITS      (r)      : ORIGIN = 0x0807E000,   LENGTH = 8K
+  FLASH    (rx)     : ORIGIN = 0x08000000,   LENGTH = (512K - 8K)
 }
 
 /* Sections */
 SECTIONS
 {
+  /* Export ITS region symbols */
+  __its_start__ = ORIGIN(ITS);
+  
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {
@@ -86,6 +89,14 @@ SECTIONS
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
   } >FLASH
+
+  /* ITS storage region - reserved area */
+  ITS_RESERVED (READONLY):
+  {
+    . = ALIGN(4);
+    KEEP(*(ITS_RESERVED))
+    . = ALIGN(4);
+  } >ITS AT >FLASH
 
   .ARM.extab (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {

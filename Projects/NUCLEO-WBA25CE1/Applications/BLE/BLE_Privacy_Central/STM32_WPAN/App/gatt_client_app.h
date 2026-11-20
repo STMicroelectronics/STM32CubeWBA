@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -65,9 +65,11 @@ typedef struct
 /* Exported constants --------------------------------------------------------*/
 
 /* USER CODE BEGIN EC */
-#define ST_PRIVACY_SERVICE_UUID                                           (0xFEA0)
-#define ST_PRIVACY_WRITE_CHAR_UUID                                        (0xFEA1)
-#define ST_PRIVACY_NOTIFY_CHAR_UUID                                       (0xFEA2)
+
+#define ST_PRIVACY_SERVICE_UUID                                       (0xFEA0)
+#define ST_PRIVACY_WRITE_CHAR_UUID                                    (0xFEA1)
+#define ST_PRIVACY_NOTIFY_CHAR_UUID                                   (0xFEA2)
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
@@ -91,6 +93,7 @@ uint8_t GATT_CLIENT_APP_Get_State(uint8_t index);
 tBleStatus GATT_CLIENT_APP_ReadCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t *data_length_p, uint8_t **data_p, uint8_t use_read_long);
 tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t data_length, uint8_t *data);
 /* USER CODE BEGIN EFP */
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

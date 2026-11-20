@@ -441,43 +441,43 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
     {
       case OT_DEVICE_ROLE_DISABLED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
-      APP_LED_OFF(LD2);
-      APP_LED_OFF(LD3);
+      APP_BSP_LED_Off(LD2);
+      APP_BSP_LED_Off(LD3);
           /* USER CODE END OT_DEVICE_ROLE_DISABLED */
           break;
 
       case OT_DEVICE_ROLE_DETACHED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DETACHED */
-      APP_LED_OFF(LD2);
-      APP_LED_OFF(LD3);
+      APP_BSP_LED_Off(LD2);
+      APP_BSP_LED_Off(LD3);
           /* USER CODE END OT_DEVICE_ROLE_DETACHED */
           break;
 
       case OT_DEVICE_ROLE_CHILD:
           /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
-      APP_LED_OFF(LD2);
-      APP_LED_ON(LD3);
+      APP_BSP_LED_Off(LD2);
+      APP_BSP_LED_On(LD3);
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
 
       case OT_DEVICE_ROLE_ROUTER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
-      APP_LED_OFF(LD2);
-      APP_LED_ON(LD3);
+      APP_BSP_LED_Off(LD2);
+      APP_BSP_LED_On(LD3);
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
 
       case OT_DEVICE_ROLE_LEADER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
-      APP_LED_ON(LD2);
-      APP_LED_OFF(LD3);
+      APP_BSP_LED_On(LD2);
+      APP_BSP_LED_Off(LD3);
           /* USER CODE END OT_DEVICE_ROLE_LEADER */
           break;
 
       default:
           /* USER CODE BEGIN DEFAULT */
-      APP_LED_OFF(LD2);
-      APP_LED_OFF(LD3);
+      APP_BSP_LED_Off(LD2);
+      APP_BSP_LED_Off(LD3);
           /* USER CODE END DEFAULT */
           break;
     }
@@ -573,7 +573,7 @@ static void HandleUdpReceive(void *aContext, otMessage *aMessage, const otMessag
   if(strcmp((char const*)udpBuffferReceived, (char const*)udpBufffer) == 0)
   {
     LOG_INFO_APP("\r\nComparison OK!\r\n");
-    APP_LED_TOGGLE(LED_BLUE);
+    APP_BSP_LED_Toggle(LED_BLUE);
   }
 }
 

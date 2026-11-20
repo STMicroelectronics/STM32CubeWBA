@@ -235,7 +235,6 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>PHY_40nm_6_00_a</state>
           <state>USE_FULL_LL_DRIVER</state>
           <state>BLE_LL</state>
           <state>USE_HAL_DRIVER</state>
@@ -390,9 +389,7 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
@@ -1439,6 +1436,9 @@
     <group>
       <name>STM32WBAxx_HAL_Driver</name>
       <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
@@ -1528,39 +1528,6 @@
     </group>
   </group>
   <group>
-    <name>Middlewares</name>
-    <group>
-      <name>STM32_WPAN</name>
-      <group>
-        <name>BLE</name>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\lib\stm32wba_ble_stack_llo.a</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</name>
-        </file>
-      </group>
-      <group>
-        <name>LinkLayer</name>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Peripheral_Only_V3_0p.a</name>
-        </file>
-      </group>
-    </group>
-  </group>
-  <group>
     <name>Utilities</name>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\trace\adv_trace\stm32_adv_trace.c</name>
@@ -1586,6 +1553,39 @@
     <file>
       <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\lpm\tiny_lpm\stm32_lpm.c</name>
     </file>
+  </group>
+  <group>
+    <name>Middlewares</name>
+    <group>
+      <name>STM32_WPAN</name>
+      <group>
+        <name>LinkLayer</name>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Peripheral_Only_V3_0p.a</name>
+        </file>
+      </group>
+      <group>
+        <name>BLE</name>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_llo.a</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</name>
+        </file>
+      </group>
+    </group>
   </group>
 </project>
 

@@ -10,7 +10,7 @@
  ******************************************************************************
  * @attention
  *
- * Copyright (c) 2025 STMicroelectronics.
+ * Copyright (c) 2026 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -23,6 +23,7 @@
 /* Includes */
 #include <errno.h>
 #include <stdint.h>
+#include <stddef.h>
 
 /**
  * Pointer to the current high watermark of the heap usage
@@ -77,3 +78,9 @@ void *_sbrk(ptrdiff_t incr)
 
   return (void *)prev_heap_end;
 }
+#if defined(__PICOLIBC__)
+  // Picolibc expects syscalls without the leading underscore.
+  // This creates a strong alias so that
+  // calls to `sbrk()` are resolved to our `_sbrk()` implementation.
+  __strong_reference(_sbrk, sbrk);
+#endif

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2026 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -367,6 +367,7 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
+
   /* USER CODE END ICACHE_Init 1 */
 
   /** Full retention for ICACHE in stop mode
@@ -378,6 +379,7 @@ void MX_ICACHE_Init(void)
   LL_ICACHE_SetMode(LL_ICACHE_1WAY);
   LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
+
   /* USER CODE END ICACHE_Init 2 */
 
 }

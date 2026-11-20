@@ -19,7 +19,7 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, ThreadX.
 
   - Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).
   - This application is configured to support low power mode (No traces - No debugger).
-  - Traces and debugger could be acivated by setting the following in app_conf.h.
+  - Traces and debugger could be activated by setting the following in app_conf.h.
     - CFG_LPM_LEVEL to 0
     - CFG_DEBUGGER_LEVEL to 1
     - CFG_LOG_SUPPORTED to 1

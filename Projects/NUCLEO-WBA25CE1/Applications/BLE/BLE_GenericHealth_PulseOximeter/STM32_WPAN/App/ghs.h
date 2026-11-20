@@ -35,6 +35,37 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for GHS */
+#define GHS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for GHS (service declaration not counted in attributes)
+  *                + 2 for HSF
+  *                + 2 for LHO
+  *                + 2 for GHSCP
+  *                + 2 for OSC
+  *                + 1 for HSF CCCD
+  *                + 1 for LHO CCCD
+  *                + 1 for GHSCP CCCD
+  *                + 1 for OSC CCCD
+  *                = 12
+**/
+#define GHS_NUM_GATT_ATTRIBUTES (12)
+
+/**
+  * Size_Attributes = 0 for GHS (service declaration not counted in attributes)
+  *                 + 5 for HSF declaration + 20 for HSF size
+  *                 + 5 for LHO declaration + 80 for LHO size
+  *                 + 5 for GHSCP declaration + 1 for GHSCP size
+  *                 + 5 for OSC declaration + 12 for OSC size
+  *                 + 2 for HSF CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for LHO CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for GHSCP CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for OSC CCCD * CFG_BLE_NUM_LINK
+  *                 = 133 + 8 * CFG_BLE_NUM_LINK
+**/
+#define GHS_ATT_VALUE_ARRAY_SIZE  (133 + 8 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

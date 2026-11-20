@@ -112,7 +112,7 @@ static otInstance * PtOpenThreadInstance;
 
 /* USER CODE BEGIN PV */
 static APP_THREAD_LedTogglingMode_t   ToggleBlueLedMode = SLOW_TOGGLING;
-static uint32_t   APP_THREAD_DeviceIsLeader = FALSE;
+static uint32_t   APP_THREAD_DeviceIsLeader = 999;
 static UTIL_TIMER_Object_t timerThreadApp_Id;
 /* USER CODE END PV */
 
@@ -329,11 +329,11 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
   
   while (1)
   {
-    APP_LED_TOGGLE(LD1);
+    APP_BSP_LED_Toggle(LD1);
     HAL_Delay(500U);
-    APP_LED_TOGGLE(LD2);
+    APP_BSP_LED_Toggle(LD2);
     HAL_Delay(500U);
-    APP_LED_TOGGLE(LD3);
+    APP_BSP_LED_Toggle(LD3);
     HAL_Delay(500U);
   }
 
@@ -436,39 +436,40 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
     {
       case OT_DEVICE_ROLE_DISABLED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
-      	  APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+      	  APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END OT_DEVICE_ROLE_DISABLED */
           break;
 
       case OT_DEVICE_ROLE_DETACHED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DETACHED */
-          APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END OT_DEVICE_ROLE_DETACHED */
           break;
 
       case OT_DEVICE_ROLE_CHILD:
           /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
-          APP_LED_OFF(LD2);
-          APP_LED_ON(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_On(LD3);
           ToggleBlueLedMode = NO_TOGGLING;
           BSP_LED_On(LD1);
+          APP_THREAD_DeviceIsLeader = FALSE;
           APP_DBG("ROLE CHILD");
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
 
       case OT_DEVICE_ROLE_ROUTER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
-          APP_LED_OFF(LD2);
-          APP_LED_ON(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_On(LD3);
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
 
       case OT_DEVICE_ROLE_LEADER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
-          APP_LED_ON(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_On(LD2);
+          APP_BSP_LED_Off(LD3);
           if (APP_THREAD_DeviceIsLeader == TRUE)
           {
             UTIL_SEQ_SetTask(TASK_START_COMMISSIONER, CFG_SEQ_PRIO_1);
@@ -481,8 +482,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
       default:
           /* USER CODE BEGIN DEFAULT */
-          APP_LED_OFF(LD2);
-          APP_LED_OFF(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END DEFAULT */
           break;
     }
@@ -601,7 +602,10 @@ static void CommissionerJoinerCallback(otCommissionerJoinerEvent aEvent, const o
       break;
   }
 
+  if(aJoinerId)
+  {
   OutputBytes(aJoinerId->m8, sizeof(*aJoinerId));
+  }
 }
 
 
@@ -764,9 +768,18 @@ static void APP_THREAD_JoinerHandler(otError OtError, void *pContext)
  */
 void APP_BSP_Button1Action(void)
 {
-  LOG_INFO_APP("Config Leader Device");
-  
-  APP_THREAD_ConfigLeaderDevice();
+  if (APP_THREAD_DeviceIsLeader != FALSE)
+    {  
+     LOG_INFO_APP("Config Leader Device if not already done");
+	}
+  else
+    {
+     LOG_INFO_APP("SW1 pushed: no action except this message");
+	}
+  if (APP_THREAD_DeviceIsLeader == 999)
+    {
+     APP_THREAD_ConfigLeaderDevice();
+    }
 }
 
 /**
@@ -776,9 +789,18 @@ void APP_BSP_Button1Action(void)
  */
 void APP_BSP_Button3Action(void)
 {
-  LOG_INFO_APP("Config Joiner");
-  
-  APP_THREAD_ConfigJoiner();
+  if (APP_THREAD_DeviceIsLeader != TRUE)
+    {
+     LOG_INFO_APP("Config Joiner if not alread done");
+  	}
+  else
+    {
+     LOG_INFO_APP("SW3 pushed: no action except this message");
+	}
+  if (APP_THREAD_DeviceIsLeader == 999) 
+    {
+     APP_THREAD_ConfigJoiner();
+    }
 }
 
 

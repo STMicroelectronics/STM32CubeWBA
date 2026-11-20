@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -55,6 +55,13 @@ extern TX_BYTE_POOL         *pBytePool;
 /* USER CODE END EV */
 
 /* Exported macros ------------------------------------------------------------*/
+#if TX_TIMER_TICKS_PER_SECOND == 100
+#define TX_TIMER_TICKS_PERIOD_MS 10
+#elif TX_TIMER_TICKS_PER_SECOND == 1000
+#define TX_TIMER_TICKS_PERIOD_MS 1
+#else
+#define TX_TIMER_TICKS_PERIOD_MS (1000 / TX_TIMER_TICKS_PER_SECOND)
+#endif
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */

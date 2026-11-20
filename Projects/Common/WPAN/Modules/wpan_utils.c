@@ -37,35 +37,39 @@ static const uint16_t   iDeviceRevIdList[] = { 0xFFFF, 0x1000, 0x2000 };
 static const char *     szDeviceRevNameList[] = { "Unknown", "A", "B" };
 
 static const uint16_t   iDevicePackageIdList[] = { 0xFFFF, 
-#if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx)
+#if defined(STM32WBA5xxx)
                                                  LL_UTILS_PACKAGETYPE_UFQFPN32,         LL_UTILS_PACKAGETYPE_UFQFPN48,
                                                  LL_UTILS_PACKAGETYPE_WLCSP41_SMPS,     LL_UTILS_PACKAGETYPE_UFQFPN48_SMPS,
                                                  LL_UTILS_PACKAGETYPE_UFBGA59,
-#elif defined(STM32WBA62xx) || defined(STM32WBA63xx) || defined(STM32WBA64xx) || defined(STM32WBA65xx) || defined (STM32WBA6Mxx)
+#elif defined(STM32WBA6xxx)
                                                  LL_UTILS_PACKAGETYPE_UFQFPN48_USB,     LL_UTILS_PACKAGETYPE_WLCSP88_USB,
                                                  LL_UTILS_PACKAGETYPE_UFBGA121_USB,     LL_UTILS_PACKAGETYPE_UFQFPN48_SMPS,
                                                  LL_UTILS_PACKAGETYPE_UFQFPN48_SMPS_USB,LL_UTILS_PACKAGETYPE_VFQFPN68_SMPS_USB,
                                                  LL_UTILS_PACKAGETYPE_WLCSP88_SMPS_USB, LL_UTILS_PACKAGETYPE_UFBGA121_SMPS_USB,
-#elif defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)
+#elif defined(STM32WBA2xxx)
                                                  LL_UTILS_PACKAGETYPE_UFQFPN32,         LL_UTILS_PACKAGETYPE_UFQFPN48,
                                                  LL_UTILS_PACKAGETYPE_WLCSP37,          LL_UTILS_PACKAGETYPE_UFQFPN32_USB,
                                                  LL_UTILS_PACKAGETYPE_UFQFPN48_USB,     LL_UTILS_PACKAGETYPE_WLCSP37_USB,
                                                  LL_UTILS_PACKAGETYPE_UFQFPN48_SMPS,    LL_UTILS_PACKAGETYPE_WLCSP37_SMPS_USB,
                                                  LL_UTILS_PACKAGETYPE_UFQFPN48_SMPS_USB,
-#endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx) */
+#else
+#error "Unsupported STM32WBA series in wpan_utils.c"
+#endif
                                                };
 static const char *     szDevicePackageNameList[] = { "Unknown", 
-#if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx)
+#if defined(STM32WBA5xxx)
                                                      "UFQFPN32", "UFQFPN48", "WLCSP41_SMPS", "UFQFPN48_SMPS", "UFBGA59",
-#elif defined(STM32WBA62xx) || defined(STM32WBA63xx) || defined(STM32WBA64xx) || defined(STM32WBA65xx) || defined (STM32WBA6Mxx)
+#elif defined(STM32WBA6xxx)
                                                      "UFQFPN48_USB", "WLCSP88_USB", "UFBGA121_USB", "UFQFPN48_SMPS",   
                                                      "UFQFPN48_SMPS_USB", "VFQFPN68_SMPS_USB", "WLCSP88_SMPS_USB", "UFBGA121_SMPS_USB",
-#elif defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)
+#elif defined(STM32WBA2xxx)
                                                      "UFQFPN32", "UFQFPN48", "WLCSP37", "UFQFPN32_USB", "UFQFPN48_USB", 
                                                      "WLCSP37_USB", "UFQFPN48_SMPS", "WLCSP37_SMPS_USB", "UFQFPN48_SMPS_USB",
-#endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA5Mxx) */
+#else
+#error "Unsupported STM32WBA series in wpan_utils.c"
+#endif
                                                     };
-													
+                          
 /* Private macros ------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/

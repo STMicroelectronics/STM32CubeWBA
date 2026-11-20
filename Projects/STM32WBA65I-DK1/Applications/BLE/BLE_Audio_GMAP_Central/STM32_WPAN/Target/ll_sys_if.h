@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -53,10 +53,6 @@ extern "C" {
 #define DRIFT_TIME_OPTIMIZED                    (13)
 #define EXEC_TIME_OPTIMIZED                     (24)
 
-#undef DRIFT_TIME_DEFAULT
-#define DRIFT_TIME_DEFAULT                      DRIFT_TIME_OPTIMIZED
-#undef EXEC_TIME_DEFAULT
-#define EXEC_TIME_DEFAULT                       EXEC_TIME_OPTIMIZED
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

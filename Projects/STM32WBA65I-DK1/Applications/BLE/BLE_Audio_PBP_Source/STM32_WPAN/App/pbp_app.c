@@ -37,7 +37,7 @@ typedef struct
   Sampling_Freq_t       Freq;
   Frame_Duration_t      FrameDuration;
   uint16_t              OctetsPerCodecFrame;
-} PBPAPP_CodecConf_t;
+} APP_CodecConf_t;
 
 typedef struct
 {
@@ -48,7 +48,7 @@ typedef struct
   uint8_t               RTN;
   uint16_t              MaxTpLatency;
   uint32_t              PresentationDelay;
-} PBPAPP_QoSConf_t;
+} APP_QoSConf_t;
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -140,58 +140,61 @@ static uint32_t aCAPMemBuffer[DIVC(CAP_DYN_ALLOC_SIZE,4)];
 static uint32_t aAudioInitBuffer[BLE_AUDIO_DYN_ALLOC_SIZE];
 static BleAudioInit_t BleAudioInit;
 
-const PBPAPP_QoSConf_t aPBPAPP_BroadcastQoSConf[NUM_LC3_QOS_CONFIG] = {
-  {SAMPLE_FREQ_8000_HZ, 7500, BAP_FRAMING_UNFRAMED, 26, 2, 8, 40000},
-  {SAMPLE_FREQ_8000_HZ, 10000, BAP_FRAMING_UNFRAMED, 30, 2, 10, 40000},
-  {SAMPLE_FREQ_16000_HZ, 7500, BAP_FRAMING_UNFRAMED, 30, 2, 8, 40000},
-  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED, 40, 2, 10, 40000},
-  {SAMPLE_FREQ_24000_HZ, 7500, BAP_FRAMING_UNFRAMED, 45, 2, 8, 40000},
-  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED, 60, 2, 10, 40000},
-  {SAMPLE_FREQ_32000_HZ, 7500, BAP_FRAMING_UNFRAMED, 60, 2, 8, 40000},
-  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED, 80, 2, 10, 40000},
-  {SAMPLE_FREQ_44100_HZ, 8163, BAP_FRAMING_FRAMED, 97, 4, 24, 40000},
-  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED, 130, 4, 31, 40000},
-  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 75, 4, 15, 40000},
-  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100, 4, 20, 40000},
-  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 90, 4, 15, 40000},
-  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120, 4, 20, 40000},
-  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 117, 4, 15, 40000},
-  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155, 4, 20, 40000},
-  {SAMPLE_FREQ_8000_HZ, 7500, BAP_FRAMING_UNFRAMED, 26, 4, 45, 40000},
-  {SAMPLE_FREQ_8000_HZ, 10000, BAP_FRAMING_UNFRAMED, 30, 4, 60, 40000},
-  {SAMPLE_FREQ_16000_HZ, 7500, BAP_FRAMING_UNFRAMED, 30, 4, 45, 40000},
-  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED, 40, 4, 60, 40000},
-  {SAMPLE_FREQ_24000_HZ, 7500, BAP_FRAMING_UNFRAMED, 45, 4, 45, 40000},
-  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED, 60, 4, 60, 40000},
-  {SAMPLE_FREQ_32000_HZ, 7500, BAP_FRAMING_UNFRAMED, 60, 4, 45, 40000},
-  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED, 80, 4, 60, 40000},
-  {SAMPLE_FREQ_44100_HZ, 8163, BAP_FRAMING_FRAMED, 97, 4, 54, 40000},
-  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED, 130, 4, 60, 40000},
-  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 75, 4, 50, 40000},
-  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100, 4, 65, 40000},
-  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 90, 4, 50, 40000},
-  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120, 4, 65, 40000},
-  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 117, 4, 50, 40000},
-  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155, 4, 65, 40000}
+/* Codec Configurations defined in Basic Audio Profile Specification*/
+const APP_CodecConf_t APP_CodecConf[NUM_LC3_CODEC_CONFIG] = {
+  {SAMPLE_FREQ_8000_HZ,  FRAME_DURATION_7_5_MS,  26u},
+  {SAMPLE_FREQ_8000_HZ,  FRAME_DURATION_10_MS,   30u},
+  {SAMPLE_FREQ_16000_HZ, FRAME_DURATION_7_5_MS,  30u},
+  {SAMPLE_FREQ_16000_HZ, FRAME_DURATION_10_MS,   40u},
+  {SAMPLE_FREQ_24000_HZ, FRAME_DURATION_7_5_MS,  45u},
+  {SAMPLE_FREQ_24000_HZ, FRAME_DURATION_10_MS,   60u},
+  {SAMPLE_FREQ_32000_HZ, FRAME_DURATION_7_5_MS,  60u},
+  {SAMPLE_FREQ_32000_HZ, FRAME_DURATION_10_MS,   80u},
+  {SAMPLE_FREQ_44100_HZ, FRAME_DURATION_7_5_MS,  97u},
+  {SAMPLE_FREQ_44100_HZ, FRAME_DURATION_10_MS,  130u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS,  75u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS,  100u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS,  90u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS,  120u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS, 117u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS,  155u}
 };
 
-const PBPAPP_CodecConf_t aPBPAPP_CodecConf[NUM_LC3_CODEC_CONFIG] = {
-  {SAMPLE_FREQ_8000_HZ, FRAME_DURATION_7_5_MS, 26u},
-  {SAMPLE_FREQ_8000_HZ, FRAME_DURATION_10_MS, 30u},
-  {SAMPLE_FREQ_16000_HZ, FRAME_DURATION_7_5_MS, 30u},
-  {SAMPLE_FREQ_16000_HZ, FRAME_DURATION_10_MS, 40u},
-  {SAMPLE_FREQ_24000_HZ, FRAME_DURATION_7_5_MS, 45u},
-  {SAMPLE_FREQ_24000_HZ, FRAME_DURATION_10_MS, 60u},
-  {SAMPLE_FREQ_32000_HZ, FRAME_DURATION_7_5_MS, 60u},
-  {SAMPLE_FREQ_32000_HZ, FRAME_DURATION_10_MS, 80u},
-  {SAMPLE_FREQ_44100_HZ, FRAME_DURATION_7_5_MS, 97u},
-  {SAMPLE_FREQ_44100_HZ, FRAME_DURATION_10_MS, 130u},
-  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS, 75u},
-  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS, 100u},
-  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS, 90u},
-  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS, 120u},
-  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS, 117u},
-  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS, 155u}
+const APP_QoSConf_t APP_BroadcastQoSConf[NUM_LC3_BRD_QOSCONF] = {
+  /* Low Latency BAP Broadcast Configs */
+  {SAMPLE_FREQ_8000_HZ,   7500, BAP_FRAMING_UNFRAMED,  26,  2,   8, 40000},
+  {SAMPLE_FREQ_8000_HZ,  10000, BAP_FRAMING_UNFRAMED,  30,  2,  10, 40000},
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  2,   8, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  2,  10, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45,  2,   8, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60,  2,  10, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  2,   8, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  2,  10, 40000},
+  {SAMPLE_FREQ_44100_HZ,  8163, BAP_FRAMING_FRAMED,    97,  4,  24, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED,   130,  4,  31, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  4,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  4,  20, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90,  4,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120,  4,  20, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED, 117,  4,  15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155,  4,  20, 40000},
+  /* High Reliability BAP Broadcast Configs */
+  {SAMPLE_FREQ_8000_HZ,   7500, BAP_FRAMING_UNFRAMED,  26,  4,  45, 40000},
+  {SAMPLE_FREQ_8000_HZ,  10000, BAP_FRAMING_UNFRAMED,  30,  4,  60, 40000},
+  {SAMPLE_FREQ_16000_HZ,  7500, BAP_FRAMING_UNFRAMED,  30,  4,  45, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED,  40,  4,  60, 40000},
+  {SAMPLE_FREQ_24000_HZ,  7500, BAP_FRAMING_UNFRAMED,  45,  4,  45, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED,  60,  4,  60, 40000},
+  {SAMPLE_FREQ_32000_HZ,  7500, BAP_FRAMING_UNFRAMED,  60,  4,  45, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED,  80,  4,  60, 40000},
+  {SAMPLE_FREQ_44100_HZ,  8163, BAP_FRAMING_FRAMED,    97,  4,  54, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED,   130,  4,  60, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  75,  4,  50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100,  4,  65, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED,  90,  4,  50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120,  4,  65, 40000},
+  {SAMPLE_FREQ_48000_HZ,  7500, BAP_FRAMING_UNFRAMED, 117,  4,  50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155,  4,  65, 40000},
 };
 
 /* Buffers allocation for LC3*/
@@ -396,7 +399,7 @@ uint8_t PBPAPP_InitSource(void)
                    a_channel_allocation,
                    BROADCAST_SOURCE_FRAME_BLOCK_PER_SDU);
 
-  if (aPBPAPP_CodecConf[BROADCAST_SOURCE_BAP_CONFIG%16].Freq == SAMPLE_FREQ_48000_HZ
+  if (APP_CodecConf[BROADCAST_SOURCE_BAP_CONFIG%16].Freq == SAMPLE_FREQ_48000_HZ
      && (BROADCAST_SOURCE_NUM_BIS == 2
        || LTV_GetNumberOfChannelsSet(BROADCAST_SOURCE_CHANNEL_ALLOC_1) == 2))
   {
@@ -421,7 +424,9 @@ uint8_t PBPAPP_StartSource(void)
                                                                                     AD_TYPE_COMPLETE_LOCAL_NAME};
   PBP_PBS_BroadcastAudioStart_Params_t pbp_audio_start_params;
   CAP_Broadcast_AudioStart_Params_t cap_audio_start_params;
+#if (CFG_LCD_SUPPORTED == 1)
   char broadcast_name_string[BROADCAST_NAME_LENGTH+1];
+#endif /* CFG_LCD_SUPPORTED == 1 */
   char source_id_string[COMPLETE_LOCAL_NAME_LENGTH+1];
 
   uint8_t Pb_Addr_Len;
@@ -431,8 +436,10 @@ uint8_t PBPAPP_StartSource(void)
   snprintf(source_id_string, COMPLETE_LOCAL_NAME_LENGTH+1, "PBP_WBA_%02X%02X", Pb_Addr[1], Pb_Addr[0]);
   MEMCPY(&a_additional_adv_data[2], source_id_string, COMPLETE_LOCAL_NAME_LENGTH);
 
+#if (CFG_LCD_SUPPORTED == 1)
   snprintf(broadcast_name_string, BROADCAST_NAME_LENGTH+1, "%s", aPBPAPP_BroadcastName);
   UTIL_LCD_DisplayStringAt(0, 5+12+2, (uint8_t *) broadcast_name_string, CENTER_MODE);
+#endif /* CFG_LCD_SUPPORTED == 1 */
 
   /* enable ISO cohabitation scheduling mode for extended advertising */
   const uint8_t iso_ext_adv_schl = 1;
@@ -646,12 +653,13 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
   if (ret == BLE_STATUS_SUCCESS)
   {
 
-    /*Initialize the Audio Codec (LC3)*/
-    CODEC_LC3Config_t lc3_config = {0};
     PBPAPP_Context.bap_role = PBPAPP_BAP_Config.Role;
 
     /*Register the Audio Task */
     UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
+
+    /*Initialize the Audio Codec (LC3)*/
+    CODEC_LC3Config_t lc3_config = {0};
 
     lc3_config.SessionSize = sizeof(aLC3SessionMemBuffer);
     lc3_config.ChannelSize = sizeof(aLC3ChannelMemBuffer);
@@ -718,14 +726,14 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
   PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength = 0;
   PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = 0x02;
   PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = CODEC_SAMPLING_FREQ;
-  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = aPBPAPP_CodecConf[BAPConfID%16].Freq;
+  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = APP_CodecConf[BAPConfID%16].Freq;
   PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = 0x02;
   PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = CODEC_FRAME_DURATION;
-  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = aPBPAPP_CodecConf[BAPConfID%16].FrameDuration;
+  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = APP_CodecConf[BAPConfID%16].FrameDuration;
   PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = 0x03;
   PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = CODEC_OCTETS_PER_CODEC_FRAME;
-  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = (uint8_t) aPBPAPP_CodecConf[BAPConfID%16].OctetsPerCodecFrame;
-  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = (uint8_t) (aPBPAPP_CodecConf[BAPConfID%16].OctetsPerCodecFrame >> 8);
+  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = (uint8_t) APP_CodecConf[BAPConfID%16].OctetsPerCodecFrame;
+  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = (uint8_t) (APP_CodecConf[BAPConfID%16].OctetsPerCodecFrame >> 8);
 
   PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength += 10;
 
@@ -735,9 +743,9 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
 
   PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength += 3;
 
-  PBPAPP_Context.RTN = aPBPAPP_BroadcastQoSConf[BAPConfID].RTN;
-  PBPAPP_Context.max_transport_latency = aPBPAPP_BroadcastQoSConf[BAPConfID].MaxTpLatency;
-  PBPAPP_Context.base_group.PresentationDelay = aPBPAPP_BroadcastQoSConf[BAPConfID].PresentationDelay;
+  PBPAPP_Context.RTN = APP_BroadcastQoSConf[BAPConfID].RTN;
+  PBPAPP_Context.max_transport_latency = APP_BroadcastQoSConf[BAPConfID].MaxTpLatency;
+  PBPAPP_Context.base_group.PresentationDelay = APP_BroadcastQoSConf[BAPConfID].PresentationDelay;
 
   for (i = 0; i < NumBIS; i++)
   {

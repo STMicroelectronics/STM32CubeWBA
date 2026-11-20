@@ -9,7 +9,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -118,30 +118,6 @@
 #define HSI_VALUE     (16000000U) /*!< Value of the Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
 
-/* Note: Following vector table addresses must be defined in line with linker
-         configuration. */
-/*!< Uncomment the following line if you need to relocate the vector table
-     anywhere in Flash or Sram, else the vector table is kept at the automatic
-     remap of boot address selected */
-/* #define USER_VECT_TAB_ADDRESS */
-
-#if defined(USER_VECT_TAB_ADDRESS)
-/*!< Uncomment the following line if you need to relocate your vector Table
-     in Sram else user remap will be done in Flash. */
-/* #define VECT_TAB_SRAM */
-#if defined(VECT_TAB_SRAM)
-#define VECT_TAB_BASE_ADDRESS   SRAM1_BASE      /*!< Vector Table base address field.
-                                                     This value must be a multiple of 0x200. */
-#define VECT_TAB_OFFSET         0x00000000U     /*!< Vector Table base offset field.
-                                                     This value must be a multiple of 0x200. */
-#else
-#define VECT_TAB_BASE_ADDRESS   FLASH_BASE      /*!< Vector Table base address field.
-                                                     This value must be a multiple of 0x200. */
-#define VECT_TAB_OFFSET         0x00000000U     /*!< Vector Table base offset field.
-                                                     This value must be a multiple of 0x200. */
-#endif /* VECT_TAB_SRAM */
-#endif /* USER_VECT_TAB_ADDRESS */
-
 /******************************************************************************/
 
 /**
@@ -179,6 +155,8 @@
 /** @addtogroup STM32WBAxx_System_Private_FunctionPrototypes
   * @{
   */
+typedef void(*pFunc)(void);
+extern const pFunc __VECTOR_TABLE[];
 
 /**
   * @}
@@ -196,6 +174,9 @@
 
 void SystemInit(void)
 {
+  /* Configure the Vector Table location -------------------------------------*/
+  SCB->VTOR = (uint32_t)&__VECTOR_TABLE[0];
+
   /* SAU/IDAU, FPU and Interrupts secure/non-secure allocation settings */
   TZ_SAU_Setup();
 
@@ -279,11 +260,11 @@ void SystemCoreClockUpdate(void)
       /* Check if fractional part is enable */
       if ((tmp1 & RCC_PLL1CFGR_PLL1FRACEN) != 0x00u)
       {
-        fracn = ((RCC->PLL1FRACR & RCC_PLL1FRACR_PLL1FRACN) >> RCC_PLL1FRACR_PLL1FRACN_Pos);
+        fracn = (float_t)((uint32_t)((RCC->PLL1FRACR & RCC_PLL1FRACR_PLL1FRACN) >> RCC_PLL1FRACR_PLL1FRACN_Pos));
       }
       else
       {
-        fracn = 0;
+        fracn = (float_t)0U;
       }
 
       /* determine PLL source */
@@ -306,8 +287,8 @@ void SystemCoreClockUpdate(void)
       }
 
       /* Compute VCO output frequency */
-      pllvco = ((float) tmp1 / (float)pllm) * (((float)plln + (float)(fracn / 0x2000u)));
-      SystemCoreClock = (uint32_t)((float_t) pllvco /(float_t) pllr);
+      pllvco = ((float_t) tmp1 / (float_t)pllm) * (((float_t)plln + (float_t)(fracn / (float_t)0x2000U)));
+      SystemCoreClock = (uint32_t)((float_t)(pllvco / (float_t)pllr));
       break;
 
     case 0x00u:  /* HSI used as system clock source */

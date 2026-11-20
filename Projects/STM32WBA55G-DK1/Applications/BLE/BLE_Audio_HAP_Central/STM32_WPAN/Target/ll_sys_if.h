@@ -53,10 +53,6 @@ extern "C" {
 #define DRIFT_TIME_OPTIMIZED                    (13)
 #define EXEC_TIME_OPTIMIZED                     (24)
 
-#undef DRIFT_TIME_DEFAULT
-#define DRIFT_TIME_DEFAULT                      DRIFT_TIME_OPTIMIZED
-#undef EXEC_TIME_DEFAULT
-#define EXEC_TIME_DEFAULT                       EXEC_TIME_OPTIMIZED
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

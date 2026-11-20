@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -26,6 +26,7 @@
 #include "serial_cmd_interpreter.h"
 #include "log_module.h"
 #endif /* CFG_LOG_SUPPORTED */
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,6 +73,7 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
  */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -129,7 +131,6 @@ int main(void)
   MX_RTC_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
-
 #if (CFG_LOG_SUPPORTED == 0)
   MX_USART1_UART_Init();
 
@@ -139,7 +140,7 @@ int main(void)
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
-  
+
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
@@ -395,6 +396,7 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
+
   /* USER CODE END ICACHE_Init 1 */
 
   /** Full retention for ICACHE in stop mode
@@ -406,6 +408,7 @@ void MX_ICACHE_Init(void)
   LL_ICACHE_SetMode(LL_ICACHE_1WAY);
   LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
+
   /* USER CODE END ICACHE_Init 2 */
 
 }

@@ -106,7 +106,7 @@ static UTIL_TIMER_Object_t Startup_Timer;
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 
 static uint8_t csip_conf_id = 0;
-static uint8_t app_initialization_done = 0;
+static uint8_t app_initialization_done;
 
 /* Private functions prototypes-----------------------------------------------*/
 static void Menu_Start_Advertising(void);
@@ -134,6 +134,8 @@ static void Menu_Startup_TimerCallback(void *arg);
  */
 void Menu_Config(void)
 {
+  app_initialization_done = 0;
+
   Menu_Action_t access_config_menu_action = {MENU_ACTION_MENU_PAGE, &access_menu_icon, 0, 0};
   Menu_Action_t clear_db_action = {MENU_ACTION_CALLBACK, &access_menu_icon, &Menu_ClearSecDB, 0};
   Menu_Action_t access_menu_action = {MENU_ACTION_MENU_PAGE, &access_menu_icon, 0, 0};

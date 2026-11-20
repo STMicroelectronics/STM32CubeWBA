@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -44,6 +44,7 @@ extern "C" {
 #define TASK_PRIO_MAC_LAYER                     CFG_SEQ_PRIO_1
 #define TASK_PRIO_ZIGBEE_LAYER                  CFG_SEQ_PRIO_1
 #define TASK_PRIO_ZIGBEE_NETWORK_FORM           CFG_SEQ_PRIO_1
+#define TASK_PRIO_ZIGBEE_NETWORK_REJOIN         CFG_SEQ_PRIO_1
 #define TASK_PRIO_ZIGBEE_APP_START              CFG_SEQ_PRIO_1
 
 /* USER CODE BEGIN TASK_Priority_Define */

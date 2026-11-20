@@ -48,6 +48,11 @@
 
 /* USER CODE END PI */
 
+/* Global variables -----------------------------------------------------------*/
+/* USER CODE BEGIN GV */
+
+/* USER CODE END GV */
+
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
@@ -121,7 +126,7 @@ void APP_ZIGBEE_ApplicationInit(void)
   /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */
   stZigbeeAppInfo.eStartupControl = ZbStartTypeForm;
   stZigbeeAppInfo.bPersistNotification = false;
-  stZigbeeAppInfo.bNwkStartup = true;
+  stZigbeeAppInfo.bNwkStartupDone = false;
 
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
 
@@ -129,6 +134,20 @@ void APP_ZIGBEE_ApplicationInit(void)
 
   /* Initialize Zigbee stack layers */
   APP_ZIGBEE_StackLayersInit();
+
+  /* Launch the Startup to Join/Form Network */
+  if ( stZigbeeAppInfo.bWaitUserActionToJoin == false )
+  {
+    osSemaphoreRelease( NwkFormStartSemaphore );
+  }
+  else
+  {
+    LOG_INFO_APP( "Wait User action to start a 'Join' ..." );
+
+    /* In this case, the 'User Code' (by example button management) must launch
+     * osSemaphoreRelease( NwkFormStartSemaphore );
+     * to start the Join process. */
+  }
 }
 
 /**
@@ -215,7 +234,7 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
  */
 void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
-  /* Attempt to join a zigbee network */
+  /* Setting to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
   /* Using the default HA preconfigured Link Key */
@@ -243,16 +262,45 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
  * @brief  Manage a New Device on Network (called only if Coord or Router).
  * @param  iShortAddress      Short Address of new Device
  * @param  dlExtendedAddress  Extended Address of new Device
- * @param  cCapability        Capability of new Device
- * @retval Group Address
+ * @retval None
  */
-void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
+void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
 {
-  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+  LOG_INFO_APP( "New Device on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
 
   /* USER CODE END APP_ZIGBEE_SetNewDevice */
+}
+
+/**
+ * @brief  Manage a Device on Network that Rejoin Network.
+ * @param  iShortAddress      Short Address of Device
+ * @param  dlExtendedAddress  Extended Address of Device
+ * @retval None
+ */
+void APP_ZIGBEE_SetRejoinDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
+{
+  LOG_INFO_APP( "Device Rejoin Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+
+  /* USER CODE BEGIN APP_ZIGBEE_SetRejoinDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetRejoinDevice */
+}
+
+/**
+ * @brief  Manage a Device on Network that Leave Network.
+ * @param  iShortAddress      Short Address of Device
+ * @param  dlExtendedAddress  Extended Address of Device
+ * @retval None
+ */
+void APP_ZIGBEE_SetLeaveDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
+{
+  LOG_INFO_APP( "Device Leave Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+
+  /* USER CODE BEGIN APP_ZIGBEE_SetLeaveDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetLeaveDevice */
 }
 
 /**
@@ -296,7 +344,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclCluste
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT)
   {
     LOG_INFO_APP( "[ONOFF] Light 'OFF'" );
-    APP_LED_OFF( LED_WORK );
+    APP_BSP_LED_Off( LED_WORK );
     UTIL_LCD_ClearStringLine( 1 );
     UTIL_LCD_DisplayStringAtLine( 1, (uint8_t *)"Light 'OFF'" );
     BSP_LCD_Refresh( LCD1 );
@@ -325,7 +373,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclCluster
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT )
   {
     LOG_INFO_APP( "[ONOFF] Light 'ON'" );
-    APP_LED_ON( LED_WORK );
+    APP_BSP_LED_On( LED_WORK );
     UTIL_LCD_ClearStringLine( 1 );
     UTIL_LCD_DisplayStringAtLine( 1, (uint8_t *)"Light 'ON'" );
     BSP_LCD_Refresh( LCD1 );

@@ -37,7 +37,7 @@ Flash the second board (Coordinator):
     
       - The Thermostat Client send a Report Request to obtains regularly the **ZCL\_THERM\_SVR\_ATTR\_LOCAL\_TEMP** attributes.
     
-      - The Thermostat Server send regularly (5 s) a Report with the latest value of **ZCL\_THERM\_SVR\_ATTR\_LOCAL\_TEMP** attributes.
+      - The Thermostat Server send regularly (10 s) a Report with the latest value of **ZCL\_THERM\_SVR\_ATTR\_LOCAL\_TEMP** attributes.
 
 
   - The Firmware Update Over The Air (FUOTA) cluster provides the possibility to receive a new application to be installed while the current application is running. Download is done by Coordinator by the press of SW3.
@@ -63,17 +63,17 @@ Flash the second board (Coordinator):
            |            |                                                                |            |      or simulate it with RNG and the Thermostat setting.
            |            |                                                                |            |    * <= ZbZclAttrIntegerWrite(ZCL_THERM_SVR_ATTR_LOCAL_TEMP) 
            |            |  After a Router was connected :                                |            |    * Display Local Temperature and Relay State (OPEN or CLOSED
-           |            |  ZbZclAttrReportConfigReq(ZCL_THERM_SVR_ATTR_LOCAL_TEMP, 5sec) |            |      depending on thermostat setting).
+           |            |  ZbZclAttrReportConfigReq(ZCL_THERM_SVR_ATTR_LOCAL_TEMP,10sec) |            |      depending on thermostat setting).
            |            | -------------------------------------------------------------> |            |
            |            | <------------------------------------------------------------- |            |
            |            |                                                                |            |
-           |            | <-------------- Report (every 5 seconds) --------------------- |            |
+           |            | <-------------- Report (every 10 seconds) -------------------- |            |
            |            |                                                                |            |             
            |            |                                                                |            | <= PushB SW1/SW2/SW3 : Change a Thermostat setting (see Menu description below)
            |            |                                                                |            |          
            |            |                                                                |            | 
            |            |                                                                |            |          
-           +----------+                                                                  +------------+
+           +------------+                                                                +------------+
   
 ```
 

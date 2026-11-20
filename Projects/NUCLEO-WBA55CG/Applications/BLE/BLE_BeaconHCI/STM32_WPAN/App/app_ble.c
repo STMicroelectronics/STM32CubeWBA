@@ -61,6 +61,11 @@ typedef struct
 }BleApplicationContext_t;
 
 /* Private defines -----------------------------------------------------------*/
+#define BLE_LL_BUF_SIZE \
+        (BLE_LL_BUFFER_SIZE(CFG_BLE_NUM_STATE_MACHINES, \
+                            CFG_BLE_OPTIONS,            \
+                            SUPPORT_COEXISTENCE))
+
 #define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
 /* Dummy value for NVM buffer in RAM for BLE Host stack */
@@ -70,6 +75,9 @@ typedef struct
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
+#if CFG_BLE_NUM_LINK > CFG_BLE_NUM_STATE_MACHINES
+#warning CFG_BLE_NUM_STATE_MACHINES must not be lower than CFG_BLE_NUM_LINK
+#endif
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
@@ -89,6 +97,8 @@ static AMM_VirtualMemoryCallbackFunction_t BLE_EVENTS_ResumeFlowProcessCb;
 
 /* Host stack init variables */
 static BleStack_init_t pInitParams;
+
+PLACE_IN_SECTION("TAG_HostStack") static uint32_t ll_buffer[DIVC(BLE_LL_BUF_SIZE, 4)];
 
 /* USER CODE BEGIN PV */
 
@@ -224,6 +234,8 @@ void APP_BLE_Init(void)
   return;
 }
 
+extern void ll_sys_bg_process_deinit(void);
+
 /* All BLE activities must be stopped before calling this API */
 void APP_BLE_Deinit(void)
 {
@@ -232,6 +244,15 @@ void APP_BLE_Deinit(void)
   /* USER CODE END APP_BLE_Deinit_1 */
 
   aci_reset(0, 0);
+
+  /* Reset Radio peripheral */
+  HAL_NVIC_DisableIRQ(RADIO_IRQn);
+  __HAL_RCC_RADIO_FORCE_RESET();
+  __HAL_RCC_RADIO_RELEASE_RESET();
+  HAL_NVIC_ClearPendingIRQ(RADIO_IRQn);
+  HAL_NVIC_EnableIRQ(RADIO_IRQn);
+
+  ll_sys_bg_process_deinit();
 
   /* De-initialize BLE related modules */
   BAES_Reset( );
@@ -355,7 +376,6 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       }
 
       /* USER CODE BEGIN META_EVT */
-
       /* USER CODE END META_EVT */
     }
     break; /* HCI_LE_META_EVT_CODE */
@@ -364,7 +384,6 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
     {
       p_blecore_evt = (evt_blecore_aci*) p_event_pckt->data;
       /* USER CODE BEGIN EVT_VENDOR */
-
       /* USER CODE END EVT_VENDOR */
       switch (p_blecore_evt->ecode)
       {
@@ -416,12 +435,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         }
       }
       /* USER CODE BEGIN EVT_VENDOR_1 */
-
       /* USER CODE END EVT_VENDOR_1 */
     }
     break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
     /* USER CODE BEGIN EVENT_PCKT */
-
     /* USER CODE END EVENT_PCKT */
     default:
     {
@@ -433,7 +450,6 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
     }
   }
   /* USER CODE BEGIN SVCCTL_App_Notification_1 */
-
   /* USER CODE END SVCCTL_App_Notification_1 */
 
   return (SVCCTL_UserEvtFlowEnable);
@@ -497,14 +513,15 @@ static uint8_t HOST_BLE_Init(void)
 {
   tBleStatus return_status;
 
+  pInitParams.ll_sm_num               = CFG_BLE_NUM_STATE_MACHINES;
+  pInitParams.ll_buffer               = (uint8_t*)ll_buffer;
+  pInitParams.ll_buffer_size          = BLE_LL_BUF_SIZE;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
-
 /* USER CODE END HOST_BLE_Init_Params */
   return_status = BleStack_Init(&pInitParams);
 /* USER CODE BEGIN HOST_BLE_Init */
-
 /* USER CODE END HOST_BLE_Init */
   return ((uint8_t)return_status);
 }
@@ -625,7 +642,6 @@ static const uint8_t* BleGenerateBdAddress(void)
     udn = LL_FLASH_GetUDN();
 
     /* USER CODE BEGIN BleGenerateBdAddress */
-
     /* USER CODE END BleGenerateBdAddress */
 
     if (udn != 0xFFFFFFFF)
@@ -685,7 +701,6 @@ static const uint8_t* BleGenerateIRValue(void)
   };
 
   /* USER CODE BEGIN BleGenerateIRValue_1 */
-
   /* USER CODE END BleGenerateIRValue_1 */
 
   memset(&a_BLE_CfgIrValueNull[0], 0x00, sizeof(a_BLE_CfgIrValueNull));
@@ -701,7 +716,6 @@ static const uint8_t* BleGenerateIRValue(void)
     uid_word0 = LL_GetUID_Word0();
     uid_word1 = LL_GetUID_Word1();
     /* USER CODE BEGIN BleGenerateIRValue_2 */
-
     /* USER CODE END BleGenerateIRValue_2 */
 
     if ((uid_word0 != 0xFFFFFFFF) && (uid_word1 != 0xFFFFFFFF))
@@ -728,7 +742,6 @@ static const uint8_t* BleGenerateIRValue(void)
   }
 
   /* USER CODE BEGIN BleGenerateIRValue_3 */
-
   /* USER CODE END BleGenerateIRValue_3 */
   return p_ir_value;
 }
@@ -746,7 +759,6 @@ static const uint8_t* BleGenerateERValue(void)
   };
 
   /* USER CODE BEGIN BleGenerateERValue_1 */
-
   /* USER CODE END BleGenerateERValue_1 */
 
   memset(&a_BLE_CfgErValueNull[0], 0x00, sizeof(a_BLE_CfgErValueNull));
@@ -763,7 +775,6 @@ static const uint8_t* BleGenerateERValue(void)
     uid_word2 = LL_GetUID_Word2();
 
     /* USER CODE BEGIN BleGenerateERValue_2 */
-
     /* USER CODE END BleGenerateERValue_2 */
 
    if ((uid_word1 != 0xFFFFFFFF) && (uid_word2 != 0xFFFFFFFF))
@@ -790,7 +801,6 @@ static const uint8_t* BleGenerateERValue(void)
   }
 
   /* USER CODE BEGIN BleGenerateERValue_3 */
-
   /* USER CODE END BleGenerateERValue_3 */
   return p_er_value;
 }

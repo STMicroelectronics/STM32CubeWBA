@@ -19,6 +19,8 @@
   */
 #include "low_level_rng.h"
 #include "stm32_hal.h"
+#include "bootutil/bootutil_log.h"
+
 extern void Error_Handler(void);
 
 static RNG_HandleTypeDef handle;
@@ -69,28 +71,34 @@ void RNG_Init(void)
 
 void RNG_GetBytes(uint8_t *output, size_t length, size_t *output_length)
 {
-  int32_t ret = 0;
   uint8_t tries = 0;
   __IO uint8_t random[4];
   *output_length = 0;
 
   /* Get Random byte */
-  while ((*output_length < length) && (ret == 0))
+  while (*output_length < length)
   {
     if (HAL_RNG_GenerateRandomNumber(&handle, (uint32_t *)random) != HAL_OK)
     {
       /* retry when random number generated are not immediately available */
       if (tries < 3)
       {
-        if (HAL_RNG_GetError(&handle) == HAL_RNG_ERROR_RECOVERSEED)
+        if (HAL_RNG_GetError(&handle) != HAL_RNG_ERROR_SEED)
         {
-          (void)HAL_RNGEx_RecoverSeedError(&handle);
+          BOOT_LOG_ERR("RNG error. Reseting");
+          Error_Handler();
+        }
+        if (HAL_RNGEx_RecoverSeedError(&handle) != HAL_OK)
+        {
+          BOOT_LOG_ERR("RNG error. Reseting (Recover error)");
+          Error_Handler();
         }
         tries++;
       }
       else
       {
-        ret = -1;
+        BOOT_LOG_ERR("RNG error. Reseting (max retry)");
+        Error_Handler();
       }
     }
     else
@@ -102,11 +110,6 @@ void RNG_GetBytes(uint8_t *output, size_t length, size_t *output_length)
         random[i] = 0;
       }
     }
-  }
-  /* Just be extra sure that we didn't do it wrong */
-  if ((__HAL_RNG_GET_FLAG(&handle, (RNG_FLAG_CECS | RNG_FLAG_SECS))) != 0)
-  {
-    *output_length = 0;
   }
 }
 
@@ -120,8 +123,8 @@ void RNG_DeInit(void)
   users = 0;
 }
 
-
-/*  interface for mbed-crypto */
+#if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
+/* Provide entropy source to mbedtls */
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen)
 {
   RNG_GetBytes(output, len, olen);
@@ -131,4 +134,4 @@ int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t 
   }
   return 0;
 }
-
+#endif

@@ -58,7 +58,6 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 /* Private function prototypes -----------------------------------------------*/
 static void MPU_Config(void);
-static void MX_GPDMA1_Init(void);
 static void MX_GPIO_Init(void);
 static void MX_GTZC_NS_Init(void);
 static void MX_NVIC_Init(void);
@@ -284,7 +283,7 @@ void MX_CRC_Init(void)
   * @param None
   * @retval None
   */
-static void MX_GPDMA1_Init(void)
+void MX_GPDMA1_Init(void)
 {
 
   /* USER CODE BEGIN GPDMA1_Init 0 */
@@ -384,6 +383,7 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
+
   /* USER CODE END ICACHE_Init 1 */
 
   /** Full retention for ICACHE in stop mode
@@ -395,6 +395,7 @@ void MX_ICACHE_Init(void)
   LL_ICACHE_SetMode(LL_ICACHE_1WAY);
   LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
+
   /* USER CODE END ICACHE_Init 2 */
 
 }

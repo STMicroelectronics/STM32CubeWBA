@@ -23,7 +23,7 @@ For this application it is requested to have:
 	
     * The Thermostat Client send a Report Request to obtains regularly the **ZCL_THERM_SVR_ATTR_LOCAL_TEMP** attributes.  
 	
-	* The Thermostat Server send regularly (5 s) a Report with the latest value of **ZCL_THERM_SVR_ATTR_LOCAL_TEMP** attributes.  
+	* The Thermostat Server send regularly (10 s) a Report with the latest value of **ZCL_THERM_SVR_ATTR_LOCAL_TEMP** attributes.  
 	  
 * 1 read-only attributes is used :
     * Temperature Value (16-bit integer)  
@@ -44,17 +44,17 @@ For this application it is requested to have:
            |            |                                                                |            |      or simulate it with RNG and the Thermostat setting.
            |            |                                                                |            |    * <= ZbZclAttrIntegerWrite(ZCL_THERM_SVR_ATTR_LOCAL_TEMP) 
            |            |  After a Router was connected :                                |            |    * Display Local Temperature and Relay State (OPEN or CLOSED
-           |            |  ZbZclAttrReportConfigReq(ZCL_THERM_SVR_ATTR_LOCAL_TEMP, 5sec) |            |      depending on thermostat setting).
+           |            |  ZbZclAttrReportConfigReq(ZCL_THERM_SVR_ATTR_LOCAL_TEMP,10sec) |            |      depending on thermostat setting).
            |            | -------------------------------------------------------------> |            |
            |            | <------------------------------------------------------------- |            |
            |            |                                                                |            |
-           |            | <-------------- Report (every 5 seconds) --------------------- |            |
+           |            | <-------------- Report (every 10 seconds) -------------------- |            |
            |            |                                                                |            |             
            |            |                                                                |            | <= PushB SW1/SW2/SW3 : Change a Thermostat setting (see Menu description below)
            |            |                                                                |            |			 
            |            |                                                                |            |	
            |            |                                                                |            |			 
-           +----------+                                                                  +------------+
+           +------------+                                                                +------------+
   
 
 </pre> 

@@ -68,6 +68,7 @@ void MX_APPE_LinkLayerInit(void);
 void MX_APPE_SetTicklessIdleState(uint8_t state);
 
 /* USER CODE BEGIN EFP */
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

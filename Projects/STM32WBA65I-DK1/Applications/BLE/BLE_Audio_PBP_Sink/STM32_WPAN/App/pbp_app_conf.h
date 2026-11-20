@@ -31,6 +31,7 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /*Audio Profiles Roles configuration*/
 #define APP_CAP_ROLE                                    (CAP_ROLE_ACCEPTOR)
+#define APP_AUDIO_ROLE                                  (AUDIO_ROLE_SINK)
 
 #define APP_BAP_ROLE_UNICAST_SERVER_SUPPORT             (0u)
 #define APP_BAP_ROLE_UNICAST_CLIENT_SUPPORT             (0u)
@@ -54,7 +55,9 @@ extern "C" {
 #define APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT           (0u)
 #define APP_CSIP_ROLE_SET_MEMBER_SUPPORT                (0u)
 
-/*BAP Configuration Settings*/
+/**
+ * Basic Audio Profile Settings
+ */
 #define MAX_NUM_UCL_SNK_ASE                             (0u)
 #define MAX_NUM_UCL_SRC_ASE                             (0u)
 #define MAX_NUM_USR_SNK_ASE                             (0u)
@@ -63,19 +66,31 @@ extern "C" {
 #define MAX_NUM_PAC_SRC_RECORDS                         (3u)    /* Maximum number of Source PAC records supported by Broadcast Sink*/
 #define PACS_CODEC_SPECIFIC_CAPABILITIES_LENGTH         (16u)   /* Size of the Codec Specific Capabilities Length of the registered PACS records */
 #define PACS_SRV_METADATA_SIZE                          (4u)    /* Size of the metadata associated to the registered PACS records */
+
+/**
+ * Broadcast and Connects Isochronous Stream
+ */
 #define MAX_NUM_CIG                                     (0u)    /* Maximum number of CIGes */
 #define MAX_NUM_CIS_PER_CIG                             (0u)    /* Maximum number of CISes per CIG */
 #define MAX_NUM_BIG                                     (1u)    /* Maximum number of BIGes */
 #define MAX_NUM_BIS_PER_BIG                             (2u)    /* Maximum number of BISes per BIG */
+
+/**
+ * Scan Delegator Settings
+ */
 #define MAX_NUM_SDE_BSRC_INFO                           (1u)    /* Maximum Number of Broadcast Source Information supported by Scan Delegator */
 #define MAX_BASS_CODEC_CONFIG_SIZE                      (20u)   /* Maximum size of the Codec Specific Configuration for each Broadcast Source Information supported by Scan Delegator */
 #define MAX_BASS_METADATA_SIZE                          (20u)   /* Maximum size of the etadata for each Broadcast Source Information supported by Scan Delegator */
 #define MAX_NUM_BASS_BASE_SUBGROUPS                     (2u)    /* Maximum number of number of subgroups present in the BASE structure used to describe a BIG */
-#define PBP_MAX_BIS                                     (2u)
-#define PBP_MAX_SUBGROUPS                               (2u)
-#define MAX_METADATA_LEN                                (50u)
-#define MAX_BIS_CODEC_SPECIFIC_CONFIG_LEN               (6u)
-#define MAX_SUBGROUP_CODEC_SPECIFIC_CONFIG_LEN          (19u)
+
+/**
+ * Broadcast Sink Settings
+ */
+#define PBP_MAX_BIS                                     (2u)    /* Maximum number of BIS in the BASE structure accross all subgroups */
+#define PBP_MAX_SUBGROUPS                               (2u)    /* Maximum number of subgroups in the BASE structure */
+#define MAX_SUBGROUP_CODEC_SPECIFIC_CONFIG_LEN          (19u)   /* Maximum size of the Codec Specific Configuration for each subgroup */
+#define MAX_BIS_CODEC_SPECIFIC_CONFIG_LEN               (19u)   /* Maximum size of the Codec Specific Configuration for each BIS in each subgroup */
+#define MAX_METADATA_LEN                                (50u)   /* Size of the metadata associated to the subgroup */
 
 /* Maximum number of Ble links is supported in CAP Acceptor role configuration*/
 #define MAX_CAP_ACCEPTOR_INSTANCES              (1u)
@@ -96,16 +111,16 @@ extern "C" {
 /**
  * GATT Services Configuration
  */
-#define BLE_APP_NUM_GATT_SERVICES       (2u + BAP_PACS_SRV_NUM_GATT_SERVICES \
+#define BLE_APP_NUM_GATT_SERVICES       (BAP_PACS_SRV_NUM_GATT_SERVICES \
                                         + BAP_BASS_SRV_NUM_GATT_SERVICES \
                                         + CAP_ACC_COM_NUM_GATT_SERVICES)
 
 /**
  * GATT Attributes Configuration
  */
-#define BLE_APP_NUM_GATT_ATTRIBUTES     (4u + 7u \
-                                        + BAP_PACS_SRV_GATT_ATTRIBUTES(MAX_NUM_PAC_SNK_RECORDS,MAX_NUM_PAC_SRC_RECORDS) \
-                                        + BAP_BASS_SRV_GATT_ATTRIBUTES(MAX_NUM_SDE_BSRC_INFO))
+#define BLE_APP_NUM_GATT_ATTRIBUTES     (BAP_PACS_SRV_GATT_ATTRIBUTES(MAX_NUM_PAC_SNK_RECORDS,MAX_NUM_PAC_SRC_RECORDS) \
+                                        + BAP_BASS_SRV_GATT_ATTRIBUTES(MAX_NUM_SDE_BSRC_INFO) \
+                                        + CAP_ACC_NUM_GATT_ATTRIBUTES)
 
 /**
  * Size of the storage area for Attribute values
@@ -125,7 +140,7 @@ extern "C" {
                       BAP_BASS_SRV_ATT_VALUE_ARRAY_SIZE(MAX_NUM_SDE_BSRC_INFO,CFG_BLE_NUM_LINK,MAX_BASS_METADATA_SIZE, \
                                                         MAX_NUM_BASS_BASE_SUBGROUPS)
 
-#define BLE_APP_ATT_VALUE_ARRAY_SIZE    (52u + BLE_PACS_SRV_ATT_VALUE_ARRAY_SIZE \
+#define BLE_APP_ATT_VALUE_ARRAY_SIZE    (BLE_PACS_SRV_ATT_VALUE_ARRAY_SIZE \
                                         + BLE_BASS_SRV_ATT_VALUE_ARRAY_SIZE)
 
 /* Exported types ------------------------------------------------------------*/
@@ -144,4 +159,3 @@ extern "C" {
 #endif
 
 #endif /*__PBP_APP_CONF_H */
-

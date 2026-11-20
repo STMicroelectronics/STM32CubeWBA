@@ -1,11 +1,11 @@
 /*
 ******************************************************************************
 **
-** @file        : STM32WBA25CEUX_FLASH.ld
+** @file        : LinkerScript.ld
 **
 ** @author      : Application team
 **
-** @brief       : Linker script for STM32WBA25CEUX Device from STM32WBA series
+** @brief       : Linker script for STM32WBA25CEUx Device from STM32WBA series
 **                      512 KBytes FLASH
 **                      96 KBytes RAM
 **
@@ -38,17 +38,17 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 
+/* Heap and Stack sizes */
 _Min_Heap_Size = 0x0; /* required amount of heap */
 _Min_Stack_Size = 0x1000; /* required amount of stack */
 
 /* Memories definition */
 MEMORY
 {
-  RAM      (rw)     : ORIGIN = 0x20000020,   LENGTH = (96K - 0x20)
-
-  NVM      (r)      : ORIGIN = 0x0807C000,   LENGTH = 16K
+  RAM      (xrw)    : ORIGIN = 0x20000020,   LENGTH = (96K - 0x20)
   DATA     (r)      : ORIGIN = 0x0807A000,   LENGTH = 8K
   FLASH    (rx)     : ORIGIN = 0x08006000,   LENGTH = (256K - 8K - 16K)
+  NVM      (rx)     : ORIGIN = 0x0807C000,   LENGTH = 16K
 }
 
 /* Sections */
@@ -94,14 +94,14 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .ARM.extab (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .ARM.extab (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(4);
   } >FLASH
 
-  .ARM (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .ARM (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     __exidx_start = .;
@@ -110,7 +110,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .preinit_array (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .preinit_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -119,7 +119,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .init_array (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .init_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__init_array_start = .);
@@ -129,7 +129,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .fini_array (READONLY) : /* The "READONLY" keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  .fini_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     . = ALIGN(4);
     PROVIDE_HIDDEN (__fini_array_start = .);
@@ -180,7 +180,7 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
-  /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
+  /* User_heap_stack section, used to check that there is enough "RAM" Ram type memory left */
   ._user_heap_stack :
   {
     . = ALIGN(8);
@@ -200,6 +200,7 @@ SECTIONS
   }
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
+
   TAG_OTA_END(NOLOAD) :
   {
     KEEP (*(TAG_OTA_END))

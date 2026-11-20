@@ -33,6 +33,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
+
 #define NUM_LC3_CODEC_CAP       16
 #define NUM_LC3_CODEC_CONFIG    16
 #define LC3_8_1                 0
@@ -52,7 +53,8 @@ extern "C" {
 #define LC3_48_5                14
 #define LC3_48_6                15
 
-#define NUM_LC3_QoSConf         32
+#define NUM_LC3_BRD_QOSCONF     32
+#define NUM_LC3_UNICAST_QOSCONF 38
 #define LC3_QOS_8_1_1           0
 #define LC3_QOS_8_2_1           1
 #define LC3_QOS_16_1_1          2
@@ -85,6 +87,12 @@ extern "C" {
 #define LC3_QOS_48_4_2          29
 #define LC3_QOS_48_5_2          30
 #define LC3_QOS_48_6_2          31
+#define LC3_QOS_16_1_3          32
+#define LC3_QOS_16_2_3          33
+#define LC3_QOS_24_1_3          34
+#define LC3_QOS_24_2_3          35
+#define LC3_QOS_32_1_3          36
+#define LC3_QOS_32_2_3          37
 
 /*Audio Configuration specified in Basic Audio Profile Specification*/
 #define NUM_USR_AUDIO_CONF      (16u)
@@ -287,33 +295,34 @@ typedef uint8_t audio_profile_t;
 
 /* CAP Linkup State */
 typedef uint8_t APP_CAP_Linkup_State_t;
-#define APP_CAP_LINKUP_STATE_NONE               0x00
-#define APP_CAP_LINKUP_STATE_STARTED_RESTORE    0x01
-#define APP_CAP_LINKUP_STATE_STARTED_COMPLETE   0x02
-#define APP_CAP_LINKUP_STATE_DONE_RESTORE       0x03
-#define APP_CAP_LINKUP_STATE_DONE_COMPLETE      0x04
+#define APP_CAP_LINKUP_STATE_NONE               (0x00)
+#define APP_CAP_LINKUP_STATE_STARTED_RESTORE    (0x01)
+#define APP_CAP_LINKUP_STATE_STARTED_COMPLETE   (0x02)
+#define APP_CAP_LINKUP_STATE_DONE_RESTORE       (0x03)
+#define APP_CAP_LINKUP_STATE_DONE_COMPLETE      (0x04)
 
 /* MCP Client Read State */
 typedef uint8_t APP_MCP_Linkup_State_t;
-#define APP_MCP_LINKUP_STATE_IDLE                        0x00
-#define APP_MCP_LINKUP_STATE_CONFIGURE_TRACK_TITLE_NOTIF 0x01
-#define APP_MCP_LINKUP_STATE_READ_MEDIA_STATE            0x02
-#define APP_MCP_LINKUP_STATE_READ_TRACK_TITLE            0x03
+#define APP_MCP_LINKUP_STATE_IDLE                        (0x00)
+#define APP_MCP_LINKUP_STATE_CONFIGURE_TRACK_TITLE_NOTIF (0x01)
+#define APP_MCP_LINKUP_STATE_READ_MEDIA_STATE            (0x02)
+#define APP_MCP_LINKUP_STATE_READ_TRACK_TITLE            (0x03)
 
 typedef uint8_t APP_PASyncState_t;
-#define APP_PA_SYNC_STATE_IDLE           (0x00)
-#define APP_PA_SYNC_STATE_SYNCHRONIZING  (0x01)
-#define APP_PA_SYNC_STATE_SYNCHRONIZED   (0x02)
-#define APP_PA_SYNC_STATE_BASE_RECEIVED  (0x03)
+#define APP_PA_SYNC_STATE_IDLE                  (0x00)
+#define APP_PA_SYNC_STATE_SYNCHRONIZING         (0x01)
+#define APP_PA_SYNC_STATE_SYNCHRONIZED          (0x02)
+#define APP_PA_SYNC_STATE_BASE_RECEIVED         (0x03)
 
 typedef uint8_t APP_BIGSyncState_t;
-#define APP_BIG_SYNC_STATE_IDLE          (0x00)
-#define APP_BIG_SYNC_STATE_SYNCHRONIZING (0x01)
-#define APP_BIG_SYNC_STATE_SYNCHRONIZED  (0x02)
+#define APP_BIG_SYNC_STATE_IDLE                 (0x00)
+#define APP_BIG_SYNC_STATE_BASE_READY           (0x01)
+#define APP_BIG_SYNC_STATE_SYNCHRONIZING        (0x02)
+#define APP_BIG_SYNC_STATE_SYNCHRONIZED         (0x03)
 
 typedef uint8_t APP_ScanState_t;
-#define APP_SCAN_STATE_IDLE              (0x00)
-#define APP_SCAN_STATE_SCANNING          (0x01)
+#define APP_SCAN_STATE_IDLE                     (0x00)
+#define APP_SCAN_STATE_SCANNING                 (0x01)
 
 /* MCP CLient Operation type*/
 #define MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION           0x0001u
@@ -509,6 +518,7 @@ typedef struct
 #endif /*((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)*/
 
   APP_BroadcastMode_t           BroadcastMode;
+
 } TMAPAPP_Context_t;
 
 typedef struct

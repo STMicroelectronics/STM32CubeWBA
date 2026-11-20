@@ -12,102 +12,65 @@ Connectivity, Concurrency, BLE protocol, Thread, COAP, STM32WBA,
 
 ### __Directory contents__
 
-  - BLE_HeartRate_Thread/Core/Inc/app_common.h                               		 App Common application configuration file for STM32WPAN Middleware
-  - BLE_HeartRate_Thread/Core/Inc/app_conf.h                                   	 Application configuration file for STM32WPAN Middleware
-  - BLE_HeartRate_Thread/Core/Inc/app_entry.h                         			 Interface to the application 
-  - BLE_HeartRate_Thread/Core/Inc/main.h                                             	 Header for main.c file. This file contains the common defines of the application
-  - BLE_HeartRate_Thread/Core/Inc/stm32wbaxx_hal_conf.h                              	 HAL configuration file
-  - BLE_HeartRate_Thread/Core/Inc/stm32wbaxx_it.h                                    	 This file contains the headers of the interrupt handlers
-  - BLE_HeartRate_Thread/Core/Inc/utilities_conf.h                                   	 Header for configuration file for STM32 Utilities
-  - BLE_HeartRate_Thread/STM32_WPAN/App/app_ble.h                                    	 Header for ble application 
-  - BLE_HeartRate_Thread/STM32_WPAN/App/app_thread.h                                    Header for thread application 
-  - BLE_HeartRate_Thread/STM32_WPAN/App/ble_conf.h                                      Configuration file for BLE Middleware
-  - BLE_HeartRate_Thread/STM32_WPAN/App/ble_dbg_conf.h                               	 Debug configuration file for BLE Middleware
-  - BLE_HeartRate_Thread/STM32_WPAN/App/dis.h                                           Header for service2.c 
-  - BLE_HeartRate_Thread/STM32_WPAN/App/dis_app.h                                       Header for service2_app.c 
-  - BLE_HeartRate_Thread/STM32_WPAN/App/hrs.h                                           Header for service1.c 
-  - BLE_HeartRate_Thread/STM32_WPAN/App/hrs_app.h                                       Header for service1_app.c 
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/bpka.h                                       This file contains the interface of the BLE PKA module
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/host_stack_if.h                              This file contains the interface for the stack tasks 
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/ll_sys_if.h                                  Header file for ll_sys_if.c
-  - BLE_HeartRate_Thread/System/Config/Debug_GPIO/app_debug.h                           Real Time Debug module application APIs and signal table 
-  - BLE_HeartRate_Thread/System/Config/Debug_GPIO/app_debug_signal_def.h                Real Time Debug module application signal definition 
-  - BLE_HeartRate_Thread/System/Config/Debug_GPIO/debug_config.h                        Real Time Debug module general configuration file 
-  - BLE_HeartRate_Thread/System/Config/Flash/simple_nvm_arbiter_conf.h                  Configuration header for simple_nvm_arbiter.c module 
-  - BLE_HeartRate_Thread/System/Config/LowPower/app_sys.h                               Header for app_sys.c 
-  - BLE_HeartRate_Thread/System/Config/LowPower/user_low_power_config.h                 Header for user_low_power_config.c
-  - BLE_HeartRate_Thread/System/Interfaces/hw.h                                         This file contains the interface of STM32 HW drivers
-  - BLE_HeartRate_Thread/System/Interfaces/hw_if.h                                      Hardware Interface 
-  - BLE_HeartRate_Thread/System/Interfaces/stm32_lpm_if.h                               Header for stm32_lpm_if.c module (device specific LP management) 
-  - BLE_HeartRate_Thread/System/Interfaces/timer_if.h                                   configuration of the timer_if.c instances 
-  - BLE_HeartRate_Thread/System/Interfaces/usart_if.h                                   Header file for stm32_adv_trace interface file 
-  - BLE_HeartRate_Thread/System/Modules/adc_ctrl.h                                      Header for ADC client manager module 
-  - BLE_HeartRate_Thread/System/Modules/ble_timer.h                                     This header defines the timer functions used by the BLE stack 
-  - BLE_HeartRate_Thread/System/Modules/dbg_trace.h                                     Header for dbg_trace.c 
-  - BLE_HeartRate_Thread/System/Modules/otp.h                                           Header file for One Time Programmable (OTP) area 
-  - BLE_HeartRate_Thread/System/Modules/scm.h                                           Header for scm.c module 
-  - BLE_HeartRate_Thread/System/Modules/stm_list.h                                      Header file for linked list library
-  - BLE_HeartRate_Thread/System/Modules/utilities_common.h                              Common file to utilities 
-  - BLE_HeartRate_Thread/System/Modules/baes/baes.h                                     This file contains the interface of the basic AES software module
-  - BLE_HeartRate_Thread/System/Modules/baes/baes_global.h                              This file contains the internal definitions of the AES software module
-  - BLE_HeartRate_Thread/System/Modules/Flash/flash_driver.h                            Header for flash_driver.c module 
-  - BLE_HeartRate_Thread/System/Modules/Flash/flash_manager.h                           Header for flash_manager.c module 
-  - BLE_HeartRate_Thread/System/Modules/Flash/rf_timing_synchro.h                       Header for rf_timing_synchro.c module 
-  - BLE_HeartRate_Thread/System/Modules/Flash/simple_nvm_arbiter.h                      Header for simple_nvm_arbiter.c module 
-  - BLE_HeartRate_Thread/System/Modules/Flash/simple_nvm_arbiter_common.h               Common header of simple_nvm_arbiter.c module 
-  - BLE_HeartRate_Thread/System/Modules/MemoryManager/advanced_memory_manager.h         Header for advance_memory_manager.c module 
-  - BLE_HeartRate_Thread/System/Modules/MemoryManager/stm32_mm.h                        Header for stm32_mm.c module 
-  - BLE_HeartRate_Thread/System/Modules/Nvm/nvm.h                                       This file contains the interface of the NVM manager
-  - BLE_HeartRate_Thread/System/Modules/RFControl/rf_antenna_switch.h                   RF related module to handle dedictated GPIOs for antenna switch
-  - BLE_HeartRate_Thread/System/Modules/RTDebug/debug_signals.h                         Real Time Debug module System and Link Layer signal definition 
-  - BLE_HeartRate_Thread/System/Modules/RTDebug/local_debug_tables.h                    Real Time Debug module System and Link Layer signal 
-  - BLE_HeartRate_Thread/System/Modules/RTDebug/RTDebug.h                               Real Time Debug module API declaration 
-  - BLE_HeartRate_Thread/System/Modules/RTDebug/RTDebug_dtb.h                           Real Time Debug module API declaration for DTB usage
-  - BLE_HeartRate_Thread/Core/Src/app_entry.c                                           Entry point of the application 
-  - BLE_HeartRate_Thread/Core/Src/main.c                                                Main program body 
-  - BLE_HeartRate_Thread/Core/Src/stm32wbaxx_hal_msp.c                                  This file provides code for the MSP Initialization and de-Initialization codes
-  - BLE_HeartRate_Thread/Core/Src/stm32wbaxx_it.c                                       Interrupt Service Routines
-  - BLE_HeartRate_Thread/Core/Src/system_stm32wbaxx.c                                   CMSIS Cortex-M33 Device Peripheral Access Layer System Source File 
-  - BLE_HeartRate_Thread/STM32_WPAN/App/app_ble.c                                       BLE Application
-  - BLE_HeartRate_Thread/STM32_WPAN/App/app_thread.c                                    Thread Application 
-  - BLE_HeartRate_Thread/STM32_WPAN/App/dis.c                                           service2 definition 
-  - BLE_HeartRate_Thread/STM32_WPAN/App/dis_app.c                                       service2_app application definition
-  - BLE_HeartRate_Thread/STM32_WPAN/App/hrs.c                                           service1 definition
-  - BLE_HeartRate_Thread/STM32_WPAN/App/hrs_app.c                                       service1_app application definition
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/bleplat.c                                    This file implements the platform functions for BLE stack library
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/bpka.c                                       This file implements the BLE PKA module
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/host_stack_if.c                              Source file for the stack tasks 
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/linklayer_plat.c                             Source file for the linklayer plateform adaptation layer 
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/ll_sys_if.c                                  Source file for initiating the system sequencer 
-  - BLE_HeartRate_Thread/STM32_WPAN/Target/power_table.c                                This file contains supported power tables 
-  - BLE_HeartRate_Thread/System/Config/Debug_GPIO/app_debug.c                           Real Time Debug module application side APIs 
-  - BLE_HeartRate_Thread/System/Config/LowPower/user_low_power_config.c                 Low power related user configuration
-  - BLE_HeartRate_Thread/System/Interfaces/hw_aes.c                                     This file contains the AES driver for STM32WBA 
-  - BLE_HeartRate_Thread/System/Interfaces/hw_otp.c                                     This file contains the OTP driver
-  - BLE_HeartRate_Thread/System/Interfaces/hw_pka.c                                     This file contains the PKA driver for STM32WBA 
-  - BLE_HeartRate_Thread/System/Interfaces/hw_rng.c                                     This file contains the RNG driver for STM32WBA 
-  - BLE_HeartRate_Thread/System/Interfaces/pka_p256.c                                   This file is an optional part of the PKA driver for STM32WBA. It is dedicated to the P256 elliptic curve
-  - BLE_HeartRate_Thread/System/Interfaces/stm32_lpm_if.c                               Low layer function to enter/exit low power modes (stop, sleep) 
-  - BLE_HeartRate_Thread/System/Interfaces/timer_if.c                                   Configure RTC Alarm, Tick and Calendar manager 
-  - BLE_HeartRate_Thread/System/Interfaces/usart_if.c                                   Source file for interfacing the stm32_adv_trace to hardware 
-  - BLE_HeartRate_Thread/System/Modules/adc_ctrl.c                                      Header for ADC client manager module 
-  - BLE_HeartRate_Thread/System/Modules/app_sys.c                                       Application system for STM32WPAN Middleware
-  - BLE_HeartRate_Thread/System/Modules/ble_timer.c                                     This module implements the timer core functions 
-  - BLE_HeartRate_Thread/System/Modules/otp.c                                           Source file for One Time Programmable (OTP) area 
-  - BLE_HeartRate_Thread/System/Modules/scm.c                                           Functions for the System Clock Manager
-  - BLE_HeartRate_Thread/System/Modules/stm_list.c                                      TCircular Linked List Implementation
-  - BLE_HeartRate_Thread/System/Modules/baes/baes_cmac.c                                This file contains the AES CMAC implementation
-  - BLE_HeartRate_Thread/System/Modules/baes/baes_ecb.c                                 This file contains the AES ECB functions implementation
-  - BLE_HeartRate_Thread/System/Modules/Flash/flash_driver.c                            The Flash Driver module is the interface layer between Flash management modules and HAL Flash drivers
-  - BLE_HeartRate_Thread/System/Modules/Flash/flash_manager.c                           The Flash Manager module provides an interface to write raw data from SRAM to FLASH
-  - BLE_HeartRate_Thread/System/Modules/Flash/rf_timing_synchro.c                       The RF Timing Synchronization module provides an interface to synchronize the flash processing versus the RF activity to make sure the RF timing is not broken
-  - BLE_HeartRate_Thread/System/Modules/Flash/simple_nvm_arbiter.c                      The Simple NVM arbiter module provides an interface to write and/or restore data from SRAM to FLASH with use of NVMs
-  - BLE_HeartRate_Thread/System/Modules/MemoryManager/advanced_memory_manager.c         Memory Manager 
-  - BLE_HeartRate_Thread/System/Modules/MemoryManager/stm32_mm.c                        Memory Manager 
-  - BLE_HeartRate_Thread/System/Modules/Nvm/nvm_emul.c                                  This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose
-  - BLE_HeartRate_Thread/System/Modules/RFControl/rf_antenna_switch.c                   RF related module to handle dedictated GPIOs for antenna switch
-  - BLE_HeartRate_Thread/System/Modules/RTDebug/RTDebug.c                               Real Time Debug module API definition 
-  - BLE_HeartRate_Thread/System/Modules/RTDebug/RTDebug_dtb.c                           Real Time Debug module API definition for DTB usage
+  - BLE_HeartRate_Thread/Core/Inc/app_common.h                            App Common application configuration file for STM32WPAN Middleware
+  - BLE_HeartRate_Thread/Core/Inc/app_conf.h                              Application configuration file for STM32WPAN Middleware
+  - BLE_HeartRate_Thread/Core/Inc/app_entry.h                             Interface to the application
+  - BLE_HeartRate_Thread/Core/Inc/main.h                                  Header for main.c file. This file contains the common defines of the application
+  - BLE_HeartRate_Thread/Core/Inc/stm32wba65i_discovery_conf.h            STM32WBA65I-DK1 board configuration file
+  - BLE_HeartRate_Thread/Core/Inc/stm32wbaxx_hal_conf.h                   HAL configuration file
+  - BLE_HeartRate_Thread/Core/Inc/stm32wbaxx_it.h                         This file contains the headers of the interrupt handlers
+  - BLE_HeartRate_Thread/Core/Inc/stm32_rtos.h                            Include file for all RTOS/Sequencer can be used on WBA
+  - BLE_HeartRate_Thread/Core/Inc/utilities_conf.h                        Header for configuration file for STM32 Utilities
+  - BLE_HeartRate_Thread/STM32_WPAN/App/app_ble.h                         Header for ble application
+  - BLE_HeartRate_Thread/STM32_WPAN/App/app_tests_commands.h              Header file for CLI Commands to test Concurrents Modes (BLE/Thread/Zigbee)
+  - BLE_HeartRate_Thread/STM32_WPAN/App/app_thread.h                      Header for thread application
+  - BLE_HeartRate_Thread/STM32_WPAN/App/ble_conf.h                        Configuration file for BLE Middleware
+  - BLE_HeartRate_Thread/STM32_WPAN/App/ble_dbg_conf.h                    Debug configuration file for BLE Middleware
+  - BLE_HeartRate_Thread/STM32_WPAN/App/dis.h                             Header for service2.c
+  - BLE_HeartRate_Thread/STM32_WPAN/App/dis_app.h                         Header for service2_app.c
+  - BLE_HeartRate_Thread/STM32_WPAN/App/hrs.h                             Header for service1.c
+  - BLE_HeartRate_Thread/STM32_WPAN/App/hrs_app.h                         Header for service1_app.c
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/bpka.h                         This file contains the interface of the BLE PKA module
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/host_stack_if.h                This file contains the interface for the stack tasks
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/ll_sys_if.h                    Header file for ll_sys_if.c
+  - BLE_HeartRate_Thread/System/Config/common_wpan_conf.h                 Configuration file for STM32 WPAN Common Utilities
+  - BLE_HeartRate_Thread/System/Config/CRC_Ctrl/crc_ctrl_conf.h           Configuration header for crc_ctrl.c module
+  - BLE_HeartRate_Thread/System/Config/Debug_GPIO/app_debug.h             Real Time Debug module application APIs and signal table
+  - BLE_HeartRate_Thread/System/Config/Debug_GPIO/app_debug_signal_def.h  Real Time Debug module application signal definition
+  - BLE_HeartRate_Thread/System/Config/Debug_GPIO/debug_config.h          Real Time Debug module general configuration file
+  - BLE_HeartRate_Thread/System/Config/Flash/simple_nvm_arbiter_conf.h    Configuration header for simple_nvm_arbiter.c module
+  - BLE_HeartRate_Thread/System/Config/Log/log_module_conf.h              Configuration header for the log module
+  - BLE_HeartRate_Thread/System/Config/LowPower/peripheral_init.h         Header for peripheral init module
+  - BLE_HeartRate_Thread/System/Config/LowPower/user_low_power_config.h   Header for user_low_power_config.c
+  - BLE_HeartRate_Thread/System/Interfaces/stm32_lpm_if.h                 Header for stm32_lpm_if.c module (device specific LP management)
+  - BLE_HeartRate_Thread/System/Modules/ble_timer.h                       This header defines the timer functions used by the BLE stack
+  - BLE_HeartRate_Thread/Core/Src/app_entry.c                             Entry point of the application
+  - BLE_HeartRate_Thread/Core/Src/main.c                                  Main program body
+  - BLE_HeartRate_Thread/Core/Src/stm32wbaxx_hal_msp.c                    This file provides code for the MSP Initialization and de-Initialization codes
+  - BLE_HeartRate_Thread/Core/Src/stm32wbaxx_it.c                         Interrupt Service Routines
+  - BLE_HeartRate_Thread/Core/Src/system_stm32wbaxx.c                     CMSIS Cortex-M33 Device Peripheral Access Layer System Source File
+  - BLE_HeartRate_Thread/STM32_WPAN/App/app_ble.c                         BLE Application
+  - BLE_HeartRate_Thread/STM32_WPAN/App/app_tests_commands.c              CLI Commands to test Concurrents Modes (BLE/Thread/Zigbee)
+  - BLE_HeartRate_Thread/STM32_WPAN/App/app_thread.c                      Thread Application
+  - BLE_HeartRate_Thread/STM32_WPAN/App/dis.c                             service2 definition
+  - BLE_HeartRate_Thread/STM32_WPAN/App/dis_app.c                         service2_app application definition
+  - BLE_HeartRate_Thread/STM32_WPAN/App/hrs.c                             service1 definition
+  - BLE_HeartRate_Thread/STM32_WPAN/App/hrs_app.c                         service1_app application definition
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/bleplat.c                      This file implements the platform functions for BLE stack library
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/bpka.c                         This file implements the BLE PKA module
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/host_stack_if.c                Source file for the stack tasks
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/linklayer_plat.c               Source file for the linklayer platform adaptation layer
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/ll_sys_if.c                    Source file for initiating the system sequencer
+  - BLE_HeartRate_Thread/STM32_WPAN/Target/power_table.c                  This file contains supported power tables
+  - BLE_HeartRate_Thread/System/Config/CRC_Ctrl/crc_ctrl_conf.c           Source for CRC client controller module configuration file
+  - BLE_HeartRate_Thread/System/Config/Debug_GPIO/app_debug.c             Real Time Debug module application side APIs
+  - BLE_HeartRate_Thread/System/Config/Flash/simple_nvm_arbiter_conf.c    Configuration source for simple_nvm_arbiter.c module
+  - BLE_HeartRate_Thread/System/Config/LowPower/peripheral_init.c         Peripheral init module
+  - BLE_HeartRate_Thread/System/Config/LowPower/user_low_power_config.c   Low power related user configuration
+  - BLE_HeartRate_Thread/System/Interfaces/stm32_lpm_if.c                 Low layer function to enter/exit low power modes (stop, sleep)
+  - BLE_HeartRate_Thread/System/Modules/ble_timer.c                       This module implements the timer core functions
+
+The other modules used by the application (Link Layer, System Clock Manager, Flash manager, Memory manager, RTDebug, BasicAES, ...) are shared between the projects and are located in `Projects/Common/WPAN`.
 
 ### __Hardware and Software environment__
 
@@ -140,12 +103,11 @@ Our Application uses two devices :
 
 After the reset of the Thread_Coap_Generic device, it will be in Leader mode (**Green LED2 ON**).    
 Then power on the BLE_HeartRate_Thread device, it will be in Child mode (**Red LED3 ON**).
-After a while, the roles being not fixed with thread, the roles can be switching. The Thread_Coap_Generic device might switch to Router mode (**Red LED3 ON**).
-And at the same time, the BLE_HeartRate_Thread device, might switch to the Leader mode (**Green LED2 ON**). 
-In case of switching role, the periodic toggling every one second will be stopped until the joystick right is resuming it.
+Thread roles are not fixed, so the devices can switch roles. The Thread_Coap_Generic device might switch to Router mode (**Red LED3 ON**), while the BLE_HeartRate_Thread device might become the Leader (**Green LED2 ON**). Periodic CoAP sending stops while the device is detached and resumes automatically when it becomes a Child, Router, or Leader.
 
 Once attached to the Thread Leader (Thread_Coap_Generic device), the Thread Child (BLE_HeartRate_Thread device) starts sending **COAP command (Non-Confirmable)**
-to the Thread Leader every one second. The Thread Leader will receive COAP commands to toggle its **blue LED1**.  
+to the Thread Leader every one second. The Thread Leader will receive COAP commands to toggle its **blue LED1**.
+On top of this periodic toggling, Joystick-Left on the Child can send a Confirmable CoAP command to the Thread Leader and stops periodic sending. Joystick-Right restarts periodic sending and sends using the currently configured CoAP type, which is Non-Confirmable by default. During initialization, the application also queues one Joystick-Left action, attempting a Confirmable request.
 
 - Board A  sends a **COAP command (Non-Confirmable)** from BLE_HeartRate_Thread device to Thread_Coap_Generic device every 1 sec.  
 The Thread_Coap_Generic device will receive COAP commands to toggle its **blue LED1**.
@@ -157,11 +119,11 @@ The Thread_Coap_Generic device will receive COAP commands to toggle its **blue L
   |_____________________________|                       |_________________________|  
   |                             |                       |                         |
   |                             |                       |                         |
-  |   every 1sec (after PowerUp)|                       |                         |
+  |  every 1sec (after attach)  |                       |                         |
   |       or Joystick right-->	|======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
-  |                         	| Resource "light"      |                         |
+  |                         	  | Resource "light"      |                         |
   |                             | Mode: Multicast       |                         |
-  |          	                | Type: Non-Confirmable |                         |
+  |          	                  | Type: Non-Confirmable |                         |
   |                             | Code: Put             |                         |
   |                             |                       |                         |
   |                             |                       |                         |
@@ -181,15 +143,17 @@ The Thread_Coap_Generic device will receive COAP commands to toggle its **blue L
   |                             |                       |                         |
   | LED : Red                   |                       | LED : Green             |
   |-----------------------------|                       |-------------------------|
-  | ROLE re-negotiation phase   | Details not described | ROLE negotiation phase  |
-  |            every 1sec -->   |==>  NOTHING!          |                         | 
+  | ROLE transition / detached  | No CoAP while detached|                         | 
+  |                             | resumes in Child,     |                         |
+  |                             | Router, or Leader role|                         |
   |-----------------------------|                       |-------------------------|
   |                             |                       |                         |
   | Role : Leader               |                       | Role : Router           |
   |                             |                       |                         |
   | LED : Green                 |                       | LED : Red               |
   |-----------------------------|                       |-------------------------|
-  |            every 1sec -->   |==>  NOTHING!          |                         | 
+  |            every 1sec -->   |==>  COAP continues    |                         |
+  |                             |      automatically    |                         |
   |                             |                       |                         |
   |-----------------------------|                       |-------------------------|
   |         Joystick right-->	|======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
@@ -227,10 +191,6 @@ On the android/ios device, enable the Bluetooth communications, and if not done 
 - Install the ST BLE Toolbox application on the android device:
 	- <a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a>
     - <a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a>
-
-- You can also install the ST BLE Sensor application on the android/ios device:
-	- <a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a>
-	- <a href="https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8"> ST BLE Sensor iOS</a>
 
 - Then, click on the App icon, ST BLE Toolbox (android/ios device),
    You can either open ST BLE Sensor application (android/ios device).

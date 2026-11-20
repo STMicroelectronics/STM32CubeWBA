@@ -39,6 +39,15 @@ USER push-button pressed:
 --> Freq: 100MHz, VCore 1.2V, Core in Run Mode
 --> LD1 toggling FAST (100ms) in infinite loop
 
+## <b>Measured Current Consumption</b>
+
+| Frequency | VCore | Mode                 | Current Consumption |
+|-----------|-------|----------------------|---------------------|
+| 100 MHz   | 1.2 V | Run Mode             | 5.9 mA              |
+| 32 MHz    | 1.0 V | Run Mode             | 2.3 mA              |
+| 1000KHz   | 1.0 V | Low Power Run Mode   | 960 µA              |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
 
       NB: LD1 has an impact on power consumption.
           Remove LD1 blinking to have a constant power consumption,

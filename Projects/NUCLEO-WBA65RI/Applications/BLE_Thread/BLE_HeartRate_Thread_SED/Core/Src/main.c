@@ -150,7 +150,7 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE2) != HAL_OK)
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -165,7 +165,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE
                               |RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSEDiv = RCC_HSE_DIV2;
+  RCC_OscInitStruct.HSEDiv = RCC_HSE_DIV1;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -188,7 +188,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV1;
   RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -411,7 +411,7 @@ void MX_RAMCFG_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_1) != HAL_OK)
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -595,6 +595,7 @@ void MX_USART2_UART_Init(void)
 void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -603,6 +604,7 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -612,7 +614,7 @@ void ConfigureStandbyWakeupPins(void)
  /* HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);   B1 --> PC13  --> not used to avoid LSE disturbance */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);   /* B2 --> PB6 */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);   /* B3 --> PB7 */
-  
+
   HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_6);
   HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_7);
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
@@ -643,6 +645,7 @@ void ConfigureMPU(void)
 
   HAL_MPU_Enable(MPU_HFNMI_PRIVDEF);
 }
+
 /* USER CODE END 4 */
 
 /**

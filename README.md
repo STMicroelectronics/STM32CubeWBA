@@ -1,6 +1,6 @@
 # STM32CubeWBA MCU Firmware Package
 
-![tag](https://img.shields.io/badge/tag-v1.10.0-brightgreen.svg)
+![tag](https://img.shields.io/badge/tag-v1.11.0-brightgreen.svg)
 [![release note](https://img.shields.io/badge/release_note-view_html-gold.svg)](https://htmlpreview.github.io/?https://github.com/STMicroelectronics/STM32CubeWBA/blob/main/Release_Notes.html)
 [![offer](https://img.shields.io/badge/stm32cube_mcu_offer-browse-orange.svg)](https://github.com/STMicroelectronics/STM32Cube_MCU_Overall_Offer)
 

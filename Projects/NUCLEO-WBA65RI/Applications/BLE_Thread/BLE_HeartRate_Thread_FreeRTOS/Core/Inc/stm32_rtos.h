@@ -46,10 +46,12 @@ extern "C" {
 /* USER CODE BEGIN TASK_Priority_Define */
 #define TASK_PRIO_BUTTON_Bx                     osPriorityNormal3
 #define TASK_PRIO_SEND_COAP_MSG                 osPriorityNormal1
+
 /* USER CODE END TASK_Priority_Define */
 
 #define RTOS_MAX_THREAD                         (20u)
 
+#define RTOS_STACK_SIZE_XLARGE                  ( 1024u * 4u )
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
@@ -58,10 +60,11 @@ extern "C" {
 #define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_XLARGE
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
-#define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL  
+#define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL
+
 /* USER CODE END TASK_Size_Define */
 
 /* Attributes needed by CMSIS */

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -80,9 +80,14 @@ extern void ll_sys_mac_cntrl_init( void );
 #if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
 
-static uint8_t rtos_tick_less_IDLE_state = 1U;
+static uint8_t rtos_tick_less_IDLE_state = RTOS_TICK_LESS_ACTIVE;
 static uint8_t rtos_tick_less_IDLE_flag = 0U;
 #endif /* ( CFG_LPM_LEVEL != 0) */
+
+#if (HAL_TICK_RTC == 1)
+/* Timer for HAL tick declaration */
+static UTIL_TIMER_Object_t TimerHalTick_Id;
+#endif /* HAL_TICK_RTC */
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration
@@ -102,10 +107,6 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 
 /* Timer for OS tick declaration */
 static UTIL_TIMER_Object_t TimerOsTick_Id;
-#if (HAL_TICK_RTC == 1)
-/* Timer for HAL tick declaration */
-static UTIL_TIMER_Object_t TimerHalTick_Id;
-#endif /* HAL_TICK_RTC */
 
 #if ( CFG_LPM_LEVEL != 0)
 /* Holds maximum number of FreeRTOS tick periods that can be suppressed */
@@ -172,14 +173,14 @@ void MX_APPE_InitTask(void* argument);
 static void RNG_Task_Entry(void* argument);
 
 static void TimerOsTickCb(void *arg);
-#if (HAL_TICK_RTC == 1)
-static void TimerHalTickCb(void *arg);
-static void HAL_StartTick(void);
-#endif /* HAL_TICK_RTC */
 #if ( CFG_LPM_LEVEL != 0)
 static void TimerOSwakeupCB(void *arg);
 static uint32_t getCurrentTime(void);
 #endif /* CFG_LPM_LEVEL */
+#if (HAL_TICK_RTC == 1)
+static void TimerHalTickCb(void *arg);
+static void HAL_StartTick(void);
+#endif /* HAL_TICK_RTC */
 
 /* USER CODE BEGIN PFP */
 
@@ -231,6 +232,7 @@ void MX_APPE_InitTask( void * argument )
   APP_ZIGBEE_ApplicationInit();
 
   /* USER CODE BEGIN APPE_Init_Task_2 */
+
   /* USER CODE END APPE_Init_Task_2 */
 
   /* FreeRTOS hard fault if task simply returns... */
@@ -393,15 +395,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -438,10 +433,8 @@ static void SystemPower_Config(void)
   LL_DBGMCU_EnableDBGStopMode();
 #endif /* CFG_DEBUGGER_LEVEL */
 
-#if (CFG_SCM_SUPPORTED == 1)
   /* Set the HSE clock to 32MHz */
   scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -509,6 +502,25 @@ static void TimerOsTickCb(void *arg)
   return;
 }
 
+#if ( CFG_LPM_LEVEL != 0)
+/* OS wakeup callback */
+static void TimerOSwakeupCB(void *arg)
+{
+  /* USER CODE BEGIN TimerOSwakeupCB */
+
+  /* USER CODE END TimerOSwakeupCB */
+  return;
+}
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
+#if ( CFG_LPM_LEVEL != 0)
+/* return current time since boot, continue to count in standby low power mode */
+static uint32_t getCurrentTime(void)
+{
+  return TIMER_IF_GetTimerValue();
+}
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
 #if (HAL_TICK_RTC == 1)
 /* Timer HAL tick callback */
 static void TimerHalTickCb(void *arg)
@@ -520,23 +532,6 @@ static void TimerHalTickCb(void *arg)
   return;
 }
 #endif /* HAL_TICK_RTC */
-
-#if ( CFG_LPM_LEVEL != 0)
-/* OS wakeup callback */
-static void TimerOSwakeupCB(void *arg)
-{
-  /* USER CODE BEGIN TimerOSwakeupCB */
-
-  /* USER CODE END TimerOSwakeupCB */
-  return;
-}
-
-/* return current time since boot, continue to count in standby low power mode */
-static uint32_t getCurrentTime(void)
-{
-  return TIMER_IF_GetTimerValue();
-}
-#endif /* ( CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
@@ -569,7 +564,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -581,7 +575,6 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -652,7 +645,7 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
   }
 
   rtos_tick_less_IDLE_flag = 0U;
-  if(rtos_tick_less_IDLE_state != 0)
+  if(rtos_tick_less_IDLE_state != RTOS_TICK_LESS_INACTIVE)
   {
     rtos_tick_less_IDLE_flag = 1U;
     /* Stop the timer that is generating the OS tick interrupt. */
@@ -781,7 +774,7 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
         (void)ll_sys_dp_slp_exit();
       }
       UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
-  
+
       if(rtos_tick_less_IDLE_flag != 0U)
       {
         /* Restart the timer that is generating the OS tick interrupt. */

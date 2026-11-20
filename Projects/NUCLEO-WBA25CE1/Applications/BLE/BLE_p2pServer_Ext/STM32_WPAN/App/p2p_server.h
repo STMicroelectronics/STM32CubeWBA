@@ -35,6 +35,29 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for P2P_Server */
+#define P2P_SERVER_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for P2P_Server (service declaration not counted in attributes)
+  *                + 2 for LED_C
+  *                + 2 for SWITCH_C
+  *                + 2 for LONG_C
+  *                + 1 for SWITCH_C CCCD
+  *                = 7
+**/
+#define P2P_SERVER_NUM_GATT_ATTRIBUTES (7)
+
+/**
+  * Size_Attributes = 0 for P2P_Server (service declaration not counted in attributes)
+  *                 + 19 for LED_C declaration + 2 for LED_C size
+  *                 + 19 for SWITCH_C declaration + 2 for SWITCH_C size
+  *                 + 19 for LONG_C declaration + 509 for LONG_C size
+  *                 + 2 for SWITCH_C CCCD * CFG_BLE_NUM_LINK
+  *                 = 570 + 2 * CFG_BLE_NUM_LINK
+**/
+#define P2P_SERVER_ATT_VALUE_ARRAY_SIZE  (570 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */
@@ -71,7 +94,7 @@ typedef struct
 
   /* USER CODE BEGIN Service1_Data_t */
   uint16_t Offset;
-  
+
   /* USER CODE END Service1_Data_t */
 } P2P_SERVER_Data_t;
 
@@ -84,6 +107,7 @@ typedef struct
   uint8_t                 ServiceInstance;
   /* USER CODE BEGIN Service1_NotificationEvt_t */
   uint16_t Prec_offset;
+
   /* USER CODE END Service1_NotificationEvt_t */
 } P2P_SERVER_NotificationEvt_t;
 

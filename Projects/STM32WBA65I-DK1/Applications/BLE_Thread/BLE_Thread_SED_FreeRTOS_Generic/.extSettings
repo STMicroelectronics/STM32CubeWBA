@@ -6,4 +6,4 @@ Drivers/BSP=../../../../../../Drivers/BSP/STM32WBA65I-DK1/stm32wba65i_discovery.
 Drivers/Components=../../../../../../Drivers/BSP/Components/ssd1315/ssd1315.c;../../../../../../Drivers/BSP/Components/ssd1315/ssd1315_reg.c;
 Utilities=../../../../../../Utilities/LCD/stm32_lcd.c;
 Common/WPAN/Interface=../../../../../Common/WPAN/Interfaces/app_bsp.c;
-App/STM32_WPAN/App=../STM32_WPAN/App/app_coap.c;
+Application/User/STM32_WPAN/App=../STM32_WPAN/App/app_coap.c;

@@ -30,7 +30,7 @@ extern "C" {
 #include "stm32wbaxx_hal.h"
 
 /* Usage of nucleo board */
-#define USE_NUCLEO_64      1U
+//#define USE_NUCLEO_64      1U
 
 /* Usage of COM feature */
 #define USE_BSP_COM_FEATURE 1U

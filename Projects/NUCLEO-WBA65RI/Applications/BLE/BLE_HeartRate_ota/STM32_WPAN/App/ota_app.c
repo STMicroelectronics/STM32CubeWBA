@@ -258,8 +258,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
+#if 0
                     /* Clear events before start testing */
                     UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+#endif
 
                     /* Check status of Erase status. */
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
@@ -273,8 +275,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
+#if 0
                     /* Clear events before start testing */
                     UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+#endif
                   }
                   else
                   {
@@ -355,9 +359,11 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
+#if 0
                     /* Clear events before start testing */
                     UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
-
+#endif
+                    
                     /* Check status of Erase. */
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
                     {
@@ -370,8 +376,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
+#if 0
                     /* Clear events before start testing */
                     UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+#endif
                   }
                   else
                   {
@@ -477,9 +485,11 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
             /* Wait for Write callback to be invoked */
             UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
+#if 0
             /* Clear events before start testing */
             UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
-
+#endif
+            
             /* Check status of Write op. */
             if (FM_WriteStatus != FM_OPERATION_COMPLETE)
             {
@@ -492,8 +502,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
             /* Wait for Write callback to be invoked */
             UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
+#if 0
             /* Clear events before start testing */
             UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
+#endif
           }
           else
           {

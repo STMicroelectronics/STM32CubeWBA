@@ -1,4 +1,4 @@
-#MicroXplorer Configuration settings - do not modify
+#MicroXplorer Configuration settings - do not modify
 CAD.formats=
 CAD.pinconfig=
 CAD.provider=
@@ -182,8 +182,9 @@ VP_PWR_VS_SECSignals.Mode=Security/Privilege
 VP_PWR_VS_SECSignals.Signal=PWR_VS_SECSignals
 VP_SYS_VS_Systick.Mode=SysTick
 VP_SYS_VS_Systick.Signal=SYS_VS_Systick
-board=custom
 VP_AES_VS_AES.Mode=AES_Activate
 VP_AES_VS_AES.Signal=AES_VS_AES
 VP_PKA_VS_PKA.Mode=PKA_Activate
 VP_PKA_VS_PKA.Signal=PKA_VS_PKA
+boardIOC=true
+board=NUCLEO-WBA55CG

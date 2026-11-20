@@ -85,7 +85,7 @@ __vector_table
         DCD     GTZC_IRQHandler                  ; Global TrustZone Controller interrupt
         DCD     RCC_IRQHandler                   ; RCC non-secure global interrupt
         DCD     RCC_S_IRQHandler                 ; RCC secure global interrupt
-        DCD     EXTI0_IRQHandler                 ; EXTI Line0 interrupt
+        DCD     0                                ; Reserved
         DCD     EXTI1_IRQHandler                 ; EXTI Line1 interrupt
         DCD     EXTI2_IRQHandler                 ; EXTI Line2 interrupt
         DCD     EXTI3_IRQHandler                 ; EXTI Line3 interrupt
@@ -138,8 +138,10 @@ __vector_table
         DCD     WKUP_IRQHandler                  ; PWR global WKUP pin interrupt
         DCD     WKUP_S_IRQHandler                ; PWR secure global WKUP pin interrupt
         DCD     RCC_AUDIOSYNC_IRQHandler         ; RCC audio synchronization interrupt
-        DCD     USB_IRQHandler                   ; USB global interrupt
+        DCD     USB_DRD_FS_IRQHandler            ; USB Dual Role Device global interrupt
         DCD     XSPI1_IRQHandler                 ; XSPI1 global interrupt
+        DCD     0                                ; Reserved
+        DCD     0                                ; Reserved
 
 __Vectors_End
 
@@ -154,6 +156,8 @@ __Vectors_Size  EQU   __Vectors_End - __Vectors
         PUBWEAK Reset_Handler
         SECTION .text:CODE:NOROOT:REORDER(2)
 Reset_Handler
+        LDR     R0, =sfb(CSTACK)
+        MSR     MSPLIM, R0               ; Set Stack Pointer Limit
         LDR     R0, =SystemInit
         BLX     R0
         LDR     R0, =__iar_program_start
@@ -258,11 +262,6 @@ RCC_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)
 RCC_S_IRQHandler
         B RCC_S_IRQHandler
-
-        PUBWEAK EXTI0_IRQHandler
-        SECTION .text:CODE:NOROOT:REORDER(1)
-EXTI0_IRQHandler
-        B EXTI0_IRQHandler
 
         PUBWEAK EXTI1_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)
@@ -509,10 +508,10 @@ WKUP_S_IRQHandler
 RCC_AUDIOSYNC_IRQHandler
         B RCC_AUDIOSYNC_IRQHandler
 
-        PUBWEAK USB_IRQHandler
+        PUBWEAK USB_DRD_FS_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)
-USB_IRQHandler
-        B USB_IRQHandler
+USB_DRD_FS_IRQHandler
+        B USB_DRD_FS_IRQHandler
 
         PUBWEAK XSPI1_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)

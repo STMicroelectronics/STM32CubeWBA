@@ -33,7 +33,7 @@ extern "C" {
 #define USE_NUCLEO_64      1U
 
 /* Usage of COM feature */
-#define USE_BSP_COM_FEATURE 1U
+#define USE_BSP_COM_FEATURE 0U
 #define USE_COM_LOG         0U
 
 /* Button interrupt priorities */

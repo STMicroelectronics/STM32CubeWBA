@@ -1,13 +1,18 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    DIS.c
+  * @file    dis.c
   * @author  MCD Application Team
-  * @brief   DIS definition.
+  * @brief   dis definition.
   ******************************************************************************
+  * Copyright [2021 - 2026] Exegin Technologies Limited. All rights reserved.
+  *
+  * This file is not intended to be modified. The authors advise against manual
+  * changes to ensure system integrity. Local "USER CODE" sections should be
+  * ignored and bypassed.
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,6 +28,7 @@
 #include "dis.h"
 
 /* USER CODE BEGIN Includes */
+#include "zdd_stack_wrapper.h"
 
 /* USER CODE END Includes */
 
@@ -70,13 +76,7 @@ typedef struct{
 #define CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET         2
 #define CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET              1
 /* USER CODE BEGIN PM */
-#define BLE_DIS_CHAR_DATA_MANUNAME                  "ST Microelectronics"
-#define BLE_DIS_CHAR_DATA_DEVICE_NAME               "ZDD"
-#define BLE_DIS_CHAR_DATA_SYSTEMID                  "1.9"
-#define BLE_DIS_CHAR_DATA_MODELNUM                  "1.9"
-#define BLE_DIS_CHAR_DATA_SERIALNUM                 "1.9"
-#define BLE_DIS_CHAR_DATA_HARDWARE_REV              "1.9"
-#define BLE_DIS_CHAR_DATA_FIRMWARE_REV              "1.9"
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -164,88 +164,71 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /*USER CODE BEGIN Service1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1 */
-            LOG_INFO_APP("Processing Read for DIS ManufName (handle = 0x%04x)",
-        	                              p_read_req->Attribute_Handle);
+
             /*USER CODE END Service1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
             aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
-            LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
           else if(p_read_req->Attribute_Handle == (DIS_Context.SyidCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /*USER CODE BEGIN Service1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1 */
-            LOG_INFO_APP("Processing Read for DIS SystemId (handle = 0x%04x)",
-        	                              p_read_req->Attribute_Handle);
+
             /*USER CODE END Service1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
             aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
-            LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
           else if(p_read_req->Attribute_Handle == (DIS_Context.MonsCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /*USER CODE BEGIN Service1_Char_3_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1 */
-            LOG_INFO_APP("Processing Read for DIS ModelNum (handle = 0x%04x)",
-        	                            p_read_req->Attribute_Handle);
+
             /*USER CODE END Service1_Char_3_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_3_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
             aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
-            LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_3_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
           else if(p_read_req->Attribute_Handle == (DIS_Context.SnsCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /*USER CODE BEGIN Service1_Char_4_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1 */
-            LOG_INFO_APP("Processing Read for DIS SerialNum (handle = 0x%04x)",
-                                  p_read_req->Attribute_Handle);
+
             /*USER CODE END Service1_Char_4_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_4_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
             aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
-            LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_4_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
           else if(p_read_req->Attribute_Handle == (DIS_Context.HrsCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /*USER CODE BEGIN Service1_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1 */
-            LOG_INFO_APP("Processing Read for DIS HwRev (handle = 0x%04x)",
-                  p_read_req->Attribute_Handle);
+
             /*USER CODE END Service1_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
             aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
-            LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
           else if(p_read_req->Attribute_Handle == (DIS_Context.FrsCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /*USER CODE BEGIN Service1_Char_6_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1 */
-            LOG_INFO_APP("Processing Read for DIS FwRev (handle = 0x%04x)",
-        			  p_read_req->Attribute_Handle);
+
             /*USER CODE END Service1_Char_6_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_6_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
             aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
-            LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_6_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_END */
-          else
-          {
-            LOG_INFO_APP("Dropping unknown Read (handle = 0x%04x)", p_read_req->Attribute_Handle);
-            break;
-          }
-          
+
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_END */
           break;/* ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE */
         }
@@ -283,7 +266,6 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
-        /* Manage ACI_GATT_INDICATION_VSEVT_CODE */
         case ACI_GATT_INDICATION_VSEVT_CODE:
           {
             tBleStatus status = BLE_STATUS_FAILED;
@@ -299,6 +281,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             }
           }
           break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
+
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */
@@ -352,10 +335,10 @@ void DIS_Init(void)
   SVCCTL_RegisterSvcHandler(DIS_EventHandler);
 
   /**
-   * DIS
+   * dis
    *
    * Max_Attribute_Records = 1 + 2*6 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
-   * service_max_attribute_record = 1 for DIS +
+   * service_max_attribute_record = 1 for dis +
    *                                2 for MANS +
    *                                2 for SYID +
    *                                2 for MONS +
@@ -381,7 +364,7 @@ void DIS_Init(void)
                              &(DIS_Context.DisSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: DIS, error code: 0x%02X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: dis, error code: 0x%02X\n", ret);
   }
   else
   {
@@ -417,12 +400,7 @@ void DIS_Init(void)
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
   /* Place holder for Characteristic Descriptors */
-  DIS_Data_t data_Dis_Mans;
-  data_Dis_Mans.Length = strlen(BLE_DIS_CHAR_DATA_MANUNAME);
-  data_Dis_Mans.p_Payload = (uint8_t *) BLE_DIS_CHAR_DATA_MANUNAME;
-  
-  DIS_UpdateValue(DIS_MANS, &data_Dis_Mans);
-  
+
   /* USER CODE END SVCCTL_InitService1Char1 */
 
   /**
@@ -450,11 +428,7 @@ void DIS_Init(void)
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
   /* Place holder for Characteristic Descriptors */
-  DIS_Data_t data_Dis_Syid;
-  data_Dis_Syid.Length = strlen(BLE_DIS_CHAR_DATA_SYSTEMID);
-  data_Dis_Syid.p_Payload = (uint8_t *) BLE_DIS_CHAR_DATA_SYSTEMID;
-  
-  DIS_UpdateValue(DIS_SYID, &data_Dis_Syid);
+
   /* USER CODE END SVCCTL_InitService1Char2 */
 
   /**
@@ -482,11 +456,7 @@ void DIS_Init(void)
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
   /* Place holder for Characteristic Descriptors */
-  DIS_Data_t data_Dis_Mons;
-  data_Dis_Mons.Length = strlen(BLE_DIS_CHAR_DATA_MODELNUM);
-  data_Dis_Mons.p_Payload = (uint8_t *) BLE_DIS_CHAR_DATA_MODELNUM;
-  
-  DIS_UpdateValue(DIS_MONS, &data_Dis_Mons);
+
   /* USER CODE END SVCCTL_InitService1Char3 */
 
   /**
@@ -514,11 +484,7 @@ void DIS_Init(void)
 
   /* USER CODE BEGIN SVCCTL_InitService1Char4 */
   /* Place holder for Characteristic Descriptors */
-  DIS_Data_t data_Dis_Sns;
-  data_Dis_Sns.Length = strlen(BLE_DIS_CHAR_DATA_SERIALNUM);
-  data_Dis_Sns.p_Payload = (uint8_t *) BLE_DIS_CHAR_DATA_SERIALNUM;
-  
-  DIS_UpdateValue(DIS_SNS, &data_Dis_Sns);
+
   /* USER CODE END SVCCTL_InitService1Char4 */
 
   /**
@@ -546,11 +512,7 @@ void DIS_Init(void)
 
   /* USER CODE BEGIN SVCCTL_InitService1Char5 */
   /* Place holder for Characteristic Descriptors */
-  DIS_Data_t data_Dis_Hrs;
-  data_Dis_Hrs.Length = strlen(BLE_DIS_CHAR_DATA_HARDWARE_REV);
-  data_Dis_Hrs.p_Payload = (uint8_t *) BLE_DIS_CHAR_DATA_HARDWARE_REV;
-  
-  DIS_UpdateValue(DIS_HRS, &data_Dis_Hrs);
+
   /* USER CODE END SVCCTL_InitService1Char5 */
 
   /**
@@ -578,11 +540,7 @@ void DIS_Init(void)
 
   /* USER CODE BEGIN SVCCTL_InitService1Char6 */
   /* Place holder for Characteristic Descriptors */
-  DIS_Data_t data_Dis_Frs;
-  data_Dis_Frs.Length = strlen(BLE_DIS_CHAR_DATA_FIRMWARE_REV);
-  data_Dis_Frs.p_Payload = (uint8_t *) BLE_DIS_CHAR_DATA_FIRMWARE_REV;
-  
-  DIS_UpdateValue(DIS_FRS, &data_Dis_Frs);
+
   /* USER CODE END SVCCTL_InitService1Char6 */
 
   /* USER CODE BEGIN SVCCTL_InitService1Svc_2 */

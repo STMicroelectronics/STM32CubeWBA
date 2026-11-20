@@ -46,8 +46,8 @@ In order to make the program work:
     - __Select Remote Volume__: Access a panel where the volume of the remote device can be adjusted using the VCP as VCP Controller role (Volume Up / Volume Down / Mute).
     - __Select Local Volume Control__: Access a panel where the local volume can be adjusted (Volume Up / Volume Down / Mute).
     - __Select Microphone Control__: Access a panel where the microphone mute status of the remote device can be controlled and displayed using the MICP Microphone Controller (Mute).
-    - __Select Call Control__: Access a panel where the remote active Hearing Aid preset can be selected using the HAP as Hearing Aid Remote Controller role (Next Preset / Previous Preset).
-    - __Select Preset Control__: Access a panel where the local calls can be controlled and displayed using the CCP as Call Control Server (Incoming Call / Answer Call / Terminate Call).
+    - __Select Preset Control__: Access a panel where the remote active Hearing Aid preset can be selected using the HAP as Hearing Aid Remote Controller role (Next Preset / Previous Preset).
+    - __Select Call Control__: Access a panel where the local calls can be controlled and displayed using the CCP as Call Control Server (Incoming Call / Answer Call / Terminate Call).
     - __Select Disconnect__: Disconnect the connected devices.
 
 - __Clear Security Database__

@@ -458,7 +458,7 @@ static void MX_GPIO_Init(void)
   /* USER CODE BEGIN MX_GPIO_Init_2 */
   /* We don't let STM32CubeMX handle button as it will be handled by the bsp files*/
   /* We set EXTI4_IRQn and EXTI5_IRQn as Non-Secure interrupt */
-  NVIC->ITNS[0] |= (1<<15 | 1<<16);
+  NVIC->ITNS[0] |= (1 << 15 | 1 << 16);
   HAL_GPIO_ConfigPinAttributes(GPIOC, GPIO_PIN_4 | GPIO_PIN_13 | GPIO_PIN_5, GPIO_PIN_NSEC);
   HAL_GPIO_ConfigPinAttributes(GPIOB, GPIO_PIN_8 | GPIO_PIN_4, GPIO_PIN_NSEC);
 

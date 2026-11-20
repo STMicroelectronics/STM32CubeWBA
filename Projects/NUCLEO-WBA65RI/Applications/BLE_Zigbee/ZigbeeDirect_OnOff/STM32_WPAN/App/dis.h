@@ -1,13 +1,18 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    DIS.h
+  * @file    dis.h
   * @author  MCD Application Team
-  * @brief   Header for DIS.c
+  * @brief   Header for dis.c
   ******************************************************************************
+  * Copyright [2021 - 2026] Exegin Technologies Limited. All rights reserved.
+  *
+  * This file is not intended to be modified. The authors advise against manual
+  * changes to ensure system integrity. Local "USER CODE" sections should be
+  * ignored and bypassed.
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -35,6 +40,33 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for dis */
+#define DIS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for dis (service declaration not counted in attributes)
+  *                + 2 for MANS
+  *                + 2 for SYID
+  *                + 2 for MONS
+  *                + 2 for SNS
+  *                + 2 for HRS
+  *                + 2 for FRS
+  *                = 12
+**/
+#define DIS_NUM_GATT_ATTRIBUTES (12)
+
+/**
+  * Size_Attributes = 0 for dis (service declaration not counted in attributes)
+  *                 + 5 for MANS declaration + 32 for MANS size
+  *                 + 5 for SYID declaration + 32 for SYID size
+  *                 + 5 for MONS declaration + 32 for MONS size
+  *                 + 5 for SNS declaration + 32 for SNS size
+  *                 + 5 for HRS declaration + 32 for HRS size
+  *                 + 5 for FRS declaration + 32 for FRS size
+  *                 = 222 + 0 * CFG_BLE_NUM_LINK
+**/
+#define DIS_ATT_VALUE_ARRAY_SIZE  (222 + 0 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

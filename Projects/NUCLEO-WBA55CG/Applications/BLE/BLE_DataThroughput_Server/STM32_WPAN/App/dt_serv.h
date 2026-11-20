@@ -35,6 +35,31 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for DT_SERV */
+#define DT_SERV_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for DT_SERV (service declaration not counted in attributes)
+  *                + 2 for TX_CHAR
+  *                + 2 for RX_CHAR
+  *                + 2 for THROUGH_CHAR
+  *                + 1 for TX_CHAR CCCD
+  *                + 1 for THROUGH_CHAR CCCD
+  *                = 8
+**/
+#define DT_SERV_NUM_GATT_ATTRIBUTES (8)
+
+/**
+  * Size_Attributes = 0 for DT_SERV (service declaration not counted in attributes)
+  *                 + 19 for TX_CHAR declaration + 255 for TX_CHAR size
+  *                 + 19 for RX_CHAR declaration + 255 for RX_CHAR size
+  *                 + 19 for THROUGH_CHAR declaration + 255 for THROUGH_CHAR size
+  *                 + 2 for TX_CHAR CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for THROUGH_CHAR CCCD * CFG_BLE_NUM_LINK
+  *                 = 822 + 4 * CFG_BLE_NUM_LINK
+**/
+#define DT_SERV_ATT_VALUE_ARRAY_SIZE  (822 + 4 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 /* USER CODE END ED */

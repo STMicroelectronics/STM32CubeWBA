@@ -60,7 +60,6 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void SystemPower_Config(void);
-static void MX_GPDMA1_Init(void);
 /* USER CODE BEGIN PFP */
 void Standby_Restore_GPIO(void);
 
@@ -338,7 +337,7 @@ void MX_CRC_Init(void)
   * @param None
   * @retval None
   */
-static void MX_GPDMA1_Init(void)
+void MX_GPDMA1_Init(void)
 {
 
   /* USER CODE BEGIN GPDMA1_Init 0 */
@@ -376,6 +375,7 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
+
   /* USER CODE END ICACHE_Init 1 */
 
   /** Full retention for ICACHE in stop mode
@@ -387,6 +387,7 @@ void MX_ICACHE_Init(void)
   LL_ICACHE_SetMode(LL_ICACHE_1WAY);
   LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
+
   /* USER CODE END ICACHE_Init 2 */
 
 }
@@ -536,7 +537,7 @@ void MX_USART1_UART_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
+  if (HAL_UARTEx_EnableFifoMode(&huart1) != HAL_OK)
   {
     Error_Handler();
   }

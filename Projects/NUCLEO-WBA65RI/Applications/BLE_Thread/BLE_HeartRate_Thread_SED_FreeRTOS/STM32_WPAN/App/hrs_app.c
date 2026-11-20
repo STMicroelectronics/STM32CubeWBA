@@ -33,6 +33,8 @@
 /* USER CODE BEGIN Includes */
 #include "host_stack_if.h"
 #include "app_freertos.h"
+#include "RTDebug.h"
+#include "bleplat.h"
 
 /* USER CODE END Includes */
 
@@ -58,6 +60,7 @@ typedef struct
   HRS_MeasVal_t                 MeasurementVal;
   uint8_t                       ResetEnergyExpended;
   HRS_BodySensorLocation_t      BodySensorLocationVal;
+
   /* USER CODE END Service1_APP_Context_t */
   uint16_t              ConnectionHandle;
 } HRS_APP_Context_t;
@@ -84,14 +87,12 @@ static HRS_APP_Context_t HRS_APP_Context;
 uint8_t a_HRS_UpdateCharData[247];
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 static void HRS_Hrme_SendNotification(void);
 
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -194,8 +195,8 @@ void HRS_APP_Init(void)
   /**
    * Set Flags for measurement value
    */
-  HRS_APP_Context.MeasurementVal.Flags = (HRS_HRM_VALUE_FORMAT_UINT16 | 
-                                          HRS_HRM_SENSOR_CONTACTS_PRESENT | 
+  HRS_APP_Context.MeasurementVal.Flags = (HRS_HRM_VALUE_FORMAT_UINT16 |
+                                          HRS_HRM_SENSOR_CONTACTS_PRESENT |
                                           HRS_HRM_SENSOR_CONTACTS_SUPPORTED |
                                           HRS_HRM_ENERGY_EXPENDED_PRESENT |
                                           HRS_HRM_RR_INTERVAL_PRESENT);
@@ -227,6 +228,7 @@ void HRS_APP_Init(void)
 }
 
 /* USER CODE BEGIN FD */
+
 void HRS_APP_Measurements(void)
 {
   uint32_t measurement;
@@ -234,24 +236,26 @@ void HRS_APP_Measurements(void)
   HRS_Data_t msg_conf;
   uint8_t hrm_char_length;
 
-  HW_RNG_Get(1, &measurement);
+  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_MEAS);
+
+  BLEPLAT_RngGet(1, &measurement);
   measurement = (measurement % 15) + 60;
 
   HRS_APP_Context.MeasurementVal.MeasurementValue = measurement;
-  
+
   if((HRS_APP_Context.MeasurementVal.Flags & HRS_HRM_ENERGY_EXPENDED_PRESENT) &&
      (HRS_APP_Context.ResetEnergyExpended == 0))
   {
     HRS_APP_Context.MeasurementVal.EnergyExpended += 5;
-  }  
+  }
   else if(HRS_APP_Context.ResetEnergyExpended == 1)
   {
     HRS_APP_Context.ResetEnergyExpended = 0;
   }
-  
+
   LOG_INFO_APP("Heart Rate value = %d bpm \n", HRS_APP_Context.MeasurementVal.MeasurementValue);
   LOG_INFO_APP("Energy expended = %d kJ \n", HRS_APP_Context.MeasurementVal.EnergyExpended);
-  
+
   /**
    * Flags update
    */
@@ -372,8 +376,11 @@ void HRS_APP_Measurements(void)
     LOG_INFO_APP("HRS_UpdateValue fails\n");
   }
 
+  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_MEAS);
+
   return;
 }
+
 /* USER CODE END FD */
 
 /*************************************************************

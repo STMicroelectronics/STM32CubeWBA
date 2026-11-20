@@ -90,7 +90,10 @@ UINT MX_USBX_Device_Init(VOID)
 }
 
 /**
-  * @brief  Application USBX Device Initialization.
+  * @brief  MX_USBX_Device_Stack_Init
+  *         Initialization of the USB Device.
+  *         Initialize the device stack, register the device class stack
+  *         register the USB device controller.
   * @param  None
   * @retval ret
   */
@@ -179,11 +182,12 @@ UINT MX_USBX_Device_Stack_Init(void)
 }
 
 /**
-  * @brief MX_USBX_Device_Stack_DeInit
-  *        Unitialization of USB Device.
-  * uninitialize the device stack, unregister of device class stack
-  * unregister of the usb device controller
-  * @retval None
+  * @brief  MX_USBX_Device_Stack_DeInit
+  *         Uninitialization of the USB Device.
+  *         Uninitialize the device stack, unregister the device class stack
+  *         unregister the USB device controller.
+  * @param  None
+  * @retval ret
   */
 UINT MX_USBX_Device_Stack_DeInit(void)
 {
@@ -193,7 +197,6 @@ UINT MX_USBX_Device_Stack_DeInit(void)
   /* USER CODE END MX_USBX_Device_Stack_DeInit_PreTreatment_0 */
 
   /* Unregister USB device controller. */
-
   if (ux_dcd_stm32_uninitialize((ULONG)USB_DRD_FS, (ULONG)&hpcd_USB_DRD_FS) != UX_SUCCESS)
   {
     return UX_ERROR;
@@ -331,26 +334,20 @@ VOID USBX_Device_Process(VOID)
   */
 VOID USBX_APP_Device_Init(VOID)
 {
-  /* USER CODE BEGIN USB_Device_Init_PreTreatment_0 */
-
-  /* USER CODE END USB_Device_Init_PreTreatment_0 */
 
 
-  /* USER CODE BEGIN USB_Device_Init_PreTreatment_1 */
+
   HAL_PCDEx_PMAConfig(&hpcd_USB_DRD_FS, 0x00, PCD_SNG_BUF, 0x14);
   HAL_PCDEx_PMAConfig(&hpcd_USB_DRD_FS, 0x80, PCD_SNG_BUF, 0x54);
   HAL_PCDEx_PMAConfig(&hpcd_USB_DRD_FS, 0x81, PCD_SNG_BUF, 0x94);
   HAL_PCDEx_PMAConfig(&hpcd_USB_DRD_FS, 0x01, PCD_SNG_BUF, 0xD4);
   HAL_PCDEx_PMAConfig(&hpcd_USB_DRD_FS, 0x82, PCD_SNG_BUF, 0x114);
 
-  /* USER CODE END USB_Device_Init_PreTreatment_1 */
 
   /* Start the USB device */
   HAL_PCD_Start(&hpcd_USB_DRD_FS);
 
-  /* USER CODE BEGIN USB_Device_Init_PostTreatment */
 
-  /* USER CODE END USB_Device_Init_PostTreatment */
 }
 
 /* USER CODE END 1 */

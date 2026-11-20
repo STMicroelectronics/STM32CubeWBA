@@ -100,6 +100,7 @@ typedef struct
 /* Exported constants --------------------------------------------------------*/
 
 /* USER CODE BEGIN EC */
+
 typedef enum
 {
   DTC_UNINITIALIZED                                 = 0,

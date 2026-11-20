@@ -40,7 +40,7 @@ In order to make the program work:
   - On the BLE_Security_Central, press the B1 button to initiate a scan and establish a connection to the first BLE_Security_Peripheral device that is found.
   - On the BLE_Security_Central, press the B1 button to send a GATT write command to the connected BLE_Security_Peripheral device, causing LED1 on the Peripheral to toggle.
 
-On the BLE_Security_Peripheral, advertising stops after 60 seconds. Pressing the B1 button restarts it. If the Peripheral is connected, pressing the B1 button starts the procedure to disconnect from the Central.<br />
+On the BLE_Security_Peripheral, advertising stops after 60 seconds. Pressing the B1 button restarts it. If the Peripheral is connected, pressing the B1 button sends notification message to the Central.<br />
 When the BLE_Security_Peripheral is not connected, pressing the B2 button clears the security database.<br />
 Once connected, pressing the B3 button on the Peripheral updates the connection interval parameters.
 

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -115,10 +115,10 @@
  * Beacon selection
  * Beacons are all exclusive
  */
-#define CFG_EDDYSTONE_UID_BEACON_TYPE   (1<<0)
-#define CFG_EDDYSTONE_URL_BEACON_TYPE   (1<<1)
-#define CFG_EDDYSTONE_TLM_BEACON_TYPE   (1<<2)
-#define CFG_IBEACON_TYPE                (1<<3)
+#define CFG_EDDYSTONE_UID_BEACON_TYPE   (1 << 0)
+#define CFG_EDDYSTONE_URL_BEACON_TYPE   (1 << 1)
+#define CFG_EDDYSTONE_TLM_BEACON_TYPE   (1 << 2)
+#define CFG_IBEACON_TYPE                (1 << 3)
 
 #define CFG_BEACON_TYPE                 (CFG_EDDYSTONE_UID_BEACON_TYPE | CFG_EDDYSTONE_TLM_BEACON_TYPE)
 
@@ -138,31 +138,33 @@
                                      0 | \
                                      0 | \
                                      0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
                                      0)
 
 /**
- * Maximum number of simultaneous connections and advertising that the device will support.
+ * Maximum number of simultaneous connections that the device will support.
  * This setting should not exceed the number of BLE connection supported by BLE host stack.
  */
 #define CFG_BLE_NUM_LINK            (1)
+
+/**
+ * Maximum number of simultaneous state machine supported by the LinkLayer, requirements are:
+ * - one per Extended Advertising Set
+ * - one for Periodic Advertising Sync
+ * - one per ACL connection
+ * - one per Broadcast Isochronous Group
+ * - one per Connected Isochronous Stream
+ */
+#define CFG_BLE_NUM_STATE_MACHINES  (4)
 
 /**
  * Maximum supported ATT_MTU size
  * This setting should be aligned with ATT_MTU value configured in the ble host
  */
 #define CFG_BLE_ATT_MTU_MAX         (251)
-
-/**
- * Size of the storage area for Attribute values
- *  This value depends on the number of attributes used by application. In particular the sum of the following quantities (in octets) should be made for each attribute:
- *  - attribute value length
- *  - 5, if UUID is 16 bit; 19, if UUID is 128 bit
- *  - 2, if server configuration descriptor is used
- *  - 2*DTM_NUM_LINK, if client configuration descriptor is used
- *  - 2, if extended properties is used
- *  The total amount of memory needed is the sum of the above quantities for each attribute.
- */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (0)
 
 /**
  * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
@@ -182,7 +184,8 @@
  * Number of allocated memory blocks used to transmit and receive data packets
  */
 #define CFG_BLE_MBLOCK_COUNT          (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                       CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
+                                       MAX(MAX(CFG_BLE_ATT_MTU_MAX, CFG_BLE_COC_MPS_MAX), SM_MTU),\
+                                       CFG_BLE_NUM_LINK) \
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
@@ -199,7 +202,7 @@
  * Connection Oriented Channel parameters
  */
 #define CFG_BLE_COC_NBR_MAX           (0)
-#define CFG_BLE_COC_MPS_MAX           (248)
+#define CFG_BLE_COC_MPS_MAX           (23)
 #define CFG_BLE_COC_INITIATOR_NBR_MAX (0)
 
 /**
@@ -371,7 +374,6 @@ typedef enum
   CFG_PKA_MUTEX,
   CFG_PKA_END_OF_PROCESS,
   /* USER CODE BEGIN CFG_Event_Id_t */
-
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -400,19 +402,6 @@ typedef enum
 #define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
-
-/******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
 /* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
@@ -430,7 +419,7 @@ typedef enum
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
  *   1 -> RF TX output level from -20 dBm to +2.6 dBm. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
- *   3 -> RF TX output level from -20 dBm to +1.4 dBm, optimised with VOS_1_5. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
+ *   3 -> RF TX output level from -20 dBm to +1.4 dBm, optimized with VOS_1_5. VDDRFPA at VDD11 level like on ST MB2293 board.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (3)
 

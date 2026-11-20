@@ -81,6 +81,7 @@ static void ll_sys_sleep_clock_source_selection(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
 
 /**
   * @brief  Link Layer background process initialization
@@ -95,7 +96,21 @@ void ll_sys_bg_process_init(void)
 
   if (LinkLayerMutex == NULL)
   {
-    LOG_ERROR_APP( "Link Layer FreeRTOS objects creation FAILED");
+    LOG_ERROR_APP( "Link Layer FreeRTOS objects creation FAILED\n");
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
+{
+  if (osMutexDelete(LinkLayerMutex) != osOK)
+  {
+    LOG_ERROR_APP("Link Layer mutex deletion FAILED\n");
     Error_Handler();
   }
 }

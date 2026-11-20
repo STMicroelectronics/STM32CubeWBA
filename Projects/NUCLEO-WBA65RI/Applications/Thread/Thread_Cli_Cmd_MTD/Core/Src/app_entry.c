@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -42,6 +42,11 @@
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
+#include "psa_plat_crypto.h"
+#include "mbedtls_threading_alt.h"
+#include "psa/crypto.h"
+#include "entropy_hardware_alt.h"
+#include "storage_interface.h"
 #include "assert.h"
 #include "stm32_lpm_if.h"
 
@@ -107,6 +112,8 @@ static void System_Init( void );
 static void SystemPower_Config( void );
 static void Config_HSE(void);
 static void APPE_RNG_Init( void );
+static void APPE_PSA_CRYPTO_Init(void);
+void PKA_NOTIF_Trigger(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -115,6 +122,7 @@ static void APPE_RNG_Init( void );
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
+
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -146,17 +154,18 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_RNG_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)  
-  APP_BSP_LedInit();
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_BUTTON_SUPPORTED == 1)
-  APP_BSP_ButtonInit();
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+  APP_BSP_Init();
 
   /* USER CODE END APPE_Init_1 */
 
+  /* Initialize PSA crypto subsystem */
+  APPE_PSA_CRYPTO_Init();
+
   /* Thread Initialisation */
   APP_THREAD_Init();
+
+  MBEDTLS_THREADING_ALT_EarlyDeInit();
+  MBEDTLS_THREADING_ALT_Init();
 
   /* USER CODE BEGIN APPE_Init_2 */
 
@@ -220,7 +229,9 @@ static void System_Init( void )
   UTIL_TIMER_Init();
 
   /* USER CODE BEGIN System_Init_1 */
-
+#if ((CFG_RT_DEBUG_DTB == 1) && (CFG_BUTTON_SUPPORTED == 1))
+#warning "DTB signal tx_on may be overwritten by buttons IOs configuration on PA1 pin"
+#endif
   /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -271,15 +282,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -343,9 +347,26 @@ static void SystemPower_Config(void)
 static void APPE_RNG_Init(void)
 {
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Start();
+  /* Fill RNG pool */
+  HW_RNG_Process();
   /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
+}
+
+static void APPE_PSA_CRYPTO_Init(void)
+{
+  /* USER CODE BEGIN PsaCryptoInit */
+
+  /* USER CODE END PsaCryptoInit */
+
+  MBEDTLS_THREADING_ALT_EarlyInit();
+
+  storage_init();
+
+  if (psa_crypto_init() != PSA_SUCCESS)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -369,11 +390,9 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
-#if (CFG_SCM_SUPPORTED == 1)
   /* SCM HSE BEGIN */
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -401,21 +420,6 @@ void UTIL_SEQ_PreIdle( void )
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
-
-#if defined(STM32WBAXX_SI_CUT1_0)
-  /* Wait until HSE is ready */
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_WaitUntilReady();
-  /* SCM HSE END */
-#else
-  while (LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
-
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
-  scm_hserdy_isr();
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* STM32WBAXX_SI_CUT1_0 */
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
 
@@ -460,7 +464,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -472,7 +475,6 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -511,7 +513,7 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 
   /* Threat USART Command to simulate button press for instance. */
   (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
-  
+
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
 }
 

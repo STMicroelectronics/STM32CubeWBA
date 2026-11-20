@@ -14,6 +14,13 @@ error()
   if [ "$script_mode" != "AUTO" ]; then $SHELL; fi
   return 1
 }
+#
+# =============================================== log_and_run <command> [args...] =========================================================
+log_and_run() {
+  echo "$*"
+  echo "$*" >> "$command_log"
+  "$@"
+}
 
 bootpath=OEMiRoT_OEMuRoT
 
@@ -62,7 +69,8 @@ wrp_protect=
 remove_bank1_protect="-ob SECWM_PSTRT=0 SECWM_PEND=$flashsectnbr WRPA_PSTRT=$flashsectnbr WRPA_PEND=0 WRPB_PSTRT=$flashsectnbr WRPB_PEND=0 $remove_protect_init"
 remove_hdp_protection="-ob HDP_PEND=0 HDPEN=0xB4"
 if [ "$rdp_lev" -ge 1 ]; then
-wrp_protect="UNLOCK_A=0 UNLOCK_B=0"
+  echo "Configure wrp_protect"
+  wrp_protect="UNLOCK_A=0 UNLOCK_B=0"
 fi
 erase_all="-e all"
 remove_boot_lock="-ob BOOT_LOCK=0"
@@ -78,32 +86,32 @@ sec_water_mark="SECWM_PSTRT=$sec1_start SECWM_PEND=$sec1_end"
 action="Set TZEN = 1"
 echo "$action"
 # Trust zone enabled is mandatory in order to execute OEM-uRoT
-"$stm32programmercli" $connect_no_reset -ob TZEN=1
+log_and_run "$stm32programmercli" $connect_no_reset -ob TZEN=1
 if [ $? -ne 0 ]; then error; return 1; fi
 
 action="Remove hdp protection"
 echo "$action"
-"$stm32programmercli" $connect_no_reset $remove_hdp_protection
+log_and_run "$stm32programmercli" $connect_no_reset $remove_hdp_protection
 if [ $? -ne 0 ]; then error; return 1; fi
 
 action="Remove bank1 protection : $remove_bank1_protect"
 echo "$action"
-"$stm32programmercli" $connect $remove_bank1_protect
+log_and_run "$stm32programmercli" $connect $remove_bank1_protect
 if [ $? -ne 0 ]; then error; return 1; fi
 
 action="Erase all"
 echo "$action"
-"$stm32programmercli" $connect_no_reset $erase_all
+log_and_run "$stm32programmercli" $connect_no_reset $erase_all
 if [ $? -ne 0 ]; then error; return 1; fi
 
 action="Remove Boot lock"
 echo "$action"
-"$stm32programmercli" $connect_no_reset $remove_boot_lock
+log_and_run "$stm32programmercli" $connect_no_reset $remove_boot_lock
 if [ $? -ne 0 ]; then error; return 1; fi
 
 set "action=Set boot address @$secbootadd0"
 echo "$action"
-"$stm32programmercli" $connect_no_reset $boot_address
+log_and_run "$stm32programmercli" $connect_no_reset $boot_address
 if [ $? -ne 0 ]; then error; return 1; fi
 
 # =============================================== Download images =========================================================================
@@ -112,12 +120,12 @@ echo "Application images programming in download slots"
 if [ "$app_image_number" == "2" ]; then
     action="Write Appli Secure"
     echo "$action $appli_dir/Binary/$s_code_image"
-    "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$s_code_image" $slot0 -v --skipErase
+    log_and_run "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$s_code_image" $slot0 -v --skipErase
     if [ $? -ne 0 ]; then error; return 1; fi
     echo "TZ Appli Secure Written"
     action="Write Appli NonSecure"
     echo "$action"
-    "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$ns_code_image" $slot1 -v --skipErase
+    log_and_run "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$ns_code_image" $slot1 -v --skipErase
     if [ $? -ne 0 ]; then error; return 1; fi
     echo "TZ Appli NonSecure Written"
 fi
@@ -126,7 +134,7 @@ if [ "$app_image_number" == "1" ]; then
     if [ "$app_full_secure" == "1" ]; then
         action="Write Appli Full Secure"
         echo "$action $appli_dir/Binary/$s_code_image"
-        "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$s_code_image" $slot0 -v --skipErase
+        log_and_run "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$s_code_image" $slot0 -v --skipErase
         if [ $? -ne 0 ]; then error; return 1; fi
         echo "Appli Full Secure Written"
     fi
@@ -140,7 +148,7 @@ if [ "$s_data_image_number" == "1" ]; then
         error
     fi
 
-    "$stm32programmercli" $connect_no_reset -d "$rot_provisioning_path/$bootpath/Binary/$s_data_image" $slot4 -v --skipErase
+    log_and_run "$stm32programmercli" $connect_no_reset -d "$rot_provisioning_path/$bootpath/Binary/$s_data_image" $slot4 -v --skipErase
     if [ $? -ne 0 ]; then error; return 1; fi
 fi
 
@@ -152,13 +160,13 @@ if [ "$ns_data_image_number" == "1" ]; then
         error
     fi
 
-    "$stm32programmercli" $connect_no_reset -d "$rot_provisioning_path/$bootpath/Binary/$ns_data_image" $slot5 -v --skipErase
+    log_and_run "$stm32programmercli" $connect_no_reset -d "$rot_provisioning_path/$bootpath/Binary/$ns_data_image" $slot5 -v --skipErase
     if [ $? -ne 0 ]; then error; return 1; fi
 fi
 
 action="Write Binary Keys of first boot Stage"
 echo "$action"
-"$stm32programmercli" "$connect_no_reset" -d "$rot_provisioning_path/OEMiRoT_OEMuRoT/Binary/OEMiRoT_Keys.bin" 0xC004000 -v --skipErase
+log_and_run "$stm32programmercli" "$connect_no_reset" -d "$rot_provisioning_path/OEMiRoT_OEMuRoT/Binary/OEMiRoT_Keys.bin" 0xC004000 -v --skipErase
 if [ $? -ne 0 ]; then error; return 1; fi
 echo "Binary Keys Written"
 
@@ -179,19 +187,19 @@ else
   fi
 fi
 
-"$stm32programmercli" "$connect_no_reset" -d "$rot_provisioning_path/OEMiRoT_OEMuRoT/Binary/$first_boot_stage_binary" 0xC006000 -v --skipErase
+log_and_run "$stm32programmercli" "$connect_no_reset" -d "$rot_provisioning_path/OEMiRoT_OEMuRoT/Binary/$first_boot_stage_binary" 0xC006000 -v --skipErase
 if [ $? -ne 0 ]; then error; return 1; fi
 echo "OEMiROT_Boot Written"
 
 action="Write Binary Keys of the second boot stage"
 echo "$action"
-"$stm32programmercli" "$connect_no_reset" -d "$rot_provisioning_path/OEMiRoT_OEMuRoT/Binary/OEMuRoT_Keys.bin" $keyaddress -v --skipErase
+log_and_run "$stm32programmercli" "$connect_no_reset" -d "$rot_provisioning_path/OEMiRoT_OEMuRoT/Binary/OEMuRoT_Keys_init_sign.bin" $keyaddress -v --skipErase
 if [ $? -ne 0 ]; then error; return 1; fi
 echo "Binary Keys Written"
 
 action="Write Write the second boot stage OEMuROT_Boot"
 echo "$action"
-"$stm32programmercli" "$connect_no_reset" -d "$boot_dir/Binary/OEMuROT_Boot_init_sign.bin" $oemirot_oemurot_slot0 -v --skipErase
+log_and_run "$stm32programmercli" "$connect_no_reset" -d "$boot_dir/Binary/OEMuROT_Boot_init_sign.bin" $oemirot_oemurot_slot0 -v --skipErase
 if [ $? -ne 0 ]; then error; return 1; fi
 echo "OEMuROT_Boot Written"
 
@@ -199,10 +207,10 @@ echo "OEMuROT_Boot Written"
 action="Configure Option Bytes"
 echo "$action"
 echo "Configure Secure option Bytes: Write Protection, Hide Protection, boot lock and Write protection"
-"$stm32programmercli" $connect_no_reset -ob $sec_water_mark $write_protect $hide_protect $boot_lock $wrp_protect
+log_and_run "$stm32programmercli" $connect_no_reset -ob $sec_water_mark $write_protect $hide_protect $boot_lock $wrp_protect
 if [ $? -ne 0 ]; then error; return 1; fi
 
 echo "Programming success"
 if [ "$script_mode" != "AUTO" ]; then $SHELL;  fi
-
 return
+

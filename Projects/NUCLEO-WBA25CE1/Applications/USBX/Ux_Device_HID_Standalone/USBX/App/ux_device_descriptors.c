@@ -206,7 +206,7 @@ uint8_t *USBD_Get_Device_Framework_Speed(uint8_t Speed, ULONG *Length)
 
   if (USBD_FULL_SPEED == Speed)
   {
-	_ux_utility_memory_set(&USBD_Device_FS, 0U, sizeof(USBD_Device_FS));
+    _ux_utility_memory_set(&USBD_Device_FS, 0U, sizeof(USBD_Device_FS));
     USBD_Device_Framework_Builder(&USBD_Device_FS, pDevFrameWorkDesc_FS,
                                   UserClassInstance, Speed);
 
@@ -760,7 +760,7 @@ static void  USBD_FrameWork_AddConfDesc(uint32_t Conf, uint32_t *pSze)
 
 /**
   * @brief  USBD_FrameWork_AssignEp
-  *         Assign and endpoint
+  *         Assign an endpoint
   * @param  pdev: device instance
   * @param  Add: Endpoint address
   * @param  Type: Endpoint type

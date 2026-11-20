@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -187,19 +187,6 @@ extern UART_HandleTypeDef           huart1;
 #define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
-
-/******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
@@ -209,7 +196,7 @@ extern UART_HandleTypeDef           huart1;
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
 #define RADIO_SW_LOW_INTR_PRIO              (14)           /* 2.4GHz RADIO low ISR priority */
 
-#define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
+#define RCC_INTR_PRIO                       (5)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
@@ -239,6 +226,7 @@ extern UART_HandleTypeDef           huart1;
 /* USER CODE END HW_RNG_Configuration */
 
 /* USER CODE BEGIN Defines */
+
 /**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
@@ -258,16 +246,6 @@ extern UART_HandleTypeDef           huart1;
   #undef  CFG_LED_SUPPORTED
   #define CFG_LED_SUPPORTED         (0)
 #endif /* CFG_FULL_LOW_POWER */
-
-#if ( CFG_LED_SUPPORTED == 1 )
-#define APP_LED_ON( LED )           BSP_LED_On( LED )
-#define APP_LED_OFF( LED )          BSP_LED_Off( LED )
-#define APP_LED_TOGGLE( LED )       BSP_LED_Toggle( LED )
-#else /* ( CFG_LED_SUPPORTED == 1 ) */
-#define APP_LED_ON( LED )
-#define APP_LED_OFF( LED )
-#define APP_LED_TOGGLE( LED )
-#endif  /* ( CFG_LED_SUPPORTED == 1 ) */
 
 /* USER CODE END Defines */
 

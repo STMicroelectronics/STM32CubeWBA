@@ -35,6 +35,27 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for DF_Tag */
+#define DF_TAG_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for DF_Tag (service declaration not counted in attributes)
+  *                + 2 for Led_C
+  *                + 2 for Switch_C
+  *                + 1 for Switch_C CCCD
+  *                = 5
+**/
+#define DF_TAG_NUM_GATT_ATTRIBUTES (5)
+
+/**
+  * Size_Attributes = 0 for DF_Tag (service declaration not counted in attributes)
+  *                 + 19 for Led_C declaration + 1 for Led_C size
+  *                 + 19 for Switch_C declaration + 1 for Switch_C size
+  *                 + 2 for Switch_C CCCD * CFG_BLE_NUM_LINK
+  *                 = 40 + 2 * CFG_BLE_NUM_LINK
+**/
+#define DF_TAG_ATT_VALUE_ARRAY_SIZE  (40 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

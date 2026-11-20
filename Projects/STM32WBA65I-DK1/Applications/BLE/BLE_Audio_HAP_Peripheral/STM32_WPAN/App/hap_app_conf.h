@@ -182,8 +182,8 @@ extern "C" {
 #else
 #define APP_NUM_SNK_ASE                         (0u)    /* Number of Sink ASEs to register */
 #define APP_MAX_CHANNEL_PER_SNK_ASE             (0u)    /* Maximum number of channels per Sink ASE */
-
 #endif /* ((APP_AUDIO_ROLE & AUDIO_ROLE_SINK) == AUDIO_ROLE_SINK) */
+
 #if ((APP_AUDIO_ROLE & AUDIO_ROLE_SOURCE) == AUDIO_ROLE_SOURCE)
 #define APP_NUM_SRC_ASE                         (1u)    /* Number of Source ASEs to register */
 #define APP_MAX_CHANNEL_PER_SRC_ASE             (1u)    /* Maximum number of channels per Source ASE */
@@ -202,10 +202,14 @@ extern "C" {
 #define SUPPORTED_SRC_CONTEXTS                  (AUDIO_CONTEXT_UNSPECIFIED | AUDIO_CONTEXT_CONVERSATIONAL)
 
 /**
+ * Hearing Aids Profile Settings
+ */
+#define APP_HAP_NUM_PRESETS                     (4u)
+
+/**
  * GAP Configuration Settings
  */
 #define APPBLE_GAP_DEVICE_NAME_LENGTH           (14u)
-#define BD_ADDR_SIZE_LOCAL                      (6u)
 #define BAP_ADV_DATA_LEN                        (18u)
 #define ADV_LOCAL_NAME_LEN                      (APPBLE_GAP_DEVICE_NAME_LENGTH+1)
 #define ADV_EXT_LEN                             (10u)
@@ -227,7 +231,7 @@ extern "C" {
 #endif /* (APP_CCP_ROLE_CLIENT_SUPPORT == 1u) */
 
 /**
- * Volume Renderer Profile Settings
+ * Volume Control Profile Settings
  */
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
 #define APP_VCP_RDR_NUM_AIC_INSTANCES                   (0u)
@@ -258,21 +262,19 @@ extern "C" {
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u)
 #define APP_CSIP_SET_MEMBER_SIZE                        (2u)
 #define APP_CSIP_SET_MEMBER_NUM_INSTANCES               (1u)
+#if (CFG_TEST_VALIDATION == 1u)
+#define APP_SIRK                                        "SIRK_TESTVAL_HAP"
+#else
 #define APP_SIRK                                        "STM32WBA_HAPSIRK"
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 #else /*(APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 0u)*/
 #define APP_CSIP_SET_MEMBER_NUM_INSTANCES               (0u)
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u) */
 
 /**
- * Hearing Aids Profile Settings
- */
-#define APP_HAP_NUM_PRESETS                             (4u)
-
-/**
  * Maximum number of Services that can be stored in the GATT database.
  * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
  */
-#define BLE_HOST_NUM_GATT_SERVICES                      (2u)
 #define BLE_APP_PACS_SRV_NUM_GATT_SERVICES              BAP_PACS_SRV_NUM_GATT_SERVICES
 #define BLE_APP_ASCS_SRV_NUM_GATT_SERVICES              BAP_ASCS_SRV_NUM_GATT_SERVICES
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
@@ -296,8 +298,7 @@ extern "C" {
 #define BLE_APP_CAP_ACC_NUM_GATT_SERVICES               CAP_ACC_COM_NUM_GATT_SERVICES
 #define BLE_APP_HAP_NUM_GATT_SERVICES                   HAP_HA_NUM_GATT_SERVICES
 
-#define BLE_APP_NUM_GATT_SERVICES                       (BLE_HOST_NUM_GATT_SERVICES \
-                                                        + BLE_APP_PACS_SRV_NUM_GATT_SERVICES \
+#define BLE_APP_NUM_GATT_SERVICES                       (BLE_APP_PACS_SRV_NUM_GATT_SERVICES \
                                                         + BLE_APP_ASCS_SRV_NUM_GATT_SERVICES \
                                                         + BLE_APP_VCP_RENDERER_NUM_GATT_SERVICES \
                                                         + BLE_APP_MICP_DEVICE_NUM_GATT_SERVICES \
@@ -308,12 +309,6 @@ extern "C" {
 /**
  * Maximum number of Attributes
  */
-#if ((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)
-#define BLE_HOST_NUM_GATT_ATTRIBUTES                    (15u)
-#else
-#define BLE_HOST_NUM_GATT_ATTRIBUTES                    (11u)
-#endif /*((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)*/
-
 #define BLE_APP_PACS_SRV_NUM_GATT_ATTRIBUTES            BAP_PACS_SRV_GATT_ATTRIBUTES(APP_NUM_SRC_PAC_RECORDS,APP_NUM_SNK_PAC_RECORDS)
 #define BLE_APP_ASCS_SRV_NUM_GATT_ATTRIBUTES            BAP_ASCS_SRV_GATT_ATTRIBUTES(APP_NUM_SNK_ASE,APP_NUM_SRC_ASE)
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
@@ -334,24 +329,20 @@ extern "C" {
 #define BLE_APP_CSIP_SET_MEMBER_NUM_GATT_ATTRIBUTES     0u
 #endif /*(APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1)*/
 
+#define BLE_APP_CAP_NUM_GATT_ATTRIBUTES                 CAP_ACC_NUM_GATT_ATTRIBUTES
 #define BLE_APP_HAP_NUM_GATT_ATTRIBUTES                 HAP_HA_NUM_GATT_ATTRIBUTES
 
-#define BLE_APP_NUM_GATT_ATTRIBUTES                     (BLE_HOST_NUM_GATT_ATTRIBUTES \
-                                                         + BLE_APP_PACS_SRV_NUM_GATT_ATTRIBUTES \
+#define BLE_APP_NUM_GATT_ATTRIBUTES                     (BLE_APP_PACS_SRV_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_ASCS_SRV_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_VCP_RENDERER_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_MICP_DEVICE_NUM_GATT_ATTRIBUTES \
+                                                         + BLE_APP_CAP_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_CSIP_SET_MEMBER_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_HAP_NUM_GATT_ATTRIBUTES)
 
 /**
  * Size of the storage area for Attribute values
  */
-#if ((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)
-#define BLE_HOST_ATT_VALUE_ARRAY_SIZE                   (59u)
-#else
-#define BLE_HOST_ATT_VALUE_ARRAY_SIZE                   (49u)
-#endif /*((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)*/
 #define BLE_TOTAL_PAC_RECORDS_ATT_VALUE_ARRAY_SIZE \
                 ((APP_NUM_SNK_PAC_RECORDS+ APP_NUM_SRC_PAC_RECORDS) \
                   * BAP_PAC_RECORD_ATT_VALUE_ARRAY_SIZE(CFG_BLE_NUM_LINK, \
@@ -391,7 +382,7 @@ extern "C" {
 
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u)
 #define BLE_APP_CSIP_SET_MEMBER_ATT_VALUE_ARRAY_SIZE    CSIP_SET_MEMBER_ATT_VALUE_ARRAY_SIZE(APP_CSIP_SET_MEMBER_NUM_INSTANCES,CFG_BLE_NUM_LINK)
-#define BLE_APP_CAP_ATT_VALUE_ARRAY_SIZE                CAP_ACC_ATT_VALUE_ARRAY_SIZE(APP_CSIP_SET_MEMBER_NUM_INSTANCES)
+#define BLE_APP_CAP_ATT_VALUE_ARRAY_SIZE                CAP_ACC_ATT_VALUE_ARRAY_SIZE
 #else
 #define BLE_APP_CSIP_SET_MEMBER_ATT_VALUE_ARRAY_SIZE    0u
 #define BLE_APP_CAP_ATT_VALUE_ARRAY_SIZE                0u
@@ -399,8 +390,7 @@ extern "C" {
 
 #define BLE_APP_HAP_ATT_VALUE_ARRAY_SIZE                HAP_HA_ATT_VALUE_ARRAY_SIZE(CFG_BLE_NUM_LINK)
 
-#define BLE_APP_ATT_VALUE_ARRAY_SIZE                    (BLE_HOST_ATT_VALUE_ARRAY_SIZE \
-                                                          + BLE_APP_PACS_SRV_ATT_VALUE_ARRAY_SIZE \
+#define BLE_APP_ATT_VALUE_ARRAY_SIZE                    (BLE_APP_PACS_SRV_ATT_VALUE_ARRAY_SIZE \
                                                           + BLE_APP_ASCS_SRV_ATT_VALUE_ARRAY_SIZE \
                                                           + BLE_APP_VCP_RENDERER_ATT_VALUE_ARRAY_SIZE \
                                                           + BLE_APP_MICP_DEVICE_ATT_VALUE_ARRAY_SIZE \
@@ -448,13 +438,12 @@ extern "C" {
 
 /* External variables --------------------------------------------------------*/
 
-/* Exported macros ------------------------------------------------------------*/
+/* Exported macros -----------------------------------------------------------*/
 
-/* Exported functions ---------------------------------------------*/
+/* Exported functions --------------------------------------------------------*/
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /*__HAP_APP_CONF_H */
-

@@ -53,6 +53,8 @@ set ns_data_init_xml="%provisioningdir%\%bootpath%\Images\%project%_NS_Data_Init
 IF "%oemurot_enabled%" == "1" (
 set oemurot_code_xml="%provisioningdir%\OEMiRoT_OEMuRoT\Images\OEMiROT_Code_Image.xml"
 set oemurot_code_init_xml="%provisioningdir%\OEMiRoT_OEMuRoT\Images\OEMiROT_Code_Init_Image.xml"
+set oemurot_data_xml="%provisioningdir%\OEMiRoT_OEMuRoT\Images\OEMiROT_Data_Image.xml"
+set oemurot_data_init_xml="%provisioningdir%\OEMiRoT_OEMuRoT\Images\OEMiROT_Data_Init_Image.xml"
 )
 
 ::=================================================================================================
@@ -156,7 +158,7 @@ exit 0
 )
 
 :: ============================================================ Update %regression% =====================================================================
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b secbootadd0 -m  RE_BL2_BOOT_ADDRESS  -d 0x80 %regression% --vb > %current_log_file% 2>>&1"
+set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b secbootadd0 -m  RE_BL2_BOOT_ADDRESS  -d 0x80 %regression% --vb >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
@@ -217,29 +219,11 @@ set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b slot7 -m
 %command%
 IF %ERRORLEVEL% NEQ 0 goto :error
 
-IF "%otfdec_enabled%" == "1" (
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b loaderaddress -m RE_IMAGE_FLASH_LOADER_ADDRESS %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-)
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
 set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b wrp_a_bank1_start -m RE_BL2_WRP_START -d 0x1000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
 set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b wrp_a_bank1_end -m RE_BL2_WRP_END -d 0x1000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-IF "%otfdec_enabled%" == "1" (
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b wrp_b_bank1_start -m RE_LOADER_WRP_START -d 0x1000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-)
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-IF "%otfdec_enabled%" == "1" (
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b wrp_b_bank1_end -m RE_LOADER_WRP_END -d 0x1000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-)
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
@@ -254,6 +238,20 @@ IF !errorlevel! NEQ 0 goto :error
 set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b hdp_end -m RE_BL2_HDP_END -d 0x1000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
+
+IF "%otfdec_enabled%" == "0" (goto bypass_otfdec_loader_setup)
+set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b loaderaddress -m RE_IMAGE_FLASH_LOADER_ADDRESS %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b wrp_b_bank1_start -m RE_LOADER_WRP_START -d 0x1000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b wrp_b_bank1_end -m RE_LOADER_WRP_END -d 0x1000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+:bypass_otfdec_loader_setup
 
 IF "%oemurot_enabled%" NEQ "1" (goto no_second_boot_stage)
 set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b overwrite -m  RE_OVER_WRITE --decimal --vb %ob_flash_programming% >> %current_log_file% 2>>&1"
@@ -277,17 +275,23 @@ IF !errorlevel! NEQ 0 goto :error
 :bypass_postbuild_appli_update
 
 :: ======================================================== Update %otfdec_ns_code_xml% =========================================================
-IF "%otfdec_enabled%" == "1" (
-set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_CODE_START_NON_SECURE -c o %otfdec_ns_code_xml% --vb >> %current_log_file% 2>>&1"
-)
+IF "%otfdec_enabled%" == "0" (goto bypass_otfdec_ns_code_xml)
+set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE -c S %otfdec_ns_code_xml% --vb >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
-IF "%otfdec_enabled%" == "1" (
-set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_CODE_START_NON_SECURE -c o %otfdec_ns_code_init_xml% --vb >> %current_log_file% 2>>&1"
-)
+set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_CODE_START_NON_SECURE -c o %otfdec_ns_code_xml% --vb >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_CODE_START_NON_SECURE -c o %otfdec_ns_code_init_xml% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE -c S %otfdec_ns_code_init_xml% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+:bypass_otfdec_ns_code_xml
 
 :: ============================================================ Update %ns_code_xml% ============================================================
 IF "%app_full_secure%" == "1" (goto bypass_ns_code_xml_update)
@@ -364,6 +368,25 @@ IF !errorlevel! NEQ 0 goto :error
 set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -c S %s_data_init_xml% --vb >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
+
+:: ========================================================= Update %oemirot_data_xml% ===========================================================
+IF "%oemurot_enabled%" == "0" (goto bypass_oemirot_data_xml_update)
+set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_SIZE -c S %oemurot_data_xml% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% xmlparam --layout  %preprocess_bl2_file% -m RE_ENCRYPTION -n "Encryption key" -link GetPublic -t File -c -E -h 1 -d "" %oemurot_data_xml% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% xmlparam --layout  %preprocess_bl2_file% -m RE_OVER_WRITE -n "Write Option" -t Data -c --overwrite-only -h 1 -d "" %oemurot_data_xml% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% xmlval --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_SIZE -c S %oemurot_data_init_xml% --vb >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+:bypass_oemirot_data_xml_update
 
 :: ============================================================ Update %appli_flash_layout% ============================================================
 set "command=%python%%applicfg% setdefine --layout %preprocess_bl2_file% -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 %appli_flash_layout% --vb >> %current_log_file% 2>&1"
@@ -494,6 +517,22 @@ set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_OFFSET -n OEMIROT_AREA_4_OFFSET %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_SIZE -n OEMIROT_AREA_4_SIZE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_OFFSET -n OEMIROT_AREA_6_OFFSET %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_SIZE -n OEMIROT_AREA_6_SIZE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
 IF NOT "%oemirot_appli_path_project:Templates=%"=="%oemirot_appli_path_project%" (goto bypass_img_loader_param_update)
 IF "%otfdec_enabled%" == "0" (goto bypass_img_loader_param_update)
 set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_IMAGE_FLASH_LOADER_OFFSET -n FLASH_S_LOADER_OFFSET %appli_flash_layout% --vb >> %current_log_file% 2>&1"
@@ -503,9 +542,9 @@ IF !errorlevel! NEQ 0 goto :error
 set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_LOADER_S_CODE_SIZE -n FLASH_S_LOADER_SIZE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
+:bypass_img_loader_param_update
 
 :: ============================================================= Update %postbuild_loader% =============================================================
-:bypass_img_loader_param_update
 IF "%otfdec_enabled%" == "0" (goto bypass_postbuild_loader_update)
 set "command=%python%%applicfg% setdefine --layout %preprocess_bl2_file% -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 %loader_flash_layout% --vb >> %current_log_file% 2>&1"
 %command%

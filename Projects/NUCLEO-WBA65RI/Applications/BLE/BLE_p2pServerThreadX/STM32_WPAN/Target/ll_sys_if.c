@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -57,12 +57,15 @@ extern void profile_reset(void);
 
 /* Private variables ---------------------------------------------------------*/
 /* ThreadX objects declaration */
-
+static CHAR             *pLinkLayerStack;
 static TX_THREAD        LinkLayerTaskHandle;
 static TX_SEMAPHORE     LinkLayerSemaphore;
 
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+static CHAR             *pTempMeasLLStack;
 static TX_THREAD        TempMeasLLTaskHandle;
 static TX_SEMAPHORE     TempMeasLLSemaphore;
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 /* USER CODE BEGIN PV */
 
@@ -79,6 +82,7 @@ TX_MUTEX                LinkLayerMutex;
 /* Private functions prototypes-----------------------------------------------*/
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 static void ll_sys_bg_temperature_measurement_init(void);
+static void ll_sys_bg_temperature_measurement_deinit(void);
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 static void ll_sys_sleep_clock_source_selection(void);
 static uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void);
@@ -95,6 +99,8 @@ void ll_sys_reset(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
+
 /**
  * @brief  Link Layer Task for ThreadX
  * @param  ULONG lArgument
@@ -125,20 +131,19 @@ static void LinkLayer_Task_Entry( ULONG lArgument )
 void ll_sys_bg_process_init(void)
 {
   UINT TXstatus;
-  CHAR *pStack;
 
   /* Create Link Layer ThreadX objects */
 
-  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_LINK_LAYER, TX_NO_WAIT);
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pLinkLayerStack, TASK_STACK_SIZE_LINK_LAYER, TX_NO_WAIT);
 
   if( TXstatus == TX_SUCCESS )
   {
-    TXstatus = tx_thread_create(&LinkLayerTaskHandle, "Link Layer  Task", LinkLayer_Task_Entry, 0,
-                                 pStack, TASK_STACK_SIZE_LINK_LAYER,
+    TXstatus = tx_semaphore_create(&LinkLayerSemaphore, "Link Layer Semaphore", 0);
+
+    TXstatus |= tx_thread_create(&LinkLayerTaskHandle, "Link Layer  Task", LinkLayer_Task_Entry, 0,
+                                 pLinkLayerStack, TASK_STACK_SIZE_LINK_LAYER,
                                  TASK_PRIO_LINK_LAYER, TASK_PREEMP_LINK_LAYER,
                                  TX_NO_TIME_SLICE, TX_AUTO_START);
-
-    TXstatus |= tx_semaphore_create(&LinkLayerSemaphore, "Link Layer Semaphore", 0);
 
     TXstatus |= tx_mutex_create(&LinkLayerMutex, "Link Layer Mutex", 0 );
   }
@@ -148,6 +153,50 @@ void ll_sys_bg_process_init(void)
     LOG_ERROR_APP( "Link Layer ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
+{
+  if (tx_thread_terminate(&LinkLayerTaskHandle) != TX_SUCCESS)
+  {
+    LOG_ERROR_APP("Link Layer thread termination FAILED\n");
+    Error_Handler();
+  }
+  else
+  {
+    if (tx_thread_delete(&LinkLayerTaskHandle) != TX_SUCCESS)
+    {
+      LOG_ERROR_APP("Link Layer thread deletion FAILED\n");
+      Error_Handler();
+    }
+  }
+
+  if (tx_byte_release(pLinkLayerStack) != TX_SUCCESS)
+  {
+    LOG_ERROR_APP("Link Layer byte pool release FAILED\n");
+    Error_Handler();
+  }
+
+  if (tx_semaphore_delete(&LinkLayerSemaphore) != TX_SUCCESS)
+  {
+    LOG_ERROR_APP("Link Layer semaphore deletion FAILED\n");
+    Error_Handler();
+  }
+
+  if (tx_mutex_delete(&LinkLayerMutex) != TX_SUCCESS)
+  {
+    LOG_ERROR_APP("Link Layer mutex deletion FAILED\n");
+    Error_Handler();
+  }
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  ll_sys_bg_temperature_measurement_deinit();
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 }
 
 /**
@@ -238,25 +287,58 @@ static void TempMeasureLL_Task_Entry( ULONG lArgument )
 void ll_sys_bg_temperature_measurement_init(void)
 {
   UINT TXstatus;
-  CHAR *pStack;
 
   /* Create Temperature Measurement Link Layer ThreadX objects */
 
-  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_TEMP_MEAS_LL, TX_NO_WAIT);
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pTempMeasLLStack, TASK_STACK_SIZE_TEMP_MEAS_LL, TX_NO_WAIT);
 
   if( TXstatus == TX_SUCCESS )
   {
-    TXstatus = tx_thread_create(&TempMeasLLTaskHandle, "Temperature Measurement LL Task", TempMeasureLL_Task_Entry, 0,
-                                 pStack, TASK_STACK_SIZE_TEMP_MEAS_LL,
+    TXstatus = tx_semaphore_create(&TempMeasLLSemaphore, "Temperature Measurement LL Semaphore", 0);
+
+    TXstatus |= tx_thread_create(&TempMeasLLTaskHandle, "Temperature Measurement LL Task", TempMeasureLL_Task_Entry, 0,
+                                 pTempMeasLLStack, TASK_STACK_SIZE_TEMP_MEAS_LL,
                                  TASK_PRIO_TEMP_MEAS_LL, TASK_PREEMP_TEMP_MEAS_LL,
                                  TX_NO_TIME_SLICE, TX_AUTO_START);
-
-    TXstatus |= tx_semaphore_create(&TempMeasLLSemaphore, "Temperature Measurement LL Semaphore", 0);
   }
 
   if( TXstatus != TX_SUCCESS )
   {
     LOG_ERROR_APP( "Temperature Measurement Link Layer ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief  Link Layer temperature request background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_temperature_measurement_deinit(void)
+{
+  if (tx_thread_terminate(&TempMeasLLTaskHandle) != TX_SUCCESS)
+  {
+    LOG_ERROR_APP("Temperature Measurement Link Layer thread termination FAILED\n");
+    Error_Handler();
+  }
+  else
+  {
+    if (tx_thread_delete(&TempMeasLLTaskHandle) != TX_SUCCESS)
+    {
+      LOG_ERROR_APP("Temperature Measurement Link Layer thread deletion FAILED\n");
+      Error_Handler();
+    }
+  }
+
+  if (tx_byte_release(pTempMeasLLStack) != TX_SUCCESS)
+  {
+    LOG_ERROR_APP("Temperature Measurement Link Layer byte pool release FAILED\n");
+    Error_Handler();
+  }
+
+  if (tx_semaphore_delete(&TempMeasLLSemaphore) != TX_SUCCESS)
+  {
+    LOG_ERROR_APP("Temperature Measurement Link Layer semaphore deletion FAILED\n");
     Error_Handler();
   }
 }
@@ -379,7 +461,7 @@ void ll_sys_reset(void)
   if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
   {
     /* Configure RCO calibration */
-    ll_intf_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
+    ll_intf_cmn_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
   }
 
   /* Update link layer timings depending on selected configuration */

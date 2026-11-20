@@ -34,47 +34,9 @@ extern "C" {
  #define CFG_USE_SEQUENCER 1
 
 /******************************************************************************
- * System Clock Manager (SCM) configuration
- ******************************************************************************/
-typedef enum {
-  SCM_USER_APP,
-  SCM_USER_LL_FW,
-  SCM_USER_LL_HW_RCO_CLBR,
-  /* USER CODE BEGIN SCM_E */
-
-  /* USER CODE END SCM_E */
-  SCM_USER_MAX /* To be at the end of the enum */
-} scm_user_id_t;
-
-/* USER CODE BEGIN SCM_DBG1 */
-
-/* USER CODE END SCM_DBG1 */
-
-#ifdef SCM_DEBUG
-#define SCM_DBG_PRINTF(...) do{ {UTIL_ADV_TRACE_COND_FSend(VLEVEL_ALWAYS, T_REG_OFF, TS_OFF, __VA_ARGS__);} }while(0);
-
-/* USER CODE BEGIN SCM_DBG2 */
-
-/* USER CODE END SCM_DBG2 */
-#else
-#define SCM_DBG_PRINTF(...)
-#endif /* SCM_DEBUG */
-
-#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
-
-/* Level of the IRQ of SCM TIMER*/
-#define CFG_SCM_TIMER_IRQ_PRIO 1
-#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
-
-/* USER CODE BEGIN SCM_3 */
-
-/* USER CODE END SCM_3 */
-/******************************************************************************
  * Timer Interface configuration
  ******************************************************************************/
-#define RTC_N_PREDIV_S      (10U)
-#define RTC_PREDIV_S        ( ( 1U << RTC_N_PREDIV_S ) - 1U )
-#define RTC_PREDIV_A        ( ( 1U << ( 15U - RTC_N_PREDIV_S ) ) - 1U )
+#define TIMER_IF_RTCCLK_FREQ_HZ      (LSE_VALUE)
 
 /* USER CODE BEGIN TIF_RTC */
 

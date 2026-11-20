@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -16,8 +16,6 @@
   *
   ******************************************************************************
   */
-
-#include "log_module.h"
 /* USER CODE END Header */
 
 #include "main.h"
@@ -76,6 +74,7 @@ static void ll_sys_sleep_clock_source_selection(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
 
 /**
   * @brief  Link Layer background process initialization
@@ -93,6 +92,20 @@ void ll_sys_bg_process_init(void)
   if( TXstatus != TX_SUCCESS )
   {
     LOG_ERROR_APP( "Link Layer ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
+{
+  if (tx_mutex_delete(&LinkLayerMutex) != TX_SUCCESS)
+  {
+    LOG_ERROR_APP("Link Layer mutex deletion FAILED\n");
     Error_Handler();
   }
 }

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -28,6 +28,7 @@
 #include "platform.h"
 #include "stm32_rtos.h"
 #include "utilities_common.h"
+#include "st_radio.h"
 #if (CFG_LPM_STANDBY_SUPPORTED == 0)
 extern void profile_reset(void);
 #endif
@@ -40,7 +41,7 @@ extern void profile_reset(void);
 #define LSI_RCO_CALIB_DURATION_CYCLE       (24U)    /* LSI calib duration in LL sleep timer clock cycles */
 
 /* USER CODE BEGIN PD */
-#include "ll_intf.h"
+
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -80,6 +81,7 @@ void ll_sys_reset(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
 
 /**
   * @brief  Link Layer background process initialization
@@ -90,6 +92,16 @@ void ll_sys_bg_process_init(void)
 {
   /* Register Link Layer task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER, UTIL_SEQ_RFU, ll_sys_bg_process);
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
+{
+  /* no background process de-initialization required */
 }
 
 /**
@@ -239,7 +251,7 @@ void ll_sys_reset(void)
   if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
   {
     /* Configure RCO calibration */
-    ll_intf_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
+    ll_intf_cmn_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
   }
 
   /* Update link layer timings depending on selected configuration */
@@ -283,6 +295,5 @@ void ll_sys_get_ble_profile_statistics(uint32_t* exec_time, uint32_t* drift_time
 
 void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time)
 {
-  /* first parameter otInstance *aInstance is unused */
-  radio_set_rtl_polling_time(NULL, rtl_polling_time);
+  StRadioSetRtlPollingTime(rtl_polling_time);
 }

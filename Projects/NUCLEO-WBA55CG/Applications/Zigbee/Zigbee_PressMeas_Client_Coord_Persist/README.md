@@ -1,137 +1,144 @@
 ## __Zigbee_PressMeas_Client_Coord_Persist Application Description__
 
-How to use the Pressure Measure cluster on a device acting as a Client within a Centralized Zigbee network.  
-    
-The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the Pressure Measure cluster. 
-Once the Zigbee mesh network is created, the Server sends regularly the Pressure to Client. The user can stop or restart Pressure evolution on Server through push buttons SW1 and SW2.
 
-With the Zigbee Persistence, the user can stop and restart each Device (Coord or Router). After the restart, the Device reconnect to the ZB network, and the reports continue.
-The ZB Persistence is erased by press push button SW3.
+This application turns an STM32WBA55xx board into a Zigbee __coordinator__ for a centralized network. It implements the ZCL __Pressure Measurement client__ cluster and is intended to operate with one or more boards running `Zigbee_PressMeas_Server_Router_Persist`, which implement the corresponding Pressure Measurement server cluster.
 
-N.B. : 
- * It's recommended to complete erase the Flash before download the application firmware on each Device.
- * After a restart of PressMeas Server (Router), reports are send every 60 seconds.
- * After an Erase of ZB Persistence on the Device, it's preferable to erase the other Device also (else there are not aligned).
+The coordinator forms or restores the Zigbee network, authorizes joining on request, detects router joins, configures pressure reporting on the joining router, and logs the received pressure values. Zigbee state is stored in non-volatile flash so the coordinator can restore its network after a reset or power cycle.
 
 
 ### __Keywords__
 
-Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, Pressure Measure cluster, Persistence
+Zigbee, Zigbee PRO, centralized network, coordinator, router, ZCL, Pressure Measurement cluster, attribute reporting, persistence, STM32WBA55xx, NUCLEO-WBA55xx.
 
 
 ### __Hardware Requirements__
 
-For this application it is requested to have:  
+- One STM32WBA55xx Nucleo board programmed with `Zigbee_PressMeas_Client_Coord_Persist`.
+- One or more STM32WBA55xx boards programmed with `Zigbee_PressMeas_Server_Router_Persist`.
+- A USB connection for programming and, optionally, an ST-LINK Virtual COM Port connection to view application traces.
 
-* One STM32WBA55xx Nucleo board loaded with application : **Zigbee_PressMeas_Client_Coord_Persist**  
-* One or more STM32WBA55xx board loaded with application : **Zigbee_PressMeas_Server_Router_Persist**
 
-### __Demo use case__
+### __Application Roles and Compatibility__
 
-* This demo shows how to use Pressure Measure cluster:
-  * The Pressure Measure Server update regularly (500 ms) its **ZCL_PRESS_MEAS_ATTR_MEAS_VAL** attributes (via the measure of a sensor or by random).  
+| Application | Zigbee role | ZCL role | Responsibility |
+|---|---|---|---|
+| `Zigbee_PressMeas_Client_Coord_Persist` | Coordinator | Pressure Measurement client | Forms the centralized network, opens the joining window, detects joining devices, configures reporting, and receives pressure reports. |
+| `Zigbee_PressMeas_Server_Router_Persist` | Router | Pressure Measurement server | Joins or rejoins the network, extends the mesh, maintains the pressure attribute, and sends reports according to the configuration received from the coordinator. |
 
-  * The Pressure Measure Client send a Report Request to obtains regularly the **ZCL_PRESS_MEAS_ATTR_MEAS_VAL** attributes.  
- 
-  * The Pressure Measure Server send regularly (60 seconds) a Report with the latest value of **ZCL_PRESS_MEAS_ATTR_MEAS_VAL** attributes.  
- 
- 
-<pre>
-    
-               Coord.                                                                       Router
-             +-----------+                                                               +-----------+
-             |           |                                                               |           |                                       
-             | PressMeas |                                                               | PressMeas |
-             [ Client    |                                                               | Server    |  - Pressure Server during Init 
-             | after 15s |                                                               | after 15s |    launch a 500 ms Periodic Timer
-             |  Blue Led |                                                               |  Blue Led |  
-             |           |                                                               | after n*s |  - Every 500 ms (Green Led toggling)
-             |           |                                                               | Green Led |    * Read the Pressure Sensor (if exist)
-             |           |                                                               | toggling  |      or simulate it with RNG.
-             |           |                                                               |           |    * <= ZbZclAttrIntegerWrite(ZCL_PRESS_MEAS_ATTR_MEAS_VAL) 
-             |           |  After a Router was connected :                               |           |
-             |           |  ZbZclAttrReportConfigReq(ZCL_PRESS_MEAS_ATTR_MEAS_VAL, 5sec) |           |
-             |           | ------------------------------------------------------------> |           |
-             |           | <------------------------------------------------------------ |           |
-             |           |                                                               |           |
-             |           | <-------------- Report (every 5 seconds) -------------------- |           |
-             |           |                                                               |           |
-             |           |                                                               |           | <= PushB SW2 : Stop 500 ms Periodic Timer.(Stop Green Led toggling but does not stop reporting)
- PushB SW2=> |           | Open a new window of commissioning                            |           |           
-             |           |  (Most of the time, without visible action                    |           | <= PushB SW1 : Restart 500 ms Periodic Timer.(Green Led toggling)
-             |           |  since network already set)                                   |           |
-             |           |                                                               |           |
- PushB SW3=> | Delete    |                                                               |           |
-             |  persist  |                                                   PushB SW3=> | Delete    |
-             |    and    |                                                               |  persist  | => attempt for a new commissioning after delete persist
-             | (Blue off)|                                                               | (Blue off)|    and restart of the application.
-             |  restart  |                                                               |   and     |     If the window of commissioning is closed then
-             | after 15s |                                                               |  restart  |      retry again and again the commissioning process.
-             |  Blue Led |                                                               |   and     |     If the window of commissioning is open then
- PushB SW2=> |           | Open a new window of commissioning                            | after 15s |      a new commissioning will succeed. 
-             |           |                                                               |  Blue Led |
-             |           |                                                               |           |
-             |           |  After a Router was connected :                               | after n*s |
-             |           |  ZbZclAttrReportConfigReq(ZCL_PRESS_MEAS_ATTR_MEAS_VAL, 5sec) | Green Led |
-             |           | ------------------------------------------------------------> | toggling  |
-             |           | <------------------------------------------------------------ |           |
-             |           |                                                               |           |
-             |           | <--- Report (every 1 minute - see limitation) --------------- |           |
-             |           |                                                               |           |
-             +-----------+                                                               +-----------+
-  
+Both applications use the Home Automation profile, endpoint `17`, the Pressure Sensor device identifier, group address `0x0001`, the Home Automation preconfigured link key, channel `14`, and a default transmit power of `0 dBm`.
 
-</pre> 
 
-### __Application Setup__
+### __Coordinator Code Architecture__
 
-* First, open the projects, build them and load your generated applications on your STM32WBA55xx devices.
+The coordinator-specific behavior is implemented mainly in the following files:
 
-* To run the application :
-  1. Start the first board. It must be the coordinator of the Zigbee network, so in this demo application it is the device running Zigbee_PressMeas_Client_Coord_Persist application.  
-    
-  2. Wait for the Blue LED ON.  
+- `STM32_WPAN/App/app_zigbee.c`: Zigbee-stack initialization, network formation, persistence recovery, join/leave notifications, permit-join requests, and startup retry handling.
+- `STM32_WPAN/App/app_zigbee_endpoint.c`: endpoint and client-cluster creation, device tracking, reporting configuration, report parsing, and button actions.
+- `STM32_WPAN/App/app_zigbee_persistence_nvm.c`: flash-based Zigbee persistence, including integrity checks and recovery of the latest valid saved state.
+- `STM32_WPAN/App/app_zigbee_utility.c`: reusable ZDO and binding helper functions.
 
-  3. Start the second board. This board is configured as Zigbee router and will be attached to the network created by the coordinator.
- 
-  Do the same for the other boards if applicable.    
-  
-  --> At this stage, Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED becomes ON to start pushing buttons. 
-  
-  4. It is now possible to see the green led toggling on the Server side (periodicity of 0.5s) and periodic tx/rx frames on wireshark or on Uart log every 5 seconds.
+At startup, `APP_ZIGBEE_ConfigEndpoints()` creates endpoint `17` and allocates a `ZbZclPressMeasClient` cluster. Its report callback checks the received attribute encoding and destination endpoint before decoding and logging the signed 16-bit Measurement Value.
 
-  5. Retention on the Coordinator can be observed with a sequence of Zigbee_PressMeas_Client_Coord_Persist.PowerOff followed by Zigbee_PressMeas_Client_Coord_Persist.PowerOn followed by a re-connection to the Zigbee_PressMeas_Server_Router_Persist and periodic tx/rx frames on wireshark or on Uart log every 1 minute.
 
-**Note:** When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.
+### __Network Formation and Recovery__
+
+The application starts with `ZbStartTypeForm`, therefore it is the coordinator that creates the centralized Zigbee network.
+
+1. The Zigbee stack and Home Automation endpoint are initialized.
+2. The persistence-rejoin task first searches flash for the latest valid saved Zigbee state.
+3. If valid state is found, `ZbStartupPersist()` restores the coordinator state and resumes the previous network.
+4. If no valid state is available, the coordinator starts network formation on channel `14`.
+5. Startup failures are retried after a 500 ms delay. After a successful startup, the join-status LED is turned on.
+6. The coordinator registers network join and leave filters so that router activity can be handled by the application.
+
+The coordinator can accept standard devices using the Home Automation preconfigured link key. The UART command path also supports an install code in the form `IC:<ExtendedAddress>:<InstallCodeWithCRC>`; when it is accepted, a device-specific trust-center link key is added and a 30-second join window is opened.
+
+
+### __Pressure Reporting Exchange__
+
+When a router joins, the coordinator receives a Zigbee join indication, saves the router short address, and starts a one-shot 20-second timer. When the timer expires, the coordinator sends a ZCL Configure Reporting request to that router on endpoint `17` for `ZCL_PRESS_MEAS_ATTR_MEAS_VAL`.
+
+The request contains one normal-direction reporting record:
+
+- Data type: signed 16-bit integer.
+- Minimum interval: __30 seconds__.
+- Maximum interval: __30 seconds__.
+- Reportable change: `0`.
+
+The router responds to the configuration request and subsequently reports its Measurement Value. The client callback validates the parsed data length and destination endpoint, decodes the value as an `int16_t`, logs the source extended address and pressure in hPa, and toggles the OK LED.
+
+```text
+Coordinator / Pressure Measurement Client              Router / Pressure Measurement Server
+-----------------------------------------              -------------------------------------
+Forms or restores the centralized network
+            <------------------------------------------  Joins or rejoins the network
+Detects a new router and waits 20 seconds
+Configure Reporting (Measurement Value, 30 s) ------->  Stores reporting configuration
+            <------------------------------------------  Configure Reporting response
+            <------------------------------------------  Measurement Value reports
+Validates, logs, and indicates received values          Updates its local pressure value every 30 s
+```
+
+The current application retains only one router short address for automatic reporting configuration. If several routers join, the most recently detected joining device becomes the target of the next Configure Reporting request. A rejoin indication is logged but does not itself start a new reporting-configuration timer.
+
+
+## __Persistence and Reset Behavior__
+
+Persistence is enabled for the coordinator. When the Zigbee stack signals a state change, the application obtains the stack persistence data and appends it to a 24 KiB flash area at the end of program flash. Each record includes a sequence counter, data size, and CRC values. At boot, the newest valid record is located and passed to the stack for restoration.
+
+With compatible retained data on the coordinator and router, both devices can recover their previous network membership after a reset or power cycle. The router's reporting configuration is also part of its Zigbee state; after recovery, reporting can continue using the retained configuration.
+
+Pressing __SW3__ erases the complete local persistence area, waits one second, and resets the MCU. The coordinator then creates a new network on the next startup. Devices that still retain the old network state must be recommissioned, or their persistence must also be erased for a clean demonstration.
+
+
+### __User Controls and LED Indications__
+
+| Control or indication | Coordinator/client behavior |
+|---|---|
+| __SW1__ | No coordinator-specific application action is defined. |
+| __SW2__ | Opens a network permit-join window for 60 seconds, but only after the coordinator has formed or restored a network. |
+| __SW3__ | Erases local Zigbee persistence, waits one second, and resets the MCU. |
+| __Blue LED__ | Join-status indication; it is switched on after successful coordinator startup. |
+| __Green LED__ | Toggles when a valid Pressure Measurement report is processed. |
+| __Blue and green LEDs alternating__ | Indicates a fatal application error. |
+
+On the paired router/server, __SW1__ starts joining after a fresh reset (short press) or requests a leave (long press), __SW2__ starts or stops pressure updates, and __SW3__ erases its persisted state.
+
+
+### __Recommended Operating Sequence__
+
+1. For an initial demonstration, erase flash or use __SW3__ on all boards to remove old Zigbee state.
+2. Program one board with `Zigbee_PressMeas_Client_Coord_Persist` and one or more boards with `Zigbee_PressMeas_Server_Router_Persist`.
+3. Start the coordinator and wait until it has formed the network.
+4. Press __SW2__ on the coordinator to open its 60-second joining window.
+5. Start a router/server. If it has no valid persistent state, short-press its __SW1__ to begin joining.
+6. After the coordinator detects the router, wait 20 seconds for its Configure Reporting request.
+7. Observe the successful configuration response and the pressure reports in the UART traces. The server updates its simulated or physical pressure value every 30 seconds by default.
+8. To repeat commissioning from a known state, erase persistence on every participating device before restarting the sequence.
+
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA55xx devices.  
+This application targets STM32WBA55xx devices and is configured for an STM32WBA55CGA Nucleo board. The STM32CubeIDE project uses STM32Cube FW_WBA V1.10.0, the STM32WBA Zigbee stack, the Zigbee PRO FFD library, and the Zigbee cluster library.
 
-* This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
+The default project configuration enables application logging through USART1. For traces through the ST-LINK Virtual COM Port, use:
 
-* On STM32WBA55CGA_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
-<br>    
-**JP1:**</br>
-1-2:  [ON]</br>
-3-4:  [OFF]</br>
-5-6:  [OFF]</br>
-7-8:  [OFF]</br>
-9-10: [OFF]</br>
-<br>
-**JP2:**</br>
-1-2:  [ON]  
+| Setting | Value |
+|---|---|
+| Baud rate | 115200 baud |
+| Data bits | 8 |
+| Stop bits | 1 |
+| Parity | None |
+| Flow control | None |
+| Line ending | LF |
 
-### __Traces__
 
-* To get the traces you need to connect your Board to the Hyperterminal (through the STLink Virtual COM Port).  
+### __Note__
 
-* The UART must be configured as follows:  
-<br>
-BaudRate       = 115200 baud</br>
-Word Length    = 8 Bits</br>
-Stop Bit       = 1 bit</br>
-Parity         = none</br>
-Flow control   = none</br>
-Terminal   "Go to the Line" : <LF>
+- The coordinator opens its joining window only when __SW2__ is pressed and it is already on a Zigbee network. Start the coordinator before commissioning a router whose persistence was erased.
+- Erasing persistence on one device only can leave the coordinator and routers with incompatible network state. Erase persistence on all participating devices when a clean recommissioning sequence is required.
+- The coordinator configures reporting after a **new join**. If a router only rejoins and does not retain a valid reporting configuration, force a new join or add an application-specific reconfiguration mechanism.
+- By default, this application runs with Zigbee PRO stack R23.
+  If you want to run this application using Zigbee PRO stack R22, you should replace ZigBeeProR23_FFD.a by ZigBeeProR22_FFD.a and ZigBeeProR23_RFD.a by ZigBeeProR22_RFD.a and ZigBeeClusters.a by ZigBeeClustersR22.a in the build environment.
+  Also, set in the project setup compilation flag CONFIG_ZB_REV=22.
 

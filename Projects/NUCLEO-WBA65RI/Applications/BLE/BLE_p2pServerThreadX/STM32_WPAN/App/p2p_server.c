@@ -261,8 +261,9 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
         /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */
         case ACI_GATT_INDICATION_VSEVT_CODE:
           {
+            tBleStatus status = BLE_STATUS_FAILED;
             aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
-            tBleStatus status = aci_gatt_confirm_indication(pr->Connection_Handle);
+            status = aci_gatt_confirm_indication(pr->Connection_Handle);
             if (status != BLE_STATUS_SUCCESS)
             {
               LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
@@ -341,6 +342,7 @@ void P2P_SERVER_Init(void)
   max_attr_record = 6;
 
   /* USER CODE BEGIN SVCCTL_InitService */
+  /* max_attr_record to be updated if descriptors have been added */
 
   /* USER CODE END SVCCTL_InitService */
 

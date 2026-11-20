@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -28,6 +28,7 @@
 #include "platform.h"
 #include "stm32_rtos.h"
 #include "utilities_common.h"
+#include "st_radio.h"
 /* Private defines -----------------------------------------------------------*/
 /* Radio event scheduling method - must be set at 1 */
 #define USE_RADIO_LOW_ISR                   (1)
@@ -94,6 +95,8 @@ static void ll_sys_sleep_clock_source_selection(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
+
 /**
  * @brief  Link Layer Task for FreeRTOS
  * @param  void *argument
@@ -128,7 +131,27 @@ void ll_sys_bg_process_init(void)
 
   if ((LinkLayerTaskHandle == NULL) || (LinkLayerSemaphore == NULL))
   {
-    LOG_ERROR_APP( "Link Layer FreeRTOS objects creation FAILED");
+    LOG_ERROR_APP( "Link Layer FreeRTOS objects creation FAILED\n");
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
+{
+  if (osThreadTerminate(LinkLayerTaskHandle) != osOK)
+  {
+    LOG_ERROR_APP("Link Layer thread termination FAILED\n");
+    Error_Handler();
+  }
+
+  if (osSemaphoreDelete(LinkLayerSemaphore) != osOK)
+  {
+    LOG_ERROR_APP("Link Layer semaphore deletion FAILED\n");
     Error_Handler();
   }
 }
@@ -220,6 +243,5 @@ void ll_sys_sleep_clock_source_selection(void)
 
 void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time)
 {
-  /* first parameter otInstance *aInstance is unused */
-  radio_set_rtl_polling_time(NULL, rtl_polling_time);
+  StRadioSetRtlPollingTime(rtl_polling_time);
 }

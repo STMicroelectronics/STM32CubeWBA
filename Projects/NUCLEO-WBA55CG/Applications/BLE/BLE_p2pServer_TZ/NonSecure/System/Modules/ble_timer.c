@@ -120,7 +120,7 @@ int8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
 
 void BLE_TIMER_Stop(uint16_t id)
 {
-  BLE_TIMER_t* timer;
+  BLE_TIMER_t* timer = NULL;
 
   /* Search for the id in the running timers list */
   timer = BLE_TIMER_GetFromList(&BLE_TIMER_RunningList, id);
@@ -142,7 +142,7 @@ void BLE_TIMER_Stop(uint16_t id)
 
 void BLE_TIMER_Background(void)
 {
-  BLE_TIMER_t* timer;
+  BLE_TIMER_t* timer = NULL;
 
   if (TRUE != LST_is_empty(&BLE_TIMER_ExpiredList))
   {
@@ -173,7 +173,7 @@ static void BLE_TIMER_Callback(void* arg)
 
 static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id)
 {
-  BLE_TIMER_t* currentNode;
+  BLE_TIMER_t* currentNode = NULL;
 
   LST_get_next_node(listHead, (tListNode **)&currentNode);
   while((tListNode *)currentNode != listHead)

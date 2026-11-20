@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -24,6 +24,7 @@
 #endif /*(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
 #include "main.h"
 #include "scm.h"
+
 #include "app_sys.h"
 #include "stm32_lpm_if.h"
 #include "stm32_lpm.h"
@@ -38,29 +39,35 @@
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
 #include "assert.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#define LL_DEEPSLEEP_EXIT_TIME_US     230     /* Time in us needed for Link Layer deepsleep exit */
-#define DEVICE_WAKEUP_STANDBY_TIME_US 60      /* Time in us needed by the device to exit from standby */
-#if defined(RCC_LSI2_SUPPORT)
-#define LSI2_FREQ_WORST_VALUE         24000   /* Worst value of LSI2 frequency */
-#endif /* RCC_LSI2_SUPPORT */
 
-#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#define LL_DEEPSLEEP_EXIT_TIME_US     180     /* Time in us needed for Link Layer deepsleep exit */
+#define DEVICE_WAKEUP_STANDBY_TIME_US 60      /* Time in us needed by the device to exit from standby */
+#if defined(RCC_LSI2_SUPPORT)
+#define LSI2_FREQ_WORST_VALUE         24000   /* Worst value of LSI2 frequency */
+#endif /* RCC_LSI2_SUPPORT */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
+
+/* Private constants ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PC */
+
+/* USER CODE END PC */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
@@ -84,9 +91,6 @@ const UTIL_LPM_Driver_fp UTIL_LPM_Driver[] =
 #if (CFG_LPM_STOP1_SUPPORTED == 1)
   LPM_Stop1Mode,
 #endif /* (CFG_LPM_STOP1_SUPPORTED == 1) */
-#if (CFG_LPM_STOP2_SUPPORTED == 1)
-  LPM_Stop2Mode,
-#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
 #if (CFG_LPM_STANDBY_SUPPORTED == 1)
   LPM_StandbyMode
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1)  */
@@ -138,22 +142,6 @@ static uint32_t boot_after_standby;
 /* USER CODE END EV */
 
 /* Private variables ---------------------------------------------------------*/
-#if (CFG_SCM_SUPPORTED == 0)
-/* If SCM is not supported, SRAM handles for waitsate configurations are defined here */
-static RAMCFG_HandleTypeDef sram1_ns =
-{
-  RAMCFG_SRAM1,           /* Instance */
-  HAL_RAMCFG_STATE_READY, /* RAMCFG State */
-  0U,                     /* RAMCFG Error Code */
-};
-
-static RAMCFG_HandleTypeDef sram2_ns =
-{
-  RAMCFG_SRAM2,           /* Instance */
-  HAL_RAMCFG_STATE_READY, /* RAMCFG State */
-  0U,                     /* RAMCFG Error Code */
-};
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
 #if (CFG_LPM_STANDBY_SUPPORTED == 1)
@@ -311,42 +299,8 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 
-#if (CFG_SCM_SUPPORTED != 1) && ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
-OPTIMIZED static void Clock_Switching(void)
-{
-  /* Activate HSE clock */
-  LL_RCC_HSE_Enable();
-  while(LL_RCC_HSE_IsReady() == 0);
-  /* Apply PWR VOS1_5 power level */
-  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1_5);
-  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1_5); /* Double write for flag readiness to cope with hw latency */
-  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
 
-  /* Switch HSE frequency from HSE16 to HSE32 */
-  LL_RCC_HSE_DisablePrescaler();
-
-  /* Switch CPU system clock to HSE */
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
-  while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE);
-
-  /* Apply HSE32 compatible waitstates */
-  __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_0);
-  while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_0);
-  HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_0);
-  HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_0);
-
-  /* Set HDIV 5 */
-  LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1); /* divided by 1 */
-
-  /* Switched to HSE, so disable HSI */
-  LL_RCC_HSI_Disable();
-
-  /* Ensure time base clock coherency */
-  SystemCoreClockUpdate();
-}
-#endif /* (CFG_SCM_SUPPORTED != 1) && ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
-
-#if (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)
 OPTIMIZED static void Enter_Stop_Standby_Mode(void)
 {
   /* Disabling ICACHE */
@@ -359,15 +313,7 @@ OPTIMIZED static void Enter_Stop_Standby_Mode(void)
   while(LL_ICACHE_IsActiveFlag_BSYEND() == 0U);
 #endif /* STM32WBAXX_SI_CUT1_0 */
 
-#if (CFG_SCM_SUPPORTED == 1)
   scm_setwaitstates(LP);
-#else
-  /* SCM module is not supported, apply low power compatible waitstates */
-  __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_3);
-  while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_3);
-  HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_1);
-  HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_1);
-#endif /* CFG_SCM_SUPPORTED */
 
   LL_LPM_EnableDeepSleep();
 
@@ -378,37 +324,15 @@ OPTIMIZED static void Exit_Stop_Standby_Mode(void)
 {
   LL_ICACHE_Enable();
   while(LL_ICACHE_IsEnabled() == 0U);
-#if (CFG_SCM_SUPPORTED == 1)
+
   if (LL_PWR_IsActiveFlag_STOP() == 1U)
   {
-    /* SCM HSE BEGIN */
-    /* Clear SW_HSERDY, if needed */
-    if (isRadioActive () == SCM_RADIO_NOT_ACTIVE)
-    {
-      SCM_HSE_Clear_SW_HSERDY();
-    }
-    /* SCM HSE END */
-
     scm_setup();
   }
   else
   {
     scm_setwaitstates( RUN );
   }
-#else
-  if (LL_PWR_IsActiveFlag_STOP() == 1U)
-  {
-    Clock_Switching();
-  }
-  else
-  {
-    /* Apply waitsates for HSE32 configuration */
-    __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_0);
-    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_0);
-    HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_0);
-    HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_0);
-  }
-#endif /* CFG_SCM_SUPPORTED */
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
@@ -513,12 +437,6 @@ OPTIMIZED static void PWR_ExitOffMode( void )
   {
     boot_after_standby = 0;
 
-#if (CFG_SCM_SUPPORTED == 1)
-    /* SCM HSE BEGIN */
-    SCM_HSE_Clear_SW_HSERDY();
-    /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
-
     HAL_NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW, 0);
     HAL_NVIC_EnableIRQ(RADIO_INTR_NUM);
     HAL_NVIC_SetPriority(RADIO_SW_LOW_INTR_NUM, RADIO_SW_LOW_INTR_PRIO, 0);
@@ -561,11 +479,7 @@ OPTIMIZED static void PWR_ExitOffMode( void )
     MX_StandbyExit_PeripheralInit();
 
     /* Restore system clock configuration */
-#if (CFG_SCM_SUPPORTED == 1)
     scm_standbyexit();
-#else
-    Clock_Switching();
-#endif /* CFG_SCM_SUPPORTED */
 
     /* Enable RTC peripheral clock */
     LL_PWR_EnableBkUpAccess();
@@ -670,106 +584,6 @@ OPTIMIZED static void PWR_ExitOffMode( void )
   SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_EXIT);
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
-
-#if (CFG_LPM_STOP2_SUPPORTED == 1)
-OPTIMIZED static void PWR_EnterStop2Mode( void )
-{
-  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STOP2_MODE_ENTER);
-
-  /* USER CODE BEGIN PWR_EnterStop2Mode_1 */
-
-  /* USER CODE END PWR_EnterStop2Mode_1 */
-
-  /* Notify the Link Layer platform layer the system will enter in WFI
-   * and AHB5 clock may be turned of regarding the 2.4Ghz radio state
-   */
-  LINKLAYER_PLAT_NotifyWFIEnter();
-
-  /*
-   * There is no risk to clear all the WUF here because in the current implementation, this API is called
-   * in critical section. If an interrupt occurs while in that critical section before that point,
-   * the flag is set and will be cleared here but the system will not enter Off Mode
-   * because an interrupt is pending in the NVIC. The ISR will be executed when moving out
-   * of this critical section
-   */
-
-  Enter_Stop_Standby_Mode();
-
-  /* Set low power mode to stop2 */
-  LL_PWR_SetPowerMode(LL_PWR_MODE_STOP2);
-
-  /* Set unretained peripherals GPIOs to output mode */
-  /* USART1 */
-  /* TX */
-
-  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STOP2_MODE_ENTER);
-  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STOP2_MODE_ACTIVE);
-
- /* Wait for interrupt */
-  __WFI();
-
-  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STOP2_MODE_ACTIVE);
-
-  /* USER CODE BEGIN PWR_EnterStop2Mode_2 */
-
-  /* USER CODE END PWR_EnterStop2Mode_2 */
-}
-#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
-
-#if (CFG_LPM_STOP2_SUPPORTED == 1)
-OPTIMIZED static void PWR_ExitStop2Mode( void )
-{
-  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STOP2_MODE_EXIT);
-
-  /* USER CODE BEGIN PWR_ExitStop2Mode_1 */
-
-  /* USER CODE END PWR_ExitStop2Mode_1 */
-
-  /* Notify the Link Layer platform layer the system exited WFI
-  * and AHB5 clock may be resynchronized as is may have been
-  * turned of during low power mode entry.
-  */
-  LINKLAYER_PLAT_NotifyWFIExit();
-
-  /* effectively gone in stop2 */
-  if (LL_PWR_IsActiveFlag_STOP2() == 1U)
-  {
-
-    LL_ICACHE_Enable();
-    while(LL_ICACHE_IsEnabled() == 0U);
-
-#if (CFG_SCM_SUPPORTED == 1)
-    /* SCM HSE BEGIN */
-    SCM_HSE_Clear_SW_HSERDY();
-    /* SCM HSE END */
-#endif /* (CFG_SCM_SUPPORTED == 1) */
-
-    /* restore unretained peripherals */
-    MX_Stop2Exit_PeripheralInit();
-
-#if (CFG_SCM_SUPPORTED == 1)
-    scm_standbyexit();
-#else
-    Clock_Switching();
-#endif /* (CFG_SCM_SUPPORTED == 1) */
-  }
-  else
-  {
-    /* Restore unretained peripherals GPIOs to alternate mode */
-    /* USART1 */
-    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_12, LL_GPIO_MODE_ALTERNATE);
-    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_6, LL_GPIO_MODE_ALTERNATE);
-
-    Exit_Stop_Standby_Mode();
-  }
-
-  /* USER CODE BEGIN PWR_ExitStop2Mode_2 */
-
-  /* USER CODE END PWR_ExitStop2Mode_2 */
-
-  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STOP2_MODE_EXIT);
-}
-#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
 
 #if (CFG_LPM_STOP1_SUPPORTED == 1)
 OPTIMIZED static void PWR_EnterStopMode( void )
@@ -977,14 +791,6 @@ void LPM_Stop1Mode(uint32_t param)
 {
   PWR_EnterStopMode();
   PWR_ExitStopMode();
-}
-#endif
-
-#if (CFG_LPM_STOP2_SUPPORTED == 1)
-void LPM_Stop2Mode(uint32_t param)
-{
-  PWR_EnterStop2Mode();
-  PWR_ExitStop2Mode();
 }
 #endif
 

@@ -40,6 +40,7 @@ extern "C" {
 #define APP_GMAP_ROLE                                   (GMAP_ROLE_UNICAST_GAME_GATEWAY \
                                                         | GMAP_ROLE_BROADCAST_GAME_SENDER)
 #define APP_CAP_ROLE                                    (CAP_ROLE_INITIATOR | CAP_ROLE_COMMANDER)
+#define APP_AUDIO_ROLE                                  (AUDIO_ROLE_SOURCE | AUDIO_ROLE_SINK)
 
 #define APP_GMAP_UGG_FEATURE                            (UGG_FEATURES_MULTIPLEX_SUPPORT \
                                                          | UGG_FEATURES_96_KBPS_SOURCE_SUPPORT \
@@ -123,15 +124,26 @@ extern "C" {
 /**
  * Basic Audio Profile Settings
  */
+#if ((APP_AUDIO_ROLE & AUDIO_ROLE_SINK) == AUDIO_ROLE_SINK)
 #define MAX_NUM_UCL_SNK_ASE_PER_LINK            (2u)                    /* Maximum number of Sink Audio Stream Endpoints per Link supported by Unicast Client*/
+#else
+#define MAX_NUM_UCL_SNK_ASE_PER_LINK            (0u)                    /* Maximum number of Sink Audio Stream Endpoints per Link supported by Unicast Client*/
+#endif /* ((APP_AUDIO_ROLE & AUDIO_ROLE_SINK) == AUDIO_ROLE_SINK) */
+
+#if ((APP_AUDIO_ROLE & AUDIO_ROLE_SOURCE) == AUDIO_ROLE_SOURCE)
 #define MAX_NUM_UCL_SRC_ASE_PER_LINK            (2u)                    /* Maximum number of Source Audio Stream Endpoints per Link supported by Unicast Client*/
+#else
+#define MAX_NUM_UCL_SRC_ASE_PER_LINK            (0u)                    /* Maximum number of Source Audio Stream Endpoints per Link supported by Unicast Client*/
+#endif /* ((APP_AUDIO_ROLE & AUDIO_ROLE_SOURCE) == AUDIO_ROLE_SOURCE) */
+
 #define MAX_UCL_CODEC_CONFIG_SIZE               (30u)                   /* Maximum size of the Codec Specific Configuration for each Audio Stream Endpoint supported by Unicast Client */
 #define MAX_UCL_METADATA_SIZE                   (30u)                   /* Maximum size of the Metadata for each Audio Stream Endpoint supported by Unicast Client */
 
-#define MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK    (12u)                   /* Maximum number of Sink PAC records per link supported by Unicast Client and Broadcast Assistant */
-#define MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK    (12u)                   /* Maximum number of Source PAC records per link supported by Unicast Client and Broadcast Assistant */
+#define MAX_NUM_CLT_SNK_PAC_CHARACTERISTICS_PER_LINK    (12u)           /* Maximum number of Sink PAC Characteristics per link supported by Unicast Client and Broadcast Assistant */
+#define MAX_NUM_CLT_SRC_PAC_CHARACTERISTICS_PER_LINK    (12u)           /* Maximum number of Source PAC Characteristics per link supported by Unicast Client and Broadcast Assistant */
 #define MAX_NUM_UCL_SNK_ASE                     (MAX_NUM_UCL_LINK * MAX_NUM_UCL_SNK_ASE_PER_LINK)
 #define MAX_NUM_UCL_SRC_ASE                     (MAX_NUM_UCL_LINK * MAX_NUM_UCL_SRC_ASE_PER_LINK)
+#define APP_MAX_SUPPORTED_PAC_RECORD_LEN        (255u)                  /*Maximum size of the PAC Record which could be parsed and analyzed in application_layer*/
 
 /**
  * Broadcast Source Settings
@@ -140,12 +152,6 @@ extern "C" {
 #define APP_MAX_SUBGROUP_CODEC_CONFIG_LEN       (19u)
 #define MAX_BIS_CODEC_CONFIG_LEN                (6u)
 #define MAX_BSRC_METADATA_LEN                   (20u)
-
-/**
- * GAP Configuration Settings
- */
-#define APPBLE_GAP_DEVICE_NAME_LENGTH           (14u)
-#define BD_ADDR_SIZE_LOCAL                      (6u)
 
 /**
  * Volume Control Profile Settings
@@ -178,8 +184,6 @@ extern "C" {
  * Maximum number of Services that can be stored in the GATT database.
  * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
  */
-#define BLE_HOST_NUM_GATT_SERVICES             (2u)
-
 #if ((APP_CAP_ROLE & CAP_ROLE_COMMANDER) == CAP_ROLE_COMMANDER)
 #define BLE_APP_CAP_COM_NUM_GATT_SERVICES      CAP_ACC_COM_NUM_GATT_SERVICES
 #else
@@ -188,36 +192,24 @@ extern "C" {
 
 #define BLE_APP_GMAP_NUM_GATT_SERVICES          GMAP_NUM_GATT_SERVICES
 
-#define BLE_APP_NUM_GATT_SERVICES              (BLE_HOST_NUM_GATT_SERVICES \
-                                               + BLE_APP_CAP_COM_NUM_GATT_SERVICES \
+#define BLE_APP_NUM_GATT_SERVICES              (BLE_APP_CAP_COM_NUM_GATT_SERVICES \
                                                + BLE_APP_GMAP_NUM_GATT_SERVICES)
 
 /**
  * Maximum number of Attributes
  */
-#if ((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)
-#define BLE_HOST_NUM_GATT_ATTRIBUTES                    (15u)
-#else
-#define BLE_HOST_NUM_GATT_ATTRIBUTES                    (11u)
-#endif /*((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)*/
-
+#define BLE_APP_CAP_NUM_GATT_ATTRIBUTES        CAP_ACC_NUM_GATT_ATTRIBUTES
 #define BLE_APP_GMAP_NUM_GATT_ATTRIBUTES       GMAP_NUM_GATT_ATTRIBUTES
 
-#define BLE_APP_NUM_GATT_ATTRIBUTES            (BLE_HOST_NUM_GATT_ATTRIBUTES \
+#define BLE_APP_NUM_GATT_ATTRIBUTES            (BLE_APP_CAP_NUM_GATT_ATTRIBUTES \
                                                + BLE_APP_GMAP_NUM_GATT_ATTRIBUTES)
 
 /**
  * Size of the storage area for Attribute values
  */
-#if ((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)
-#define BLE_HOST_ATT_VALUE_ARRAY_SIZE                   (64u)
-#else
-#define BLE_HOST_ATT_VALUE_ARRAY_SIZE                   (54u)
-#endif /*((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)*/
-
 #define BLE_APP_GMAP_ATT_VALUE_ARRAY_SIZE       GMAP_ATT_VALUE_ARRAY_SIZE
 
-#define BLE_APP_ATT_VALUE_ARRAY_SIZE            (BLE_HOST_ATT_VALUE_ARRAY_SIZE + BLE_APP_GMAP_ATT_VALUE_ARRAY_SIZE)
+#define BLE_APP_ATT_VALUE_ARRAY_SIZE            (BLE_APP_GMAP_ATT_VALUE_ARRAY_SIZE)
 
 /**
  * Size of the storage area for Database of Audio Services/Profile to save in Non Volatile Memory
@@ -230,7 +222,7 @@ extern "C" {
 
 /*Memory size required to store all devices in NVM for PACS Client role*/
 #define BAP_PACS_CLT_NVM_ALLOC_SIZE             BAP_PACS_CLT_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,\
-                                                                            (MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK + MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK))
+                                                                           (MAX_NUM_CLT_SNK_PAC_CHARACTERISTICS_PER_LINK + MAX_NUM_CLT_SRC_PAC_CHARACTERISTICS_PER_LINK))
 
 /*Memory size required to store all devices in NVM for VCP Controller role*/
 #if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)
@@ -273,4 +265,3 @@ extern "C" {
 #endif
 
 #endif /*__GMAP_APP_CONF_H */
-

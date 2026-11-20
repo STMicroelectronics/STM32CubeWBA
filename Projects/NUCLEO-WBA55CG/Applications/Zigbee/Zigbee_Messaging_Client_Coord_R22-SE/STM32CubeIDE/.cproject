@@ -112,6 +112,7 @@
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script.1002805284" name="Linker Script (-T)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script" useByScannerDiscovery="false" value="${workspace_loc:/${ProjName}/STM32WBA55CGUX_FLASH.ld}" valueType="string"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.202567051" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value=":LinkLayer_802_15_4_V3_0.a"/>
+									<listOptionValue builtIn="false" value=":Mac15_4.a"/>
 									<listOptionValue builtIn="false" value=":wba_mac_lib.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeClustersR22.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeProR22_SE_FFD.a"/>
@@ -256,6 +257,7 @@
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script.6645661" name="Linker Script (-T)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script" value="${workspace_loc:/${ProjName}/STM32WBA55CGUX_FLASH.ld}" valueType="string"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.202567051" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value=":LinkLayer_802_15_4_V3_0.a"/>
+									<listOptionValue builtIn="false" value=":Mac15_4.a"/>
 									<listOptionValue builtIn="false" value=":wba_mac_lib.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeClustersR22.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeProR22_SE_FFD.a"/>

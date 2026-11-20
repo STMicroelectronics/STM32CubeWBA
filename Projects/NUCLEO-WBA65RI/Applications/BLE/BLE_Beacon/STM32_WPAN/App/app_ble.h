@@ -139,6 +139,7 @@ typedef enum
                     ((hci_le_advertising_report_event_rp0*)(p))-> \
                     Advertising_Report[0].Length_Data))
 /* USER CODE BEGIN EM */
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 
 /* USER CODE END EM */
 

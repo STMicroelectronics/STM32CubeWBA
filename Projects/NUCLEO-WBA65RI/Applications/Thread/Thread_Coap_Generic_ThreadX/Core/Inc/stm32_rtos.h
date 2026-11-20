@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -55,9 +55,6 @@ extern "C" {
 #define TASK_PRIO_TASKLETS                      (5u)
 #define TASK_PREEMP_TASKLETS                    (5u)
 
-#define TASK_PRIO_PKA                           (10u)
-#define TASK_PREEMP_PRIO_PKA                    (10u)
-
 #define TASK_PRIO_RCP_SPINEL_RX                 (11u)
 #define TASK_PREEMP_RCP_SPINEL_RX               (11u)
 
@@ -78,6 +75,7 @@ extern "C" {
 
 #define RTOS_MAX_THREAD                         (20u)
 
+#define RTOS_STACK_SIZE_XLARGE                  ( 1024u * 4u )
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
@@ -86,10 +84,9 @@ extern "C" {
 #define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_XLARGE
 #define TASK_STACK_SIZE_IDLE                    RTOS_STACK_SIZE_REDUCED
 /* USER CODE BEGIN TASK_Size_Define */
-// TODO #define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
 #define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
 
 /* USER CODE END TASK_Size_Define */

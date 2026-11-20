@@ -77,7 +77,7 @@ void HAL_MspInit(void)
 
   /* Peripheral interrupt init */
   /* RCC_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(RCC_IRQn, 6, 0);
+  HAL_NVIC_SetPriority(RCC_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(RCC_IRQn);
   /* RADIO_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(RADIO_IRQn, RADIO_INTR_PRIO_LOW, 0);
@@ -204,9 +204,6 @@ void HAL_PKA_MspInit(PKA_HandleTypeDef* hpka)
     /* USER CODE END PKA_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_PKA_CLK_ENABLE();
-    /* PKA interrupt Init */
-    HAL_NVIC_SetPriority(PKA_IRQn, 7, 0);
-    HAL_NVIC_EnableIRQ(PKA_IRQn);
     /* USER CODE BEGIN PKA_MspInit 1 */
     HW_RNG_EnableClock(0x04);
     /* USER CODE END PKA_MspInit 1 */
@@ -230,9 +227,6 @@ void HAL_PKA_MspDeInit(PKA_HandleTypeDef* hpka)
     /* USER CODE END PKA_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_PKA_CLK_DISABLE();
-
-    /* PKA interrupt DeInit */
-    HAL_NVIC_DisableIRQ(PKA_IRQn);
     /* USER CODE BEGIN PKA_MspDeInit 1 */
     HW_RNG_DisableClock(0x04);
     /* USER CODE END PKA_MspDeInit 1 */

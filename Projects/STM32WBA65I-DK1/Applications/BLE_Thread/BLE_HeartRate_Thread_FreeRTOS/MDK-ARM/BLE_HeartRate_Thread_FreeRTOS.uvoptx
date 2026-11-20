@@ -1,10 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ProjectOpt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_optx.xsd">
-
   <SchemaVersion>1.0</SchemaVersion>
-
   <Header>### uVision Project, (C) Keil Software</Header>
-
   <Extensions>
     <cExt>*.c</cExt>
     <aExt>*.s*; *.src; *.a*</aExt>
@@ -15,12 +12,10 @@
     <CppX>*.cpp</CppX>
     <nMigrate>0</nMigrate>
   </Extensions>
-
   <DaveTm>
     <dwLowDateTime>0</dwLowDateTime>
     <dwHighDateTime>0</dwHighDateTime>
   </DaveTm>
-
   <Target>
     <TargetName>BLE_HeartRate_Thread_FreeRTOS</TargetName>
     <ToolsetNumber>0x4</ToolsetNumber>
@@ -45,7 +40,7 @@
         <PageWidth>79</PageWidth>
         <PageLength>66</PageLength>
         <TabStop>8</TabStop>
-        <ListingPath></ListingPath>
+        <ListingPath />
       </OPTLEX>
       <ListingPage>
         <CreateCListing>1</CreateCListing>
@@ -104,16 +99,16 @@
         <bSchkAxf>0</bSchkAxf>
         <bTchkAxf>0</bTchkAxf>
         <nTsel>6</nTsel>
-        <sDll></sDll>
-        <sDllPa></sDllPa>
-        <sDlgDll></sDlgDll>
-        <sDlgPa></sDlgPa>
-        <sIfile></sIfile>
-        <tDll></tDll>
-        <tDllPa></tDllPa>
-        <tDlgDll></tDlgDll>
-        <tDlgPa></tDlgPa>
-        <tIfile></tIfile>
+        <sDll />
+        <sDllPa />
+        <sDlgDll />
+        <sDlgPa />
+        <sIfile />
+        <tDll />
+        <tDllPa />
+        <tDlgDll />
+        <tDlgPa />
+        <tIfile />
         <pMon>STLink\ST-LINKIII-KEIL_SWO.dll</pMon>
       </DebugOpt>
       <TargetDriverDllRegistry>
@@ -128,7 +123,7 @@
           <Name>-U-O142 -O2254 -SF4000 -C0 -A1 -I0 -HNlocalhost -HP7184 -P1 -N00("ARM CoreSight SW-DP") -D00(0BE12477) -L00(0) -TO131090 -TC10000000 -TT10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD20000000 -FC1000 -FN1 -FF0STM32WBAx_2M_0800.FLM -FS08000000 -FL0100000 -FP0($$Device:STM32WBA65RIVx$CMSIS\Flash\STM32WBAx_2M_0800.FLM) -WA0 -WE0 -WVCE4 -WS2710 -WM0 -WP2 -WK0-R0</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint />
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>
@@ -158,19 +153,19 @@
         <newCpu>0</newCpu>
         <uProt>0</uProt>
       </DebugFlag>
-      <LintExecutable></LintExecutable>
-      <LintConfigFile></LintConfigFile>
+      <LintExecutable />
+      <LintConfigFile />
       <bLintAuto>0</bLintAuto>
       <bAutoGenD>0</bAutoGenD>
       <LntExFlags>0</LntExFlags>
-      <pMisraName></pMisraName>
-      <pszMrule></pszMrule>
-      <pSingCmds></pSingCmds>
-      <pMultCmds></pMultCmds>
-      <pMisraNamep></pMisraNamep>
-      <pszMrulep></pszMrulep>
-      <pSingCmdsp></pSingCmdsp>
-      <pMultCmdsp></pMultCmdsp>
+      <pMisraName />
+      <pszMrule />
+      <pSingCmds />
+      <pMultCmds />
+      <pMisraNamep />
+      <pszMrulep />
+      <pSingCmdsp />
+      <pMultCmdsp />
       <DebugDescription>
         <Enable>1</Enable>
         <EnableFlashSeq>1</EnableFlashSeq>
@@ -180,7 +175,6 @@
       </DebugDescription>
     </TargetOption>
   </Target>
-
   <Group>
     <GroupName>Application/MDK-ARM</GroupName>
     <tvExp>0</tvExp>
@@ -200,7 +194,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/STM32_WPAN/App</GroupName>
     <tvExp>0</tvExp>
@@ -280,7 +273,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/STM32_WPAN/Target</GroupName>
     <tvExp>0</tvExp>
@@ -348,7 +340,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/Core</GroupName>
     <tvExp>0</tvExp>
@@ -416,7 +407,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/Flash</GroupName>
     <tvExp>0</tvExp>
@@ -436,7 +426,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/CRC_Ctrl</GroupName>
     <tvExp>0</tvExp>
@@ -456,7 +445,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/ADC_Ctrl</GroupName>
     <tvExp>0</tvExp>
@@ -476,7 +464,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/LowPower</GroupName>
     <tvExp>0</tvExp>
@@ -508,7 +495,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Config/Debug_GPIO</GroupName>
     <tvExp>0</tvExp>
@@ -528,7 +514,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Interfaces</GroupName>
     <tvExp>0</tvExp>
@@ -548,7 +533,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Application/User/System/Modules</GroupName>
     <tvExp>0</tvExp>
@@ -568,7 +552,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Interface</GroupName>
     <tvExp>1</tvExp>
@@ -625,18 +608,6 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>30</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Projects/Common/WPAN/Interfaces/hw_rng.c</PathWithFileName>
-      <FilenameWithoutPath>hw_rng.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
       <FileNumber>31</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
@@ -648,7 +619,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules</GroupName>
     <tvExp>0</tvExp>
@@ -776,7 +746,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
     <tvExp>0</tvExp>
@@ -820,7 +789,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/Flash</GroupName>
     <tvExp>0</tvExp>
@@ -876,7 +844,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/MemoryManager</GroupName>
     <tvExp>0</tvExp>
@@ -908,7 +875,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/RTDebug</GroupName>
     <tvExp>0</tvExp>
@@ -940,7 +906,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/SerialCmdInterpreter</GroupName>
     <tvExp>0</tvExp>
@@ -960,7 +925,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Modules/Log</GroupName>
     <tvExp>0</tvExp>
@@ -980,7 +944,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Common/WPAN/Startup</GroupName>
     <tvExp>0</tvExp>
@@ -1000,7 +963,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Doc</GroupName>
     <tvExp>0</tvExp>
@@ -1020,7 +982,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
     <tvExp>0</tvExp>
@@ -1039,78 +1000,10 @@
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
-    <File>
-      <GroupNumber>22</GroupNumber>
-      <FileNumber>57</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_gtzc.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>22</GroupNumber>
-      <FileNumber>58</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_hsem.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>22</GroupNumber>
-      <FileNumber>59</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_i2c.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>22</GroupNumber>
-      <FileNumber>60</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c_ex.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_i2c_ex.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>22</GroupNumber>
-      <FileNumber>61</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_spi.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>22</GroupNumber>
-      <FileNumber>62</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi_ex.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_hal_spi_ex.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
+
+
+
+
     <File>
       <GroupNumber>22</GroupNumber>
       <FileNumber>63</FileNumber>
@@ -1473,18 +1366,6 @@
     </File>
     <File>
       <GroupNumber>22</GroupNumber>
-      <FileNumber>93</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</PathWithFileName>
-      <FilenameWithoutPath>stm32wbaxx_ll_dma.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>22</GroupNumber>
       <FileNumber>94</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
@@ -1520,7 +1401,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Drivers/CMSIS</GroupName>
     <tvExp>0</tvExp>
@@ -1540,7 +1420,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/RTOS2/CMSIS/RTOS2/Core/TZ_Non_Supported</GroupName>
     <tvExp>0</tvExp>
@@ -1668,7 +1547,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/RTOS2/CMSIS/RTOS2/Heap/Heap_4</GroupName>
     <tvExp>0</tvExp>
@@ -1688,7 +1566,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Utilities</GroupName>
     <tvExp>0</tvExp>
@@ -1780,7 +1657,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Drivers/BSP</GroupName>
     <tvExp>0</tvExp>
@@ -1800,7 +1676,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/LinkLayer</GroupName>
     <tvExp>0</tvExp>
@@ -1868,7 +1743,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/BLE</GroupName>
     <tvExp>0</tvExp>
@@ -1900,7 +1774,6 @@
       <bShared>0</bShared>
     </File>
   </Group>
-
   <Group>
     <GroupName>Middlewares/STM32_WPAN/Thread</GroupName>
     <tvExp>0</tvExp>
@@ -2051,20 +1924,7 @@
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
-    <File>
-      <GroupNumber>30</GroupNumber>
-      <FileNumber>136</FileNumber>
-      <FileType>4</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/openthread_lib/stm32wba_mbedtls_ftd_lib.a</PathWithFileName>
-      <FilenameWithoutPath>stm32wba_mbedtls_ftd_lib.a</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
   </Group>
-
   <Group>
     <GroupName>::CMSIS</GroupName>
     <tvExp>0</tvExp>
@@ -2072,5 +1932,4 @@
     <cbSel>0</cbSel>
     <RteFlg>1</RteFlg>
   </Group>
-
 </ProjectOpt>

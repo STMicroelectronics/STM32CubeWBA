@@ -35,6 +35,41 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for OTS */
+#define OTS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for OTS (service declaration not counted in attributes)
+  *                + 2 for OTF
+  *                + 2 for OBN
+  *                + 2 for OBT
+  *                + 2 for OBS
+  *                + 2 for OBI
+  *                + 2 for OBP
+  *                + 2 for OACP
+  *                + 2 for OLCP
+  *                + 1 for OACP CCCD
+  *                + 1 for OLCP CCCD
+  *                = 18
+**/
+#define OTS_NUM_GATT_ATTRIBUTES (18)
+
+/**
+  * Size_Attributes = 0 for OTS (service declaration not counted in attributes)
+  *                 + 5 for OTF declaration + 8 for OTF size
+  *                 + 5 for OBN declaration + 30 for OBN size
+  *                 + 5 for OBT declaration + 16 for OBT size
+  *                 + 5 for OBS declaration + 8 for OBS size
+  *                 + 5 for OBI declaration + 6 for OBI size
+  *                 + 5 for OBP declaration + 4 for OBP size
+  *                 + 5 for OACP declaration + 21 for OACP size
+  *                 + 5 for OLCP declaration + 7 for OLCP size
+  *                 + 2 for OACP CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for OLCP CCCD * CFG_BLE_NUM_LINK
+  *                 = 140 + 4 * CFG_BLE_NUM_LINK
+**/
+#define OTS_ATT_VALUE_ARRAY_SIZE  (140 + 4 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 #define OBJECT_TRANSFER_SERVICE_UUID                                    (0x1825)
   

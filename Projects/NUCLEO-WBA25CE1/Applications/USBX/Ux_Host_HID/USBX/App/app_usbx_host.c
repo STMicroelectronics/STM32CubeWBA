@@ -146,7 +146,7 @@ UINT MX_USBX_Host_Init(VOID *memory_ptr)
   */
 static VOID app_ux_host_thread_entry(ULONG thread_input)
 {
-  /* USER CODE BEGIN app_ux_host_thread_entry */
+  /* USER CODE BEGIN app_ux_host_thread_entry 0*/
   /* Start Application Message */
   USBH_UsrLog("**** USB DRD HID Host **** \n");
   USBH_UsrLog("USB Host library started.\n");
@@ -157,18 +157,20 @@ static VOID app_ux_host_thread_entry(ULONG thread_input)
 
   /* Initialization of USB host */
   MX_USB_HCD_Init();
+  /* USER CODE END app_ux_host_thread_entry 0*/
 
   /* Initialize the Stack Host USB*/
   if (MX_USBX_Host_Stack_Init() != UX_SUCCESS)
   {
-    /* USER CODE BEGIN MAIN_INITIALIZE_STACK_ERROR */
+   /* USER CODE BEGIN MAIN_INITIALIZE_HOST_STACK_ERROR */
     Error_Handler();
-    /* USER CODE END MAIN_INITIALIZE_STACK_ERROR */
+   /* USER CODE END MAIN_INITIALIZE_HOST_STACK_ERROR */
   }
+  /* USER CODE BEGIN app_ux_host_thread_entry 1*/
 
   /* Enable USB Global Interrupt*/
   HAL_HCD_Start(&hhcd_USB_DRD_FS);
-  /* USER CODE END app_ux_host_thread_entry */
+  /* USER CODE END app_ux_host_thread_entry 1*/
 }
 
 /**
@@ -326,7 +328,7 @@ UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *current_class, VOID *cur
   * @param  system_level: system level parameter.
   * @param  system_context: system context code.
   * @param  error_code: error event code.
-  * @retval Status
+  * @retval None
   */
 VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code)
 {
@@ -370,10 +372,11 @@ VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_c
 }
 
 /**
-  * @brief MX_USBX_Host_Stack_Init
-  *        Initialization of USB host stack.
-  *        Init USB Host stack, add register the host class stack
-  * @retval None
+  * @brief  MX_USBX_Host_Stack_Init
+  *         Initialization of the USB Host stack.
+  *         Initialize the host stack, register the host class stack.
+  * @param  None
+  * @retval ret
   */
 UINT MX_USBX_Host_Stack_Init(void)
 {
@@ -420,7 +423,7 @@ UINT MX_USBX_Host_Stack_Init(void)
   /* Register all the USB host controllers available in this system. */
   if (ux_host_stack_hcd_register(_ux_system_host_hcd_stm32_name,
                                  _ux_hcd_stm32_initialize, USB_DRD_BASE,
-                                 (ULONG)&hhcd_USB_DRD_FS)!= UX_SUCCESS)
+                                 (ULONG)&hhcd_USB_DRD_FS) != UX_SUCCESS)
   {
     /* USER CODE BEGIN USBX_HOST_STACK_HCD_REGISTER_ERROR */
     return UX_ERROR;
@@ -436,10 +439,11 @@ UINT MX_USBX_Host_Stack_Init(void)
 
 /**
   * @brief  MX_USBX_Host_Stack_DeInit
-  *         Uninitialize of USB Host stack.
-  *         Uninitialize the host stack, unregister of host class stack and
-  *         unregister of the usb host controllers
-  * @retval None
+  *         Uninitialization of the USB Host stack.
+  *         Uninitialize the host stack, unregister the host class stack and
+  *         unregister the USB host controllers.
+  * @param  None
+  * @retval ret
   */
 UINT MX_USBX_Host_Stack_DeInit(void)
 {
@@ -452,7 +456,7 @@ UINT MX_USBX_Host_Stack_DeInit(void)
   /* Unregister all the USB host controllers available in this system. */
   if (ux_host_stack_hcd_unregister(_ux_system_host_hcd_stm32_name,
                                    USB_DRD_BASE,
-                                   (ULONG)&hhcd_USB_DRD_FS)!= UX_SUCCESS)
+                                   (ULONG)&hhcd_USB_DRD_FS) != UX_SUCCESS)
   {
     return UX_ERROR;
   }

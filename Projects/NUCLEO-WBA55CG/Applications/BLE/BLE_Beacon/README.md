@@ -1,6 +1,7 @@
 ## __BLE_Beacon Application Description__
 
 How to advertise 5 types of beacon (Eddystone uid, Eddystone url, Eddystone uid+tlm, Eddystone url+tlm, iBeacon).
+Memory allocation is managed using malloc and free functions, not using Advanced Memory Manager (AMM) module.
 
 ### __Keywords__
 

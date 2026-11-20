@@ -3,7 +3,7 @@
 # Managing HOST OS diversity : begin
 #=================================================================================================
 OS=$(uname)
-
+#
 echo ${OS} | grep -i -e windows -e mingw >/dev/null
 if [ $? == 0 ]; then
   echo "=================================="
@@ -18,7 +18,7 @@ if [ $? == 0 ]; then
   # Return OK if no error detected during .bat script
   exit 0
 fi
-
+#
 if [ "$OS" == "Linux" ]; then
   echo "HOST OS : Linux detected"
 elif [ "$OS" == "Darwin" ]; then
@@ -27,17 +27,17 @@ else
   echo "!!!HOST OS not supported : >$OS<!!!"
   exit 1
 fi
-
+#
 #=================================================================================================
 # Managing HOST OS diversity : end
 #=================================================================================================
 echo "=================================="
 echo ">>> Running $0 $@"
 echo ""
-
+#
 # arg1 is the config type (Debug, Release)
 config=$1
-
+#
 # Getting the Trusted Package Creator CLI path
 SCRIPT=$(readlink -f $0)
 project_dir=`dirname $SCRIPT`
@@ -92,6 +92,8 @@ ns_data_init_xml="$provisioningdir/$bootpath/Images/${project}_NS_Data_Init_Imag
 if [ "$oemurot_enabled" == "1" ]; then
   oemurot_code_xml="$provisioningdir/OEMiRoT_OEMuRoT/Images/OEMiROT_Code_Image.xml"
   oemurot_code_init_xml="$provisioningdir/OEMiRoT_OEMuRoT/Images/OEMiROT_Code_Init_Image.xml"
+  oemurot_data_xml="$provisioningdir/OEMiRoT_OEMuRoT/Images/OEMiROT_Data_Image.xml"
+  oemurot_data_init_xml="$provisioningdir/OEMiRoT_OEMuRoT/Images/OEMiROT_Data_Init_Image.xml"
 fi
 
 #=================================================================================================
@@ -102,7 +104,9 @@ auth_s_xml_field="Authentication secure key"
 auth_ns_xml_field="Authentication non secure key"
 scratch_sector_number_xml_field="Number of scratch sectors"
 
-# Check if Python is installed
+#=================================================================================================
+# Check if Python V3 is installed
+#-------------------------------------------------------------------------------------------------
 if ! python3 --version > /dev/null 2>&1; then
   if ! python --version > /dev/null 2>&1; then
     echo "Python installation missing. Refer to Utilities/PC_Software/ROT_AppliConfig/README.md"
@@ -112,10 +116,11 @@ if ! python3 --version > /dev/null 2>&1; then
 else
   python="python3 "
 fi
+#=================================================================================================
 
 # Environment variable for AppliCfg
 applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/AppliCfg.py"
-
+#
 # Function to run commands and check for errors
 error()
 {
@@ -171,6 +176,7 @@ $python$applicfg flash --layout $preprocess_bl2_file -b otfdec_enabled -m RE_OTF
 ret=$?
 if [ $ret != 0 ]; then error; fi
 fi
+
 source $img_config
 
 if [ "$first_boot_stage" == "1" ]; then
@@ -242,12 +248,6 @@ $python$applicfg flash --layout $preprocess_bl2_file -b slot7 -m RE_IMAGE_FLASH_
 ret=$?
 if [ $ret != 0 ]; then error; fi
 
-if [ "$otfdec_enabled" == "1" ]; then
-  $python$applicfg flash --layout $preprocess_bl2_file -b loaderaddress -m RE_IMAGE_FLASH_LOADER_ADDRESS $ob_flash_programming --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
-fi
-
 $python$applicfg flash --layout $preprocess_bl2_file -b wrp_a_bank1_start -m RE_BL2_WRP_START -d 0x1000 $ob_flash_programming --vb >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
@@ -255,16 +255,6 @@ if [ $ret != 0 ]; then error; fi
 $python$applicfg flash --layout $preprocess_bl2_file -b wrp_a_bank1_end -m RE_BL2_WRP_END -d 0x1000 $ob_flash_programming --vb >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
-
-if [ "$otfdec_enabled" == "1" ]; then
-  $python$applicfg flash --layout $preprocess_bl2_file -b wrp_b_bank1_start -m RE_LOADER_WRP_START -d 0x1000 $ob_flash_programming --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
-
-  $python$applicfg flash --layout $preprocess_bl2_file -b wrp_b_bank1_end -m RE_LOADER_WRP_END -d 0x1000 $ob_flash_programming --vb >> $current_log_file 2>&1
-  ret=$?
-  if [ $ret != 0 ]; then error; fi
-fi
 
 $python$applicfg flash --layout $preprocess_bl2_file -b sec1_start -m RE_BL2_SEC1_START -d 0x1000 $ob_flash_programming --vb >> $current_log_file 2>&1
 ret=$?
@@ -277,6 +267,20 @@ if [ $ret != 0 ]; then error; fi
 $python$applicfg flash --layout $preprocess_bl2_file -b hdp_end -m RE_BL2_HDP_END -d 0x1000 $ob_flash_programming --vb >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
+
+if [ "$otfdec_enabled" == "1" ]; then
+  $python$applicfg flash --layout $preprocess_bl2_file -b loaderaddress -m RE_IMAGE_FLASH_LOADER_ADDRESS $ob_flash_programming --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg flash --layout $preprocess_bl2_file -b wrp_b_bank1_start -m RE_LOADER_WRP_START -d 0x1000 $ob_flash_programming --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg flash --layout $preprocess_bl2_file -b wrp_b_bank1_end -m RE_LOADER_WRP_END -d 0x1000 $ob_flash_programming --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+fi
 
 if [ "$oemurot_enabled" == "1" ]; then
   $python$applicfg flash --layout $preprocess_bl2_file -b overwrite -m RE_OVER_WRITE --decimal --vb $ob_flash_programming >> $current_log_file 2>&1
@@ -299,13 +303,21 @@ if [ "$app_full_secure" == "0" ]; then
   if [ $ret != 0 ]; then error; fi
 fi
 
-# ========================================================== Update %otfdec_ns_code_xml% =============================================================
+# ======================================================== Update %otfdec_ns_code_xml% =========================================================
 if [ "$otfdec_enabled" == "1" ]; then
+  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE -c S $otfdec_ns_code_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
   $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_CODE_START_NON_SECURE -c o $otfdec_ns_code_xml --vb >> $current_log_file 2>&1
   ret=$?
   if [ $ret != 0 ]; then error; fi
 
   $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_CODE_START_NON_SECURE -c o $otfdec_ns_code_init_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE -c S $otfdec_ns_code_init_xml --vb >> $current_log_file 2>&1
   ret=$?
   if [ $ret != 0 ]; then error; fi
 fi
@@ -385,6 +397,25 @@ if [ $ret != 0 ]; then error; fi
 $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -c S $s_data_init_xml --vb >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
+
+# ========================================================== Update %oemirot_data_xml% ================================================================
+if [ "$oemurot_enabled" == "1" ]; then
+  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_SIZE -c S $oemurot_data_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_ENCRYPTION -n "Encryption key" -link GetPublic -t File -c -E -h 1 -d "" $oemurot_data_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+
+  $python$applicfg xmlparam --layout  $preprocess_bl2_file -m RE_OVER_WRITE -n "Write Option" -t Data -c --overwrite-only -h 1 -d "" $oemurot_data_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then  error; fi
+
+  $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_SIZE -c S $oemurot_data_init_xml --vb >> $current_log_file 2>&1
+  ret=$?
+  if [ $ret != 0 ]; then error; fi
+fi
 
 # ============================================================ Update %appli_flash_layout% ===========================================================
 $python$applicfg setdefine --layout $preprocess_bl2_file -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
@@ -515,6 +546,22 @@ $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOA
 ret=$?
 if [ $ret != 0 ]; then error; fi
 
+$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_OFFSET -n OEMIROT_AREA_4_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
+
+$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_4_SIZE -n OEMIROT_AREA_4_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
+
+$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_OFFSET -n OEMIROT_AREA_6_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
+
+$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_6_SIZE -n OEMIROT_AREA_6_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
+
 if [[ "$oemirot_appli_path_project" != *Templates* ]]; then
     if [ "$otfdec_enabled" == "1" ]; then
         $python$applicfg definevalue --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_LOADER_OFFSET -n FLASH_S_LOADER_OFFSET $appli_flash_layout --vb >> $current_log_file 2>&1
@@ -526,6 +573,7 @@ if [[ "$oemirot_appli_path_project" != *Templates* ]]; then
         if [ $ret != 0 ]; then error; fi
     fi
 fi
+
 # ============================================================= Update %postbuild_loader% ============================================================
 if [ "$otfdec_enabled" == "1" ]; then
   $python$applicfg setdefine --layout $preprocess_bl2_file -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 $loader_flash_layout --vb >> $current_log_file 2>&1
@@ -650,15 +698,25 @@ if [ "$otfdec_enabled" == "1" ]; then
 fi
 
 if [ "$oemurot_enabled" == "1" ]; then
-  $python$applicfg setdefine -a uncomment -n OEMUROT_ENABLE -v 1 $appli_flash_layout
+  $python$applicfg setdefine -a uncomment -n OEMUROT_ENABLE -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
   ret=$?
   if [ $ret != 0 ]; then error; fi
 else
-  $python$applicfg setdefine -a comment -n OEMUROT_ENABLE -v 1 $appli_flash_layout
+  $python$applicfg setdefine -a comment -n OEMUROT_ENABLE -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
   ret=$?
   if [ $ret != 0 ]; then error; fi
 fi
 
-# ======================================================================== end =======================================================================
+# ============================================================ end ============================================================
 exit 0
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
 

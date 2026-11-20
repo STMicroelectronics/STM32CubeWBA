@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -121,7 +121,6 @@ typedef struct
   uint16_t ServiceChangedCharDescHdl;
   uint8_t ServiceChangedCharProperties;
   /* USER CODE BEGIN BleClientAppContext_t */
-
   /* SVC_ID_P2P characteristics handle */
   /* handles of the Tx characteristic - Write To Server */
   uint16_t P2PWriteToServerCharHdl;
@@ -204,7 +203,6 @@ static void gatt_cmd_resp_release(void);
 static uint8_t gatt_cmd_resp_wait(void);
 static uint8_t gatt_procedure(uint8_t index, ProcGattId_t GattProcId);
 /* USER CODE BEGIN PFP */
-
 static void P2Pclient_write_char(void);
 
 /* USER CODE END PFP */
@@ -258,7 +256,6 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_task);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
-
   UTIL_SEQ_RegTask(1U << CFG_TASK_FORWARD_WRITE_ID, UTIL_SEQ_RFU, GATT_CLIENT_APP_ForwardWrite);
 
   /* USER CODE END GATT_CLIENT_APP_Init_2 */
@@ -433,7 +430,6 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
 }
 
 /* USER CODE BEGIN FD */
-
 void GATT_CLIENT_APP_ForwardWrite(void)
 {
   P2Pclient_write_char();
@@ -656,17 +652,10 @@ void GATT_CLIENT_APP_ForwardWrite(void)
       {
         uint16_t charPropVal = 0x0000;
 
-        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000)
+        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000
+            && ((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
         {
-          if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_NOTIFY) == CHAR_PROP_NOTIFY)
-          {
-            charPropVal = 0x0001;
-          }
-          else if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
-          {
-            charPropVal = 0x0002;
-          }
-
+          charPropVal = 0x0002;
           procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
@@ -683,7 +672,6 @@ void GATT_CLIENT_APP_ForwardWrite(void)
           }
         }
         /* USER CODE BEGIN PROC_GATT_PROPERTIES_ENABLE_ALL */
-
         if(a_ClientContext[index].P2PNotificationDescHdl != 0x0000)
         {
           charPropVal = 0x0001;
@@ -883,7 +871,7 @@ __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif
       a_P2PR_UpdateCharData[0] = p_Notif->DataTransfered.p_Payload[0];
       a_P2PR_UpdateCharData[1] = p_Notif->DataTransfered.p_Payload[1];
 
-      UTIL_SEQ_SetTask( 1u<<CFG_TASK_FORWARD_NOTIF_ID, CFG_SEQ_PRIO_0);
+      UTIL_SEQ_SetTask( 1u << CFG_TASK_FORWARD_NOTIF_ID, CFG_SEQ_PRIO_0);
       break;
     }
 
@@ -1172,6 +1160,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
+          a_ClientContext[index].ServiceChangedCharProperties = CharProperties;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
 /* USER CODE BEGIN gatt_parse_chars_1 */
@@ -1578,7 +1567,6 @@ tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint1
 }
 
 /* USER CODE BEGIN LF */
-
 static void P2Pclient_write_char(void)
 {
   uint8_t index, indexRouter;

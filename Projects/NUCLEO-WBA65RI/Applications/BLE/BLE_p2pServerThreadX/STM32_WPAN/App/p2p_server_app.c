@@ -150,7 +150,7 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service1Char2_NOTIFY_ENABLED_EVT */
       P2P_SERVER_APP_Context.Switch_c_Notification_Status = Switch_c_NOTIFICATION_ON;
       LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION ENABLED\n");
-      LOG_INFO_APP(" \n\r");
+      LOG_INFO_APP(" \n");
       /* USER CODE END Service1Char2_NOTIFY_ENABLED_EVT */
       break;
 
@@ -158,7 +158,7 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service1Char2_NOTIFY_DISABLED_EVT */
       P2P_SERVER_APP_Context.Switch_c_Notification_Status = Switch_c_NOTIFICATION_OFF;
       LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION DISABLED\n");
-      LOG_INFO_APP(" \n\r");
+      LOG_INFO_APP(" \n");
       /* USER CODE END Service1Char2_NOTIFY_DISABLED_EVT */
       break;
 

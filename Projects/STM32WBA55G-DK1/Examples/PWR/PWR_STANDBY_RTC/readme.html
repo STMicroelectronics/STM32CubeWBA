@@ -27,8 +27,9 @@ vertical-align: middle;
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <div class="row">
-<section id="pwr_standby_rtc-example-description" class="col-sm-12 col-lg-8">
-<h2><b>PWR_STANDBY_RTC Example Description</b></h2>
+<div class="col-sm-12 col-lg-8">
+<h2 id="pwr_standby_rtc-example-description"><b>PWR_STANDBY_RTC Example
+Description</b></h2>
 <p>How to enter the Standby mode and wake-up from this mode by using an
 external reset or the RTC wakeup timer.</p>
 <p>In the associated software, the system clock is set to 100 MHz and
@@ -52,14 +53,37 @@ same way as after a software RESET.</p>
 <p>Note: This example can not be used in DEBUG mode due to the fact that
 the Cortex-M33 core is no longer clocked during low power mode so
 debugging features are disabled.</p>
+<h2 id="measured-current-consumption"><b>Measured Current
+Consumption</b></h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Current Consumption</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run</td>
+<td>6.5 mA</td>
+</tr>
+<tr>
+<td>Standby</td>
+<td>2.8 µA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> The measured current consumption values are
+typical values. To measure the current consumption while running in the
+selected mode, remove jumper JP2 and connect an amperemeter to measure
+IDD current.</p>
 <h4 id="notes"><b>Notes</b></h4>
 <ol type="1">
 <li><p>Care must be taken when HAL_RCCEx_PeriphCLKConfig() is used to
 select the RTC clock source; in this case the Backup domain will be
-reset in<br />
-order to modify the RTC Clock source, as consequence RTC registers
-(including the backup registers) and RCC_CSR register are set to their
-reset values.</p></li>
+reset in order to modify the RTC Clock source, as consequence RTC
+registers (including the backup registers) and RCC_CSR register are set
+to their reset values.</p></li>
 <li><p>Care must be taken when using HAL_Delay(), this function provides
 accurate delay (in milliseconds) based on variable incremented in
 SysTick ISR. This implies that if HAL_Delay() is called from a
@@ -109,7 +133,7 @@ revision)</li>
 the power cable then power on the board again</li>
 <li>Run the example</li>
 </ul>
-</section>
+</div>
 </div>
 </div>
 </div>

@@ -373,7 +373,6 @@ static void APP_THREAD_DeviceConfig(void)
   /* Add COAP resources */
   otCoapAddResource(PtOpenThreadInstance, &OT_Ressource);
 
-
   /* USER CODE END DEVICECONFIG */
 }
 

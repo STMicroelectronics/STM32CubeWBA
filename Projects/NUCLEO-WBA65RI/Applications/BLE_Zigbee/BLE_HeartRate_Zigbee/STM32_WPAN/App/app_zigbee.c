@@ -46,12 +46,12 @@
 
 /* USER CODE END PI */
 
-/* Public variables -----------------------------------------------------------*/
+/* Global variables -----------------------------------------------------------*/
 ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 
-/* USER CODE BEGIN PV */
+/* USER CODE BEGIN GV */
 
-/* USER CODE END PV */
+/* USER CODE END GV */
 
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_BLINK_LED_DELAY                  1000u             // Time (in ms) between two Led Blinck during the Startup/Join (up to 17 s).
@@ -65,9 +65,9 @@ ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 #define APP_ZIGBEE_BOARD_POWER                      0x00        // No Power
 
 #define APP_ZIGBEE_APP_DATE_CODE                    "20260601"
-#define APP_ZIGBEE_APP_BUILD_ID                     "V1.10"
-#define APP_ZIGBEE_APP_VERSION                      0x1A                    // Application Version v1.10
-#define APP_ZIGBEE_STACK_VERSION                    ( ( 26u << 2u ) | 6u )  // Stack Version 2026.6
+#define APP_ZIGBEE_APP_BUILD_ID                     "V1.11"
+#define APP_ZIGBEE_APP_VERSION                      0x1B                    // Application Version v1.11
+#define APP_ZIGBEE_STACK_VERSION                    ( ( 26u << 2u ) | 11u ) // Stack Version 2026.11
 
 /* USER CODE BEGIN PD */
 
@@ -87,13 +87,14 @@ static void APP_ZIGBEE_ZbRestartJoinTimerCallback     ( void * arg );
 static void APP_ZIGBEE_BlinckLedTimerCallback         ( void * arg );
 static void APP_ZIGBEE_Printf                         ( struct ZigBeeT * zb, uint32_t lMask, const char * pHeader, const char * pFrame, va_list argptr );
 
-static enum zb_msg_filter_rc APP_ZIGBEE_DeviceJointCallback   ( struct ZigBeeT * zb, uint32_t lId, void * pMessage, void * arg );
+static enum zb_msg_filter_rc APP_ZIGBEE_DeviceJoinCallback    ( struct ZigBeeT * zb, uint32_t lId, void * pMessage, void * arg );
+static enum zb_msg_filter_rc APP_ZIGBEE_DeviceLeaveCallback   ( struct ZigBeeT * zb, uint32_t lId, void * pMessage, void * arg );
 
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
-/* Private variabless -----------------------------------------------*/
+/* Private variables -----------------------------------------------*/
 static UTIL_TIMER_Object_t      stZbCallbackTimeOutTimer, stZbRestartJoinTimer, stBlinckLedTimer;
 
 /* USER CODE BEGIN PV */
@@ -118,16 +119,10 @@ void APP_ZIGBEE_NwkFormOrJoinTaskInit( void )
   {
     /* Create the Timer service to can advertise user during the time of the Join (by default 17 seconds) */
     UTIL_TIMER_Create( &stBlinckLedTimer, APP_ZIGBEE_BLINK_LED_DELAY, UTIL_TIMER_PERIODIC, &APP_ZIGBEE_BlinckLedTimerCallback, NULL );
-
-    /* Launch Blue Led Blink during Join */
-    UTIL_TIMER_Start( &stBlinckLedTimer );
   }
 
   /* Create the Task associated with network creation process */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, UTIL_SEQ_RFU, APP_ZIGBEE_NwkFormOrJoin );
-
-  /* launch the startup of the mesh network setup */
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
 }
 
 /**
@@ -198,9 +193,9 @@ void APP_ZIGBEE_StackLayersInit( void )
   /* USER CODE BEGIN APP_ZIGBEE_StackLayersInit1 */
 
   /* All Led Off at startup */
-  APP_LED_OFF(LED_RED);
-  APP_LED_OFF(LED_GREEN);
-  APP_LED_OFF(LED_BLUE);
+  APP_BSP_LED_Off(LED_JOIN);
+  APP_BSP_LED_Off(LED_WORK);
+  APP_BSP_LED_Off(LED_OK);
 
   /* USER CODE END APP_ZIGBEE_StackLayersInit1 */
 
@@ -215,7 +210,7 @@ void APP_ZIGBEE_StackLayersInit( void )
   APP_ZIGBEE_PrintApplicationInfo();
 
   /* Create the NwkFormOrJoin Task */
-  if ( stZigbeeAppInfo.bNwkStartup != false )
+  if ( stZigbeeAppInfo.bNwkStartupDone == false )
   {
     APP_ZIGBEE_NwkFormOrJoinTaskInit();
   }
@@ -293,6 +288,40 @@ static void APP_ZIGBEE_BlinckLedTimerCallback( void * arg )
 }
 
 /**
+ * @brief  Update setting when Join work well
+ *
+ * @param  None
+ * @retval None
+ */
+void APP_ZIGBEE_JoinDoneOk( void )
+{
+  stZigbeeAppInfo.lJoinDelay = 0u;
+  stZigbeeAppInfo.bInitAfterJoin = true;
+  stZigbeeAppInfo.bNwkStartupDone = true;
+
+  if ( stZigbeeAppInfo.eStartupControl == ZbStartTypeForm )
+  {
+    LOG_INFO_APP( "Mesh network created." );
+  }
+  else
+  {
+    LOG_INFO_APP( "Association accepted." );
+
+    /* Stop Blue Led Blink during Join */
+    UTIL_TIMER_Stop( &stBlinckLedTimer );
+  }
+
+  /* USER CODE BEGIN APP_ZIGBEE_JoinDoneOk */
+  APP_BSP_LED_On( LED_JOIN );
+
+  /* USER CODE END APP_ZIGBEE_JoinDoneOk */
+
+  /* Start Applications */
+  APP_ZIGBEE_ConfigMeshNetwork();
+  APP_ZIGBEE_ApplicationStart();
+}
+
+/**
  * @brief  Handle Zigbee network forming and joining
  *
  * @param  None
@@ -303,53 +332,29 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
   enum ZbStatusCodeT  eStatus = ZB_ZDP_STATUS_TIMEOUT;
   struct ZbStartupT   stConfig;
 
+  if ( stZigbeeAppInfo.eStartupControl == ZbStartTypeJoin )
+  {
+    /* Launch Blue Led Blink during Join */
+    UTIL_TIMER_Start( &stBlinckLedTimer );
+  }
+
   while ( eStatus != ZB_STATUS_SUCCESS )
   {
     /* Application configure Startup */
     APP_ZIGBEE_GetStartupConfig( &stConfig );
 
-    if ( eStatus != ZB_STATUS_SUCCESS )
+    /* Start Zigbee Stack & Form/Join Network */
+    stZigbeeAppInfo.eJoinStatus = ZB_ZDP_STATUS_TIMEOUT;
+    eStatus = ZbStartup( stZigbeeAppInfo.pstZigbee, &stConfig, APP_ZIGBEE_ZbStartupCallback, NULL );
+    if ( eStatus == ZB_STATUS_SUCCESS )
     {
-      /* Start Zigbee Stack & Form/Join network */
-      stZigbeeAppInfo.eJoinStatus = ZB_ZDP_STATUS_TIMEOUT;
-      eStatus = ZbStartup( stZigbeeAppInfo.pstZigbee, &stConfig, APP_ZIGBEE_ZbStartupCallback, NULL );
-      if ( eStatus == ZB_STATUS_SUCCESS )
-      {
-        APP_ZIGBEE_WaitForCallback( APP_ZIGBEE_STARTUP_WAIT_DELAY );
-        eStatus = stZigbeeAppInfo.eJoinStatus;
-      }
+      APP_ZIGBEE_WaitForCallback( APP_ZIGBEE_STARTUP_WAIT_DELAY );
+      eStatus = stZigbeeAppInfo.eJoinStatus;
     }
 
     if ( eStatus == ZB_STATUS_SUCCESS )
     {
-      stZigbeeAppInfo.lJoinDelay = 0u;
-      stZigbeeAppInfo.bInitAfterJoin = true;
-
-      if ( stZigbeeAppInfo.eStartupControl == ZbStartTypeForm )
-        { LOG_INFO_APP( "Mesh network created." ); }
-      else
-      {
-        LOG_INFO_APP( "Association accepted." );
-
-        /* Stop Blue Led Blink during Join */
-        UTIL_TIMER_Stop( &stBlinckLedTimer );
-      }
-
-      /* USER CODE BEGIN APP_ZIGBEE_NwkFormOrJoin */
-      APP_LED_ON( LED_BLUE );
-
-      /* Increase the age limit so that the Routers are kept longer before being removed from the routing table*/
-      /* It Makes the network more tolerant to temporary silence                                               */
-      /* Routers stay in the neighbor table longer, even if some frames are missed                             */  
-      /* Reduces route instability caused by BLE taking RF time                                                */
-      uint8_t age_limit = 10; 
-      ZbNwkSet(stZigbeeAppInfo.pstZigbee, ZB_NWK_NIB_ID_RouterAgeLimit, &age_limit, sizeof(age_limit));
-
-      /* USER CODE END APP_ZIGBEE_NwkFormOrJoin */
-
-      /* Start Applications */
-      APP_ZIGBEE_ConfigMeshNetwork();
-      APP_ZIGBEE_ApplicationStart();
+      APP_ZIGBEE_JoinDoneOk();
     }
     else
     {
@@ -379,9 +384,15 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
 static void APP_ZIGBEE_ConfigMeshNetwork(void)
 {
   bool      bReturn;
+#if (CONFIG_ZB_REV < 23)
+  uint16_t  iTransactionPersistenceTime = 0;
+#endif /* (CONFIG_ZB_REV < 23) */
   uint32_t  lBroadcastTimeOut = 3;
 
   stZigbeeAppInfo.bInitAfterJoin = false;
+
+  /* Indicate type of Device */
+  stZigbeeAppInfo.cDeviceType = AppZbUtil_GetDeviceType( stZigbeeAppInfo.pstZigbee );
 
   /* Assign ourselves to the group addresses */
   bReturn = APP_ZIGBEE_ConfigGroupAddr();
@@ -392,22 +403,40 @@ static void APP_ZIGBEE_ConfigMeshNetwork(void)
     ZbNwkSet( stZigbeeAppInfo.pstZigbee, ZB_NWK_NIB_ID_NetworkBroadcastDeliveryTime, &lBroadcastTimeOut, sizeof( lBroadcastTimeOut ) );
   }
 
-  /* If Coord or Router, start the possibility to know where a 'Device' (End Device ou Router) Join the Network */
-  if ( stZigbeeAppInfo.eStartupControl == ZbStartTypeForm )
+  /* If Coord or Router, specifics settings */
+  if ( ( stZigbeeAppInfo.cDeviceType == ZB_ZDP_NODE_TYPE_COORDINATOR ) || ( stZigbeeAppInfo.cDeviceType == ZB_ZDP_NODE_TYPE_ROUTER ) )
   {
-    ZbMsgFilterRegister( stZigbeeAppInfo.pstZigbee, ZB_MSG_FILTER_JOIN_IND, ZB_MSG_DEFAULT_PRIO, APP_ZIGBEE_DeviceJointCallback, NULL );
+    /* Start the possibility to know where a 'Device' (End Device ou Router) Join the Network */
+    (void)ZbMsgFilterRegister( stZigbeeAppInfo.pstZigbee, ZB_MSG_FILTER_JOIN_IND, ZB_MSG_DEFAULT_PRIO, APP_ZIGBEE_DeviceJoinCallback, NULL );
+    (void)ZbMsgFilterRegister( stZigbeeAppInfo.pstZigbee, ZB_MSG_FILTER_LEAVE_IND, ZB_MSG_DEFAULT_PRIO, APP_ZIGBEE_DeviceLeaveCallback, NULL );
+
+#if (CONFIG_ZB_REV < 23)
+    /* Check the TransactionPersistenceTime to be sure that is not too short (less than 30 seconds, needed to be compatible R23/R22) */
+    if ( ZbNwkGet( stZigbeeAppInfo.pstZigbee, ZB_NWK_NIB_ID_TransactionPersistenceTime, &iTransactionPersistenceTime, sizeof(iTransactionPersistenceTime) ) == ZB_STATUS_SUCCESS )
+    {
+      iTransactionPersistenceTime  = (iTransactionPersistenceTime * 1536) / 100;
+      if ( iTransactionPersistenceTime < 30000u )
+      {
+        iTransactionPersistenceTime = 1954;     /* 1954 * 15.36ms = 30s */
+        if ( ZbNwkSet( stZigbeeAppInfo.pstZigbee, ZB_NWK_NIB_ID_TransactionPersistenceTime, &iTransactionPersistenceTime, sizeof(iTransactionPersistenceTime) ) != ZB_STATUS_SUCCESS )
+        {
+          LOG_ERROR_APP( "Error during Setting the Transaction Persistence Time." );
+        }
+      }
+    }
+#endif /* (CONFIG_ZB_REV < 23) */
   }
 }
 
 /**
- * @brief Callback called every time a new Device (Router ou EndDevice) join the Network.
- *        Information around the Device (Address & Capability) are sent on 'APP_ZIGBEE_NewDevice()' function.
+ * @brief Callback called every time a new Device (Router or EndDevice) join the Network.
+ *        Information around the Device Address are sent on 'APP_ZIGBEE_NewDevice()' & 'APP_ZIGBEE_SetRejoinDevice()' functions.
  * @param zb        Zigbee stack handler
  * @param lId       Type of filter Message
  * @param pMessage  Pointer on Message information
  * @param arg       Pointer on User Argument.
  */
-static enum zb_msg_filter_rc APP_ZIGBEE_DeviceJointCallback( struct ZigBeeT * zb, uint32_t lId, void * pMessage, void * arg )
+static enum zb_msg_filter_rc APP_ZIGBEE_DeviceJoinCallback( struct ZigBeeT * zb, uint32_t lId, void * pMessage, void * arg )
 {
   struct ZbNlmeJoinIndT * pstJoinMessage;
 
@@ -419,16 +448,43 @@ static enum zb_msg_filter_rc APP_ZIGBEE_DeviceJointCallback( struct ZigBeeT * zb
     {
       case ZB_NWK_REJOIN_TYPE_ASSOC :
       case ZB_NWK_REJOIN_TYPE_ORPHAN :
-      case ZB_NWK_REJOIN_TYPE_NWKREJOIN :
       case ZB_NWK_REJOIN_TYPE_NWKCOMMISS_JOIN :
-      case ZB_NWK_REJOIN_TYPE_NWKCOMMISS_REJOIN :
           /* A new Device has Join Network at MAC/NWK level */
-          APP_ZIGBEE_SetNewDevice( pstJoinMessage->nwkAddr, pstJoinMessage->extAddr, pstJoinMessage->capabilityInfo );
+          APP_ZIGBEE_SetNewDevice( pstJoinMessage->nwkAddr, pstJoinMessage->extAddr );
+          break;
+
+      case ZB_NWK_REJOIN_TYPE_NWKREJOIN :
+      case ZB_NWK_REJOIN_TYPE_NWKCOMMISS_REJOIN :
+          /* A Device has Rejoin Network at MAC/NWK level */
+          APP_ZIGBEE_SetRejoinDevice( pstJoinMessage->nwkAddr, pstJoinMessage->extAddr );
           break;
 
       default :
           break;
     }
+  }
+
+  return( ZB_MSG_CONTINUE );
+}
+
+/**
+ * @brief Callback called every time a Device (Router or EndDevice) Leave the Network.
+ *        Information around the Device Address are sent on 'APP_ZIGBEE_NewDevice()' function.
+ * @param zb        Zigbee stack handler
+ * @param lId       Type of filter Message
+ * @param pMessage  Pointer on Message information
+ * @param arg       Pointer on User Argument.
+ */
+static enum zb_msg_filter_rc APP_ZIGBEE_DeviceLeaveCallback( struct ZigBeeT * zb, uint32_t lId, void * pMessage, void * arg )
+{
+  struct ZbNlmeLeaveIndT * pstLeaveMessage;
+
+  if ( lId == ZB_MSG_FILTER_LEAVE_IND )
+  {
+    pstLeaveMessage = ( struct ZbNlmeLeaveIndT * )pMessage;
+
+    /* A Device has Leave Network at MAC/NWK level */
+    APP_ZIGBEE_SetLeaveDevice( pstLeaveMessage->shortAddr, pstLeaveMessage->deviceAddr );
   }
 
   return( ZB_MSG_CONTINUE );
@@ -667,11 +723,9 @@ static void APP_ZIGBEE_TraceError( const char * pMess, uint32_t ErrCode )
   while (1U == 1U)
   {
     /* USER CODE BEGIN APP_ZIGBEE_TraceError */
-    APP_LED_TOGGLE( LED_BLUE );
+    APP_BSP_LED_Toggle( LED_JOIN );
     HAL_Delay( 500U );
-    APP_LED_TOGGLE( LED_GREEN );
-    HAL_Delay( 500U );
-    APP_LED_TOGGLE( LED_RED );
+    APP_BSP_LED_Toggle( LED_WORK );
     HAL_Delay( 500U );
 
     /* USER CODE END APP_ZIGBEE_TraceError */

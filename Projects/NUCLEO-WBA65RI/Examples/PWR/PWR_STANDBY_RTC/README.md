@@ -4,16 +4,23 @@ How to enter the Standby mode and wake-up from this mode by using an external
 reset or the RTC wakeup timer.
 
 
-In the associated software, the system clock is set to 100 MHz and the SysTick is
+In the associated software, the system clock is set to HSI16 and the SysTick is
 programmed to generate an interrupt each 1 ms.
 The Low Speed Internal (LSI) clock is used as RTC clock source by default.
- is internally connected to the RTC Wakeup event.
+LSI is internally connected to the RTC Wakeup event.
 
 The system automatically enters Standby mode 5 sec. after start-up. The RTC wake-up
 is configured to generate an interrupt on rising edge about 33 sec. afterwards.
 Current consumption in Standby mode with RTC feature enabled can be measured during that time.
 More than half a minute is chosen to ensure current convergence to its lowest operating point.
 
+## <b>Measured Current Consumption</b>
+
+| Mode    | Current Consumption |
+|---------|---------------------|
+| Run     | 7.4 mA              |
+| Standby | 2.9 µA              |
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
 After wake-up from Standby mode, program execution restarts in the same way as after
 a software RESET.
 

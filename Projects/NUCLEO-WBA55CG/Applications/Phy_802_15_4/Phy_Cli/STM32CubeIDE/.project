@@ -34,9 +34,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Doc/README.md</name>
+			<name>Phy_Cli.ioc</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/README.md</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Phy_Cli.ioc</locationURI>
 		</link>
 		<link>
 			<name>Utilities/stm32_adv_trace.c</name>
@@ -59,9 +59,19 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Utilities/sequencer/stm32_seq.c</locationURI>
 		</link>
 		<link>
+			<name>Utilities/stm32_systime.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Utilities/misc/stm32_systime.c</locationURI>
+		</link>
+		<link>
 			<name>Utilities/stm32_timer.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Utilities/tim_serv/stm32_timer.c</locationURI>
+		</link>
+		<link>
+			<name>Utilities/stm32_tiny_sscanf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Utilities/misc/stm32_tiny_sscanf.c</locationURI>
 		</link>
 		<link>
 			<name>Utilities/stm32_tiny_vsnprintf.c</name>
@@ -71,22 +81,12 @@
 		<link>
 			<name>Drivers/CMSIS/system_stm32wbaxx.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/CMSIS/Device/ST/STM32WBAxx/Source/Templates/system_stm32wbaxx.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/system_stm32wbaxx.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_adc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_adc_ex.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_cortex.c</name>
@@ -132,31 +132,6 @@
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_gpio.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_gtzc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_hsem.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_i2c.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_i2c_ex.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c_ex.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_icache.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_pwr.c</name>
@@ -214,29 +189,34 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_exti.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_gpio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_icache.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_icache.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_pka.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_pka.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_tim.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/ll_sys_cs.c</name>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_utils.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/ll_sys_dp_slp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/ll_sys_intf.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/ll_sys_startup.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/Core/app_entry.c</name>
@@ -259,19 +239,89 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
+			<name>Common/WPAN/Interface/adv_trace_usart_if.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/adv_trace_usart_if.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/STM32_WPAN/App/app_cli_runner.c</name>
+			<name>Common/WPAN/Interface/hw_otp.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_cli_runner.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_otp.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/STM32_WPAN/App/app_cli_runner_ex.c</name>
+			<name>Common/WPAN/Interface/hw_rng.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_cli_runner_ex.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_rng.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Interface/timer_if.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/timer_if.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/app_sys.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/app_sys.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/crc_ctrl.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/crc_ctrl.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/otp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/otp.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/scm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/scm.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/stm_list.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/stm_list.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/stm_queue.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/stm_queue.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/wpan_utils.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/wpan_utils.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/LinkLayer/ll_sys_cs.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/LinkLayer/ll_sys_dp_slp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/LinkLayer/ll_sys_intf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/LinkLayer/ll_sys_startup.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/LinkLayer/mac_radio_port.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/802_15_4_ll_porting/mac_radio_port.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/linklayer_plat.c</name>
@@ -284,24 +334,24 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/ll_sys_if.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/STM32_WPAN/Target/mac_sys_if.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/mac_sys_if.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/STM32_WPAN/Target/power_table.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/power_table.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Config/app_debug.c</name>
+			<name>Application/User/STM32_WPAN/App/app_cli_runner.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Config/Debug_GPIO/app_debug.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_cli_runner.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Interfaces/hw_aes.c</name>
+			<name>Application/User/STM32_WPAN/App/app_cli_runner_ex.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_aes.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Interfaces/hw_rng.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_rng.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_cli_runner_ex.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Interfaces/stm32_lpm_if.c</name>
@@ -309,34 +359,34 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/stm32_lpm_if.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Interfaces/timer_if.c</name>
+			<name>Common/WPAN/Modules/Log/log_module.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/timer_if.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Log/log_module.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Modules/app_sys.c</name>
+			<name>Common/WPAN/Modules/RTDebug/RTDebug.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/app_sys.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Modules/otp.c</name>
+			<name>Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/otp.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</locationURI>
 		</link>
 		<link>
-			<name>Common/WPAN/Modules/pka_ctrl.c</name>
+			<name>Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/pka_ctrl.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Modules/scm.c</name>
+			<name>Application/User/System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/scm.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/CRC_Ctrl/crc_ctrl_conf.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
+			<name>Application/User/System/Config/Debug_GPIO/app_debug.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/Debug_GPIO/app_debug.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/LowPower/peripheral_init.c</name>
@@ -348,21 +398,5 @@
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Config/LowPower/user_low_power_config.c</locationURI>
 		</link>
-		<link>
-			<name>Application/User/System/Modules/RTDebug/RTDebug.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Modules/RTDebug/RTDebug_dtb.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</locationURI>
-		</link>
 	</linkedResources>
-	<variableList>
-		<variable>
-			<name>copy_PARENT</name>
-			<value>$%7BPARENT-3-PROJECT_LOC%7D/Mac_802_15_4/Mac_802_15_4_Node</value>
-		</variable>
-	</variableList>
 </projectDescription>

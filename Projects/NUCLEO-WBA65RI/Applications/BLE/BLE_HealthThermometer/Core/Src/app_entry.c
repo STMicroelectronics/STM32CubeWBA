@@ -58,7 +58,7 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
-
+#include "timer_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -165,7 +165,17 @@ int PKACTRL_TakeSemEndOfOperation(void);
 int PKACTRL_ReleaseSemEndOfOperation(void);
 
 /* USER CODE BEGIN PFP */
-
+#if (CFG_LSI2_CALIB_SUPPORTED == 1)
+static UTIL_TIMER_Object_t LSI2_Period_Calibration;
+__IO uint32_t uwLsiFreq = 32000;
+static __IO uint16_t tmpCCTIM_CHANNEL[2] = {0, 0};
+static __IO uint32_t uwPeriodValue = 0;
+static __IO uint32_t uwCaptureNumber = 0;
+static void LSI2_Periodic_Calib(void *argument);
+void LSI2_Measure_Frequency(void);
+static uint32_t GetLSIFrequency(void);
+static void LSI2_Recalibrate(void);
+#endif /* CFG_LSI2_CALIB_SUPPORTED */
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -214,12 +224,7 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_FLASH_MANAGER_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
-  APP_BSP_LedInit();
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_BUTTON_SUPPORTED == 1)
-  APP_BSP_ButtonInit();
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+  APP_BSP_Init();
 
   /* USER CODE END APPE_Init_1 */
 
@@ -234,10 +239,16 @@ uint32_t MX_APPE_Init(void *p_param)
 
   APP_BLE_Init();
 
-  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
-
   /* USER CODE BEGIN APPE_Init_2 */
+#if (CFG_LSI2_CALIB_SUPPORTED == 1)
+      LSI2_Recalibrate();
+
+    UTIL_TIMER_Create(&(LSI2_Period_Calibration),
+                      CFG_LSI2_CALIB_PERIOD_MS,
+                      UTIL_TIMER_PERIODIC,
+                      &LSI2_Periodic_Calib, 0);
+    UTIL_TIMER_Start(&(LSI2_Period_Calibration));
+#endif /* CFG_LSI2_CALIB_SUPPORTED */
 
   /* USER CODE END APPE_Init_2 */
 
@@ -349,15 +360,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -410,6 +414,7 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
+
   /* USER CODE END SystemPower_Config */
 }
 
@@ -480,11 +485,9 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
-#if (CFG_SCM_SUPPORTED == 1)
   /* SCM HSE BEGIN */
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -512,21 +515,6 @@ void UTIL_SEQ_PreIdle( void )
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
-
-#if defined(STM32WBAXX_SI_CUT1_0)
-  /* Wait until HSE is ready */
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_WaitUntilReady();
-  /* SCM HSE END */
-#else
-  while (LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
-
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
-  scm_hserdy_isr();
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* STM32WBAXX_SI_CUT1_0 */
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
 
@@ -611,7 +599,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -623,7 +610,6 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -660,7 +646,7 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
 
-  /* Simulate button press from UART commands. */
+  /* Threat USART Command to simulate button press for instance. */
   (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
 
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
@@ -784,5 +770,245 @@ FM_Cmd_Status_t FM_MutexRelease(void)
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
+#if (CFG_LSI2_CALIB_SUPPORTED == 1)
+/**
+  * @brief  Measure LSI2 frequency and update uwLsiFreq.
+  */
+void LSI2_Measure_Frequency(void)
+{
+  /*TIM16 Initialization*/
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM16);
+
+  /* TIMxx interrupt Init */
+  NVIC_SetPriority(TIM16_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+  NVIC_EnableIRQ(TIM16_IRQn);
+  
+  uwLsiFreq = GetLSIFrequency();
+  /* Hardware predivider remains unchanged; timer_if conversions use uwLsiFreq
+     runtime value together with fixed hardware predivider. */
+}
+
+uint32_t TIMER_IF_GetRuntimeRtcClockHz(void)
+{
+  return (uwLsiFreq != 0U) ? uwLsiFreq : LSI_VALUE;
+}
+
+void LSI2_TIM16_CaptureCallback(void)
+{
+  uint16_t capture0;
+  uint16_t capture1;
+
+  /* Get the Input Capture value */
+  if (uwCaptureNumber < 2U)
+  {
+    tmpCCTIM_CHANNEL[uwCaptureNumber++] = (uint16_t)LL_TIM_IC_GetCaptureCH1(TIM16);
+  }
+
+  if (uwCaptureNumber >= 2)
+  {
+    capture0 = tmpCCTIM_CHANNEL[0];
+    capture1 = tmpCCTIM_CHANNEL[1];
+
+    if (capture0 > capture1)
+    {
+      uwPeriodValue = (uint16_t)(0xFFFF - capture0 + capture1 + 1);
+    }
+    else
+    {
+      uwPeriodValue = (uint16_t)(capture1 - capture0);
+    }
+    if (uwPeriodValue == 0U)
+    {
+      uwCaptureNumber = 0U;
+      return;
+    }
+    uwLsiFreq = (uint32_t) SystemCoreClock / uwPeriodValue;
+    uwLsiFreq *= 8;
+  }
+}
+
+/**
+  * @brief  Configures TIM16 to measure the LSI2 oscillator frequency.
+  * @param  None
+  * @retval LSI2 Frequency
+  */
+static uint32_t GetLSIFrequency(void)
+{
+  LL_TIM_InitTypeDef    TIM_InitStruct = {0};
+  LL_TIM_IC_InitTypeDef TIMInput_Config = {0};
+  uwCaptureNumber = 0U;
+  uwPeriodValue = 0U;
+  tmpCCTIM_CHANNEL[0] = 0U;
+  tmpCCTIM_CHANNEL[1] = 0U;
+  uwLsiFreq = 0U;
+
+  /* Make sure LSI2 is running and stabilized before measuring. */
+  LL_PWR_EnableBkUpAccess();
+  while (LL_PWR_IsEnabledBkUpAccess() == 0U);
+  LL_RCC_LSI2_Enable();
+  while (LL_RCC_LSI2_IsReady() != 1U);
+
+  /* Refresh SystemCoreClock from the hardware so the divisor used in the
+     capture callback matches the actual current TIM16 clock. */
+  SystemCoreClockUpdate();
+  /* TIM16 configuration: Input Capture mode ---------------------
+     LSI2 is connected to TIM16 TIM_CHANNEL_1.
+     The Rising edge is used as active edge.
+     The TIM16 Capture/Compare register associated to TIM_CHANNEL_1
+     is used to compute the frequency value.
+  ------------------------------------------------------------ */
+  TIM_InitStruct.Prescaler = 0U;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 0xFFFFU;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  TIM_InitStruct.RepetitionCounter = 0U;
+  if(LL_TIM_Init(TIM16, &TIM_InitStruct) != SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  LL_TIM_SetRemap(TIM16, LL_TIM_TIM16_TI1_RMP_LSI);
+
+  /* Configure the Input Capture of TIM_CHANNEL_1 */
+  TIMInput_Config.ICPolarity = LL_TIM_IC_POLARITY_RISING;
+  TIMInput_Config.ICActiveInput = LL_TIM_ACTIVEINPUT_DIRECTTI;
+  TIMInput_Config.ICPrescaler = LL_TIM_ICPSC_DIV8;
+  TIMInput_Config.ICFilter = LL_TIM_IC_FILTER_FDIV32_N8;
+  if(LL_TIM_IC_Init(TIM16, LL_TIM_CHANNEL_CH1, &TIMInput_Config) != SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  LL_TIM_SetCounter(TIM16, 0U);
+  LL_TIM_ClearFlag_CC1(TIM16);
+  LL_TIM_ClearFlag_UPDATE(TIM16);
+  NVIC_ClearPendingIRQ(TIM16_IRQn);
+
+  LL_TIM_CC_EnableChannel(TIM16, LL_TIM_CHANNEL_CH1);
+  LL_TIM_EnableCounter(TIM16);
+
+  /* Polled: caller may run with IRQs masked (pre-scheduler BASEPRI or UTIL_TIMER critical section). */
+  while (uwLsiFreq == 0U)
+  {
+    if (LL_TIM_IsActiveFlag_CC1(TIM16) != 0U)
+    {
+      LL_TIM_ClearFlag_CC1(TIM16);
+      LSI2_TIM16_CaptureCallback();
+    }
+  }
+
+  /* Disable TIM16 Capture/Compare channel Interrupt Request */
+  LL_TIM_DisableIT_CC1(TIM16);
+  LL_TIM_CC_DisableChannel(TIM16, LL_TIM_CHANNEL_CH1);
+  LL_TIM_DisableCounter(TIM16);
+
+  /* Deinitialize the TIM16 peripheral registers to their default reset values */
+  if(LL_TIM_DeInit(TIM16) != SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  return uwLsiFreq;
+}
+
+static void LSI2_Recalibrate(void)
+{
+  uint32_t elapsedTicks;
+  uint32_t oldLsiFreq;
+  uint32_t newLsiFreq;
+  uint32_t measuredLsiFreq;
+  UTIL_TIMER_Object_t *timerObj;
+
+  /* Step 1: stop the RTC alarm and capture elapsed ticks atomically. */
+
+  elapsedTicks = TIMER_IF_GetTimerElapsedTime();
+  oldLsiFreq   = (uwLsiFreq != 0U) ? uwLsiFreq : LSI_VALUE;
+  TIMER_IF_StopTimer();
+
+  /* Step 2: measure LSI2 outside the critical section. */
+  LSI2_Measure_Frequency();
+  measuredLsiFreq = uwLsiFreq;
+  if (measuredLsiFreq == 0U)
+  {
+    measuredLsiFreq = LSI_VALUE;
+  }
+
+  /* Restore the TIM16 configuration used by the HSE stabilization timer.
+   * The LSI measurement temporarily reconfigures TIM16 for input capture;
+    * restore only the timer hardware and preserve the clock-manager state.
+   */
+  {
+    LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM16);
+    NVIC_SetPriority(TIM16_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0));
+    NVIC_EnableIRQ(TIM16_IRQn);
+
+    LL_TIM_DisableUpdateEvent(TIM16);
+    LL_TIM_SetUpdateSource(TIM16, LL_TIM_UPDATESOURCE_COUNTER);
+    LL_TIM_DisableARRPreload(TIM16);
+    LL_TIM_SetOnePulseMode(TIM16, LL_TIM_ONEPULSEMODE_SINGLE);
+
+    TIM_InitStruct.Prescaler = 0U;
+    TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_DOWN;
+    TIM_InitStruct.Autoreload = 3200U;
+    TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+    TIM_InitStruct.RepetitionCounter = 0U;
+    if (LL_TIM_Init(TIM16, &TIM_InitStruct) != SUCCESS)
+    {
+      Error_Handler();
+    }
+  }
+
+
+  /* Update the runtime conversion frequency; keep the RTC divider unchanged. */
+  newLsiFreq = measuredLsiFreq;
+
+
+  /* Convert pending timers from the old tick rate to the new one. */
+  for (timerObj = UTIL_TIMER_GetTimerList(); timerObj != NULL; timerObj = timerObj->Next)
+  {
+    uint32_t remaining = (timerObj->Timestamp > elapsedTicks)
+                         ? (timerObj->Timestamp - elapsedTicks) : 0U;
+    timerObj->Timestamp = (uint32_t)((((uint64_t)remaining * (uint64_t)newLsiFreq)
+                                      + ((uint64_t)oldLsiFreq / 2U))
+                                     / (uint64_t)oldLsiFreq);
+    /* Periodic timers reuse ReloadValue, so convert it as well. */
+    timerObj->ReloadValue = (uint32_t)((((uint64_t)timerObj->ReloadValue * (uint64_t)newLsiFreq)
+                                        + ((uint64_t)oldLsiFreq / 2U))
+                                       / (uint64_t)oldLsiFreq);
+  }
+
+  (void)TIMER_IF_SetTimerContext();
+
+  timerObj = UTIL_TIMER_GetTimerList();
+
+  /* Ensure the next alarm is not scheduled in the past. */
+  if (timerObj != NULL)
+  {
+    uint32_t minTimeout = UTIL_TimerDriver.GetMinimumTimeout();
+    if (timerObj->Timestamp < minTimeout)
+    {
+      timerObj->Timestamp = minTimeout;
+    }
+  }
+
+
+  /* Re-arm the alarm after leaving the critical section. */
+  if (timerObj != NULL)
+  {
+    (void)TIMER_IF_StartTimer(timerObj->Timestamp);
+  }
+}
+
+static void LSI2_Periodic_Calib(void *argument)
+{
+  UNUSED(argument);
+  LSI2_Recalibrate();
+}
+
+
+#endif /* CFG_LSI2_CALIB_SUPPORTED */
 
 /* USER CODE END FD_WRAP_FUNCTIONS */

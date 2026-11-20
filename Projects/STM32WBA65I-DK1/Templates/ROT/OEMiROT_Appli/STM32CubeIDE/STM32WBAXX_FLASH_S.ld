@@ -46,8 +46,6 @@ _Min_Stack_Size = S_C_STACK_SIZE ;/* required amount of stack */
 MEMORY
 {
   RAM              (xrw): ORIGIN = S_RAM_START, LENGTH = S_RAM_SIZE
-  BOOT_RAM_MEM     (rw) : ORIGIN = BOOT_RAM_BASE, LENGTH = BOOT_RAM_SIZE
-  BOOT_SHARED_MEM  (rw) : ORIGIN = BOOT_SHARED_DATA_BASE, LENGTH = BOOT_SHARED_DATA_SIZE
   ROM              (rx): ORIGIN = S_CODE_START, LENGTH = S_CODE_SIZE
 }
 
@@ -199,20 +197,6 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = ALIGN(8);
   } >RAM
-
-  .Boot_Ram_Data (NOLOAD):
-  {
-    . = ALIGN(4);
-    *(.Boot_Ram_Data)
-    . = ALIGN(4);
-  } > BOOT_RAM_MEM
-
-  .Boot_Shared_Data (NOLOAD):
-  {
-    . = ALIGN(4);
-    *(.Boot_Shared_Data)
-    . = ALIGN(4);
-  } > BOOT_SHARED_MEM
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :

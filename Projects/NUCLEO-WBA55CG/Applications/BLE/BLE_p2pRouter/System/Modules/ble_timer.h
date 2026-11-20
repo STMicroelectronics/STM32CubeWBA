@@ -21,6 +21,10 @@
 #ifndef BLE_TIMER_H__
 #define BLE_TIMER_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void BLE_TIMER_Init( void );
 void BLE_TIMER_Deinit( void );
 
@@ -34,5 +38,9 @@ void BLE_TIMER_Background(void);
 /* Callback
  */
 void BLE_TIMERCB_Expiry( uint16_t id );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BLE_TIMER_H__ */

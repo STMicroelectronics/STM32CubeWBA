@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -120,7 +120,6 @@
 /* connIntervalmax = Conn_Interval_Max x 1.25ms */
 #define ADV_CONN_INTVL_MIN                  16 /* 20 mS */
 #define ADV_CONN_INTVL_MAX                  80 /* 100 mS - this is the ZD recommended max */
-
 /* USER CODE END Generic_Parameters */
 
 /**< specific parameters */
@@ -144,46 +143,33 @@
                                      0 | \
                                      0 | \
                                      0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
                                      0)
 
 /**
- * Maximum number of simultaneous connections and advertising that the device will support.
+ * Maximum number of simultaneous connections that the device will support.
  * This setting should not exceed the number of BLE connection supported by BLE host stack.
  */
 #define CFG_BLE_NUM_LINK            (2)
 
 /**
- * Maximum number of Services that can be stored in the GATT database.
- * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
+ * Maximum number of simultaneous state machine supported by the LinkLayer, requirements are:
+ * - one per Extended Advertising Set
+ * - one for Periodic Advertising Sync
+ * - one per ACL connection
+ * - one per Broadcast Isochronous Group
+ * - one per Connected Isochronous Stream
  */
-#define CFG_BLE_NUM_GATT_SERVICES   (12)
-
-/**
- * Maximum number of Attributes
- * (i.e. the number of characteristic + the number of characteristic values + the number of descriptors, excluding the services)
- * that can be stored in the GATT database.
- * Note that certain characteristics and relative descriptors are added automatically during device initialization
- * so this parameters should be 9 plus the number of user Attributes
- */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES (96)
+#define CFG_BLE_NUM_STATE_MACHINES  (4)
 
 /**
  * Maximum supported ATT_MTU size
  * This setting should be aligned with ATT_MTU value configured in the ble host
  */
 #define CFG_BLE_ATT_MTU_MAX         (247)
-
-/**
- * Size of the storage area for Attribute values
- *  This value depends on the number of attributes used by application. In particular the sum of the following quantities (in octets) should be made for each attribute:
- *  - attribute value length
- *  - 5, if UUID is 16 bit; 19, if UUID is 128 bit
- *  - 2, if server configuration descriptor is used
- *  - 2*DTM_NUM_LINK, if client configuration descriptor is used
- *  - 2, if extended properties is used
- *  The total amount of memory needed is the sum of the above quantities for each attribute.
- */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (2048)
 
 /**
  * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
@@ -203,7 +189,8 @@
  * Number of allocated memory blocks used to transmit and receive data packets
  */
 #define CFG_BLE_MBLOCK_COUNT          (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                       CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
+                                       MAX(MAX(CFG_BLE_ATT_MTU_MAX, CFG_BLE_COC_MPS_MAX), SM_MTU),\
+                                       CFG_BLE_NUM_LINK) \
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
@@ -230,7 +217,7 @@
  * Connection Oriented Channel parameters
  */
 #define CFG_BLE_COC_NBR_MAX           (64)
-#define CFG_BLE_COC_MPS_MAX           (248)
+#define CFG_BLE_COC_MPS_MAX           (23)
 #define CFG_BLE_COC_INITIATOR_NBR_MAX (32)
 
 /**
@@ -381,7 +368,8 @@ typedef enum
   CFG_TASK_FLASH_MANAGER,
   CFG_TASK_MAC_LAYER,
   CFG_TASK_ZIGBEE_LAYER,
-  CFG_TASK_ZIGBEE_NETWORK_FORM,   /* Tasks linked to Zigbee Start. */
+  CFG_TASK_ZIGBEE_NETWORK_FORM,
+  CFG_TASK_ZIGBEE_NETWORK_REJOIN,
   CFG_TASK_ZIGBEE_APP_START,
   CFG_TASK_ZIGBEE_PERSISTENCE,
   CFG_TASK_ZIGBEE_OTA_REQUEST_UPGRADE,
@@ -394,9 +382,10 @@ typedef enum
   CFG_TASK_BSP_BUTTON_B1,
   CFG_TASK_BSP_BUTTON_B2,
   CFG_TASK_BSP_BUTTON_B3,
+
   CFG_TASK_ZIGBEE_ZDD,
   CFG_TASK_MEAS_REQ_ID,
-  CFG_TASK_ADV_LP_REQ_ID,  
+  CFG_TASK_ADV_LP_REQ_ID,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -429,6 +418,7 @@ typedef enum
 #define TASK_MAC_LAYER                      ( 1u << CFG_TASK_MAC_LAYER )
 #define TASK_ZIGBEE_LAYER                   ( 1u << CFG_TASK_ZIGBEE_LAYER )
 #define TASK_ZIGBEE_NETWORK_FORM            ( 1u << CFG_TASK_ZIGBEE_NETWORK_FORM )
+#define TASK_ZIGBEE_NETWORK_REJOIN          ( 1u << CFG_TASK_ZIGBEE_NETWORK_REJOIN )
 #define TASK_ZIGBEE_APP_START               ( 1u << CFG_TASK_ZIGBEE_APP_START )
 #define TASK_ZIGBEE_PERSISTENCE             ( 1u << CFG_TASK_ZIGBEE_PERSISTENCE )
 #define TASK_ZIGBEE_OTA_REQUEST_UPGRADE     ( 1u << CFG_TASK_ZIGBEE_OTA_REQUEST_UPGRADE )
@@ -438,6 +428,10 @@ typedef enum
 #define TASK_ZIGBEE_APP3                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
 #define TASK_ZIGBEE_APP4                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
 /* USER CODE BEGIN TASK_ID_Define */
+
+#define TASK_BSP_BUTTON_B1                  ( 1u << CFG_TASK_BSP_BUTTON_B1 )
+#define TASK_BSP_BUTTON_B2                  ( 1u << CFG_TASK_BSP_BUTTON_B2 )
+#define TASK_BSP_BUTTON_B3                  ( 1u << CFG_TASK_BSP_BUTTON_B3 )
 #define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BSP_BUTTON_B1 )
 #define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BSP_BUTTON_B2 )
 #define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BSP_BUTTON_B3 )
@@ -469,7 +463,6 @@ typedef enum
   CFG_FLASH_MUTEX,
   CFG_EVENT_PROC_GAP_COMPLETE,
   /* USER CODE BEGIN CFG_Event_Id_t */
-
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -494,10 +487,8 @@ typedef enum
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
-
 /* NVM area is placed at the end of the flash memory */
 #define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED)
-
   /**
    * This is the max size of data the THREAD Stack needs to write in NVM
    * This is different to the size allocated in the EEPROM emulator
@@ -527,19 +518,6 @@ typedef enum
 
 #define CFG_RT_DEBUG_GPIO_MODULE            (0)
 #define CFG_RT_DEBUG_DTB                    (0)
-
-/******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -606,6 +584,7 @@ typedef enum
 /* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
+
 /**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
@@ -625,16 +604,6 @@ typedef enum
   #undef  CFG_LED_SUPPORTED
   #define CFG_LED_SUPPORTED         (0)
 #endif /* CFG_FULL_LOW_POWER */
-
-#if ( CFG_LED_SUPPORTED == 1 )
-#define APP_LED_ON( LED )           BSP_LED_On( LED )
-#define APP_LED_OFF( LED )          BSP_LED_Off( LED )
-#define APP_LED_TOGGLE( LED )       BSP_LED_Toggle( LED )
-#else /* ( CFG_LED_SUPPORTED == 1 ) */
-#define APP_LED_ON( LED )
-#define APP_LED_OFF( LED )
-#define APP_LED_TOGGLE( LED )
-#endif  /* ( CFG_LED_SUPPORTED == 1 ) */
 
 /* USER CODE END Defines */
 
@@ -678,6 +647,7 @@ typedef enum
  #endif
 
 /* USER CODE BEGIN Defines_2 */
+
 /**
  * Switch to enable/disable BLE radio activity shown on green LED
  * 0 : disable / 1 : enable
@@ -687,7 +657,7 @@ typedef enum
 #if (CFG_LED_SUPPORTED == 0)
 #undef BLE_RADIO_ACTIVITY_ON_LED_SUPPORT
 #define BLE_RADIO_ACTIVITY_ON_LED_SUPPORT               (0)
-#endif 
+#endif
 /* USER CODE END Defines_2 */
 
 #endif /*APP_CONF_H */

@@ -2,23 +2,34 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="pandoc 3.10" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Release Notes for PDM2PCM Library</title>
   <style>
-    code{white-space: pre-wrap;}
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
   <link rel="stylesheet" href="_htmresc/mini-st_2020.css" />
   <link rel="icon" type="image/x-icon" href="../_htmresc/favicon.png" />
-  <!--[if lt IE 9]>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
-  <![endif]-->
 </head>
 <body>
 <div class="row">
@@ -44,15 +55,72 @@ configurable at any time and allows 1dB step in the range of -12dB to
 <section id="update-history" class="col-sm-12 col-lg-8">
 <h1>Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section_3.7.1" checked aria-hidden="true">
-<label for="collapse-section_3.7.0" aria-hidden="true">V3.7.1 /
-21-May-2026</label>
+<input type="checkbox" id="collapse-section_3.7.2" checked aria-hidden="true">
+<label for="collapse-section_3.7.2" aria-hidden="true">V3.7.2 /
+28-August-2026</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
 <ul>
-<li>Add SW Security Classification</li>
+<li>Removed the locking mechanism for the STM32 MCU</li>
+<li>List of updated files:
+<ul>
+<li>libPDMFilter_CM0_GCC_wc16.a</li>
+<li>libPDMFilter_CM0_GCC_wc32.a</li>
+<li>libPDMFilter_CM0_IAR_wc16.a</li>
+<li>libPDMFilter_CM0_IAR_wc32.a</li>
+<li>libPDMFilter_CM0_Keil_wc16.lib</li>
+<li>libPDMFilter_CM33_GCC_wc16.a</li>
+<li>libPDMFilter_CM33_GCC_wc16_softfp.a</li>
+<li>libPDMFilter_CM33_GCC_wc32.a</li>
+<li>libPDMFilter_CM33_GCC_wc32_softfp.a</li>
+<li>libPDMFilter_CM33_IAR_wc16.a</li>
+<li>libPDMFilter_CM33_IAR_wc32.a</li>
+<li>libPDMFilter_CM33_Keil_wc16.lib</li>
+<li>libPDMFilter_CM3_GCC_wc16.a</li>
+<li>libPDMFilter_CM3_GCC_wc32.a</li>
+<li>libPDMFilter_CM3_IAR_wc16.a</li>
+<li>libPDMFilter_CM3_IAR_wc32.a</li>
+<li>libPDMFilter_CM3_Keil_wc16.lib</li>
+<li>libPDMFilter_CM4_GCC_wc16.a</li>
+<li>libPDMFilter_CM4_GCC_wc16_soft.a</li>
+<li>libPDMFilter_CM4_GCC_wc16_softfp.a</li>
+<li>libPDMFilter_CM4_GCC_wc32.a</li>
+<li>libPDMFilter_CM4_GCC_wc32_soft.a</li>
+<li>libPDMFilter_CM4_GCC_wc32_softfp.a</li>
+<li>libPDMFilter_CM4_IAR_wc16.a</li>
+<li>libPDMFilter_CM4_IAR_wc32.a</li>
+<li>libPDMFilter_CM4_Keil_wc16.lib</li>
+<li>libPDMFilter_CM55_GCC_wc16.a</li>
+<li>libPDMFilter_CM55_GCC_wc16_soft.a</li>
+<li>libPDMFilter_CM55_GCC_wc16_softfp.a</li>
+<li>libPDMFilter_CM55_GCC_wc32.a</li>
+<li>libPDMFilter_CM55_GCC_wc32_soft.a</li>
+<li>libPDMFilter_CM55_GCC_wc32_softfp.a</li>
+<li>libPDMFilter_CM55_IAR_wc32.a</li>
+<li>libPDMFilter_CM55_Keil_wc16.lib</li>
+<li>libPDMFilter_CM7_GCC_wc16.a</li>
+<li>libPDMFilter_CM7_GCC_wc16_softfp.a</li>
+<li>libPDMFilter_CM7_GCC_wc32.a</li>
+<li>libPDMFilter_CM7_GCC_wc32_softfp.a</li>
+<li>libPDMFilter_CM7_IAR_wc16.a</li>
+<li>libPDMFilter_CM7_IAR_wc32.a</li>
+<li>libPDMFilter_CM7_Keil_wc16.lib</li>
+</ul></li>
 </ul>
 <h2 id="backward-compatibility">Backward Compatibility</h2>
+<p>None</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section_3.7.1" aria-hidden="true">
+<label for="collapse-section_3.7.0" aria-hidden="true">V3.7.1 /
+21-May-2026</label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
+<ul>
+<li>Add SW Security Classification</li>
+</ul>
+<h2 id="backward-compatibility-1">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -61,7 +129,7 @@ configurable at any time and allows 1dB step in the range of -12dB to
 <label for="collapse-section_3.7.0" aria-hidden="true">V3.7.0 /
 27-November-2024</label>
 <div>
-<h2 id="main-changes-1">Main Changes</h2>
+<h2 id="main-changes-2">Main Changes</h2>
 <ul>
 <li>Add PDM Filter libraries for Cortex-M55 (CM55).
 <ul>
@@ -75,7 +143,7 @@ configurable at any time and allows 1dB step in the range of -12dB to
 <li>libPDMFilter_CM55_Keil_wc16.lib</li>
 </ul></li>
 </ul>
-<h2 id="backward-compatibility-1">Backward Compatibility</h2>
+<h2 id="backward-compatibility-2">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -84,7 +152,7 @@ configurable at any time and allows 1dB step in the range of -12dB to
 <label for="collapse-section_3.6.0" aria-hidden="true">V3.6.0 /
 07-March-2024</label>
 <div>
-<h2 id="main-changes-2">Main Changes</h2>
+<h2 id="main-changes-3">Main Changes</h2>
 <ul>
 <li>Bug fix: Kept legacy API (PDM_Filter_Init, PDM_Filter_setConfig,
 PDM_Filter_getConfig, PDM_Filter in pdm2pcm_glo.h) in which bit_order
@@ -133,7 +201,7 @@ ones.</li>
 <li>libPDMFilter_CM7_Keil_wc16.lib</li>
 </ul></li>
 </ul>
-<h2 id="backward-compatibility-2">Backward Compatibility</h2>
+<h2 id="backward-compatibility-3">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -142,12 +210,12 @@ ones.</li>
 <label for="collapse-section_3.5.1" aria-hidden="true">V3.5.1 /
 01-September-2023</label>
 <div>
-<h2 id="main-changes-3">Main Changes</h2>
+<h2 id="main-changes-4">Main Changes</h2>
 <ul>
 <li>All source files: update disclaimer to add reference to the new
 license agreement.</li>
 </ul>
-<h2 id="backward-compatibility-3">Backward Compatibility</h2>
+<h2 id="backward-compatibility-4">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -156,7 +224,7 @@ license agreement.</li>
 <label for="collapse-section_3.5.0" aria-hidden="true">V3.5.0 /
 13-March-2023</label>
 <div>
-<h2 id="main-changes-4">Main Changes</h2>
+<h2 id="main-changes-5">Main Changes</h2>
 <ul>
 <li>Update PDM Filter libraries for Cortex-M0 (CM0).
 <ul>
@@ -169,7 +237,7 @@ license agreement.</li>
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="backward-compatibility-4">Backward Compatibility</h2>
+<h2 id="backward-compatibility-5">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -178,7 +246,7 @@ license agreement.</li>
 <label for="collapse-section_3.4.0" aria-hidden="true">V3.4.0 /
 02-February-2021</label>
 <div>
-<h2 id="main-changes-5">Main Changes</h2>
+<h2 id="main-changes-6">Main Changes</h2>
 <ul>
 <li>Update PDM Filter libraries for Cortex-M4 (CM4). Add compiler
 barriers to fix issue with O3 optimization in GCC.
@@ -243,7 +311,7 @@ to fix issue with O3 optimization in GCC.
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="backward-compatibility-5">Backward Compatibility</h2>
+<h2 id="backward-compatibility-6">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -252,7 +320,7 @@ to fix issue with O3 optimization in GCC.
 <label for="collapse-section_3.3.0" aria-hidden="true">V3.3.0 /
 20-April-2020</label>
 <div>
-<h2 id="main-changes-6">Main Changes</h2>
+<h2 id="main-changes-7">Main Changes</h2>
 <ul>
 <li>Update PDM Filter libraries for Cortex-M7 (CM7) to support
 STM32H72x/3x devices
@@ -269,7 +337,7 @@ STM32H72x/3x devices
 <li>Note: New CM7 libs support both CortexM7 core versions for STM32F7
 and STM32H7 (STM32H74x/5x, STM32H7Ax/Bx, STM32H72x/3x) series</li>
 </ul>
-<h2 id="backward-compatibility-6">Backward Compatibility</h2>
+<h2 id="backward-compatibility-7">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -278,7 +346,7 @@ and STM32H7 (STM32H74x/5x, STM32H7Ax/Bx, STM32H72x/3x) series</li>
 <label for="collapse-section_3.2.0" aria-hidden="true">V3.2.0 /
 06-November-2019</label>
 <div>
-<h2 id="main-changes-7">Main Changes</h2>
+<h2 id="main-changes-8">Main Changes</h2>
 <ul>
 <li>Add new PDM Filter libraries compliant with GCC version with FPU =
 softfp
@@ -314,7 +382,7 @@ libPDMFilter_CM3_GCC_wc32.a</li>
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="backward-compatibility-7">Backward Compatibility</h2>
+<h2 id="backward-compatibility-8">Backward Compatibility</h2>
 <p>None</p>
 <h2 id="dependencies">Dependencies</h2>
 <p>None</p>
@@ -325,7 +393,7 @@ libPDMFilter_CM3_GCC_wc32.a</li>
 <label for="collapse-section_3.1.0" aria-hidden="true">V3.1.0 /
 29-September-2018</label>
 <div>
-<h2 id="main-changes-8">Main Changes</h2>
+<h2 id="main-changes-9">Main Changes</h2>
 <ul>
 <li>Update PDM Filter libraries for CortexM7 (CM7) and cortexM4 (CM4)
 core versions.</li>
@@ -363,7 +431,7 @@ libPDMFilter_CM7_GCC_wc32.</li>
 <li>Note: New CM7 libs support both CortexM7 core versions for STM32F7
 and STM32H7 series</li>
 </ul>
-<h2 id="backward-compatibility-8">Backward Compatibility</h2>
+<h2 id="backward-compatibility-9">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -372,7 +440,7 @@ and STM32H7 series</li>
 <label for="collapse-section_3.0.1" aria-hidden="true">V3.0.1 /
 29-December-2017</label>
 <div>
-<h2 id="main-changes-9">Main Changes</h2>
+<h2 id="main-changes-10">Main Changes</h2>
 <ul>
 <li>Update libPDMFilter_CM7_Keil.lib to support CortexM7 (CM7) core
 version available on STM32F7 family.</li>
@@ -388,7 +456,7 @@ libPDMFilter_CM7_Keil.lib supporting both CortexM7 core versions
 available on STM32H7 family is available on PDM Lib version V3.0.0</li>
 </ul></li>
 </ul>
-<h2 id="backward-compatibility-9">Backward Compatibility</h2>
+<h2 id="backward-compatibility-10">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -397,7 +465,7 @@ available on STM32H7 family is available on PDM Lib version V3.0.0</li>
 <label for="collapse-section_3.0.0" aria-hidden="true">V3.0.0 /
 28-February-2017</label>
 <div>
-<h2 id="main-changes-10">Main Changes</h2>
+<h2 id="main-changes-11">Main Changes</h2>
 <ul>
 <li><p>Major APIs change</p></li>
 <li><p>Only one filtering function is provided PDM_Filter()</p></li>
@@ -426,7 +494,7 @@ routine PDM_Filter() can be called. Between two consecutive calls to
 this filter routine, the dynamic parameters can be changed.</li>
 </ul></li>
 </ul>
-<h2 id="backward-compatibility-10">Backward Compatibility</h2>
+<h2 id="backward-compatibility-11">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -435,7 +503,7 @@ this filter routine, the dynamic parameters can be changed.</li>
 <label for="collapse-section_2.1.0" aria-hidden="true">V2.1.0 /
 31-March-2015</label>
 <div>
-<h2 id="main-changes-11">Main Changes</h2>
+<h2 id="main-changes-12">Main Changes</h2>
 <ul>
 <li>Add Binaries for CortexM7 (CM7) core</li>
 <li>PDM_Filter_128_MSB() and PDM_Filter_128_LSB() functions: enhance
@@ -443,7 +511,7 @@ volume setting, it was lower than expected</li>
 <li>PDM_Filter_64_MSB() function: fix issue when using more than 2
 microphones</li>
 </ul>
-<h2 id="backward-compatibility-11">Backward Compatibility</h2>
+<h2 id="backward-compatibility-12">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -452,11 +520,11 @@ microphones</li>
 <label for="collapse-section_2.0.1" aria-hidden="true">V2.0.1 /
 17-December-2013</label>
 <div>
-<h2 id="main-changes-12">Main Changes</h2>
+<h2 id="main-changes-13">Main Changes</h2>
 <ul>
 <li>In HTONS() macro, change u16 type by uint16_t</li>
 </ul>
-<h2 id="backward-compatibility-12">Backward Compatibility</h2>
+<h2 id="backward-compatibility-13">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -465,13 +533,13 @@ microphones</li>
 <label for="collapse-section_2.0.0" aria-hidden="true">V2.0.0 /
 07-August-2013</label>
 <div>
-<h2 id="main-changes-13">Main Changes</h2>
+<h2 id="main-changes-14">Main Changes</h2>
 <ul>
 <li>Update Library binary name format</li>
 <li>Add Library version optimized for CM0, CM3 and CM4F cores</li>
 <li>Add functions for decimation factor 128</li>
 </ul>
-<h2 id="backward-compatibility-13">Backward Compatibility</h2>
+<h2 id="backward-compatibility-14">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -480,12 +548,12 @@ microphones</li>
 <label for="collapse-section_1.1.2" aria-hidden="true">V1.1.2 /
 17-April-2012</label>
 <div>
-<h2 id="main-changes-14">Main Changes</h2>
+<h2 id="main-changes-15">Main Changes</h2>
 <ul>
 <li>All source files: license disclaimer text update and add link to the
 License file on ST Internet.</li>
 </ul>
-<h2 id="backward-compatibility-14">Backward Compatibility</h2>
+<h2 id="backward-compatibility-15">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -494,14 +562,14 @@ License file on ST Internet.</li>
 <label for="collapse-section_1.1.1" aria-hidden="true">V1.1.1 /
 30-December-2011</label>
 <div>
-<h2 id="main-changes-15">Main Changes</h2>
+<h2 id="main-changes-16">Main Changes</h2>
 <ul>
 <li>PDM Library moved from Utilities32F4-Discovery to
 Utilities_Audio Addons PDM folder</li>
 <li>Add new license agreement “MCD-ST Image SW License Agreement
 V2.pdf”</li>
 </ul>
-<h2 id="backward-compatibility-15">Backward Compatibility</h2>
+<h2 id="backward-compatibility-16">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -510,7 +578,7 @@ V2.pdf”</li>
 <label for="collapse-section_1.1.0" aria-hidden="true">V1.1.0 /
 28-October-2011</label>
 <div>
-<h2 id="main-changes-16">Main Changes</h2>
+<h2 id="main-changes-17">Main Changes</h2>
 <ul>
 <li>Add <strong><em>PDM audio software decoding Library</em></strong>
 drivers, used to decode and reconstruct the audio signal produced by
@@ -520,7 +588,7 @@ decoding on STM32 microcontrollers (AN3998)”</em></strong>.</li>
 <li>stm32f4_discovery_audio_codec.c/.h: update to use DMA instead of
 Interrupt in I2S communication with the external codec.</li>
 </ul>
-<h2 id="backward-compatibility-16">Backward Compatibility</h2>
+<h2 id="backward-compatibility-17">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>
@@ -529,12 +597,12 @@ Interrupt in I2S communication with the external codec.</li>
 <label for="collapse-section_1.0.0" aria-hidden="true">V1.0.0 /
 19-September-2011</label>
 <div>
-<h2 id="main-changes-17">Main Changes</h2>
+<h2 id="main-changes-18">Main Changes</h2>
 <ul>
 <li>First official version of the <strong><em>STM32F4-Discovery Board
 Drivers</em></strong></li>
 </ul>
-<h2 id="backward-compatibility-17">Backward Compatibility</h2>
+<h2 id="backward-compatibility-18">Backward Compatibility</h2>
 <p>None</p>
 </div>
 </div>

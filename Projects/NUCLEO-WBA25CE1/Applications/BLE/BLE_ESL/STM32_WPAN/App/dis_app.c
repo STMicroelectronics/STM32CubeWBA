@@ -76,7 +76,6 @@ static DIS_APP_Context_t DIS_APP_Context;
 uint8_t a_DIS_UpdateCharData[247];
 
 /* USER CODE BEGIN PV */
-
 uint8_t DISAPP_PNPID_REVISION[] = {0x01, 0x30, 0x00, 0x02, 0x00, 0x01, 0x00};
 
 /* USER CODE END PV */

@@ -29,6 +29,15 @@ Note: This example can not be used in DEBUG mode due to the fact
       that the Cortex-M33 core is no longer clocked during low power mode 
       so debugging features are disabled.
 
+## <b>Measured Current Consumption</b>
+
+| Mode    | Current Consumption |
+|---------|---------------------|
+| Run     | 3.7 mA              |
+| Standby | 3.3 µA              |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
+
 #### <b>Notes</b>
 
  1. Care must be taken when HAL_RCCEx_PeriphCLKConfig() is used to select 
@@ -70,6 +79,10 @@ Power, PWR, Standby mode, Interrupt, EXTI, Wakeup, Low Power, RTC, External rese
 
   - NUCLEO-WBA25CE1 Set-up
     - Use LD1 and LD3 connected respectively to PA.07 and PB.15 pins
+
+**Note:** when measuring the MCU current consumption, the external QSPI flash memory (U3) must not be supplied, so SB47 must be removed on the MCU RF board (MB2293). It is mentioned here in the board user manual [STM32WBA Nucleo-64 board (MB1801 and MB2293) - User manual](https://www.st.com/resource/en/user_manual/um3610-stm32wba-nucleo64-board-mb1801-and-mb2293-stmicroelectronics.pdf).
+
+So this measurement is done after removing SB47 on the MCU RF board.
 
 ### <b>How to use it ?</b>
 

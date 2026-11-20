@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -33,6 +33,7 @@ extern "C" {
 #include <stdbool.h>
 #include "stm_list.h"
 #include "ble_types.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -67,33 +68,34 @@ typedef struct
 /* Exported constants --------------------------------------------------------*/
 
 /* USER CODE BEGIN EC */
-#define ESL_SERVICE_UUID                                                (0x1857)
-#define ESL_ADDRESS_UUID                                                (0x2BF6)
-#define AP_SYNC_KEY_MATERIAL_UUID                                       (0x2BF7)
-#define ESL_RESP_KEY_MATERIAL_UUID                                      (0x2BF8)
-#define ESL_CURR_ABS_TIME_UUID                                          (0x2BF9)
-#define ESL_CONTROL_POINT_UUID                                          (0x2BFE)
-#define ESL_DISPLAY_INFO_UUID                                           (0x2BFA)
-#define ESL_IMAGE_INFO_UUID                                             (0x2BFB)
-#define ESL_SENSOR_INFO_UUID                                            (0x2BFC)
-#define ESL_LED_INFO_UUID                                               (0x2BFD)
 
-#define OBJECT_TRANSFER_SERVICE_UUID                                    (0x1825)
-#define OTS_FEATURE_UUID                                                (0x2ABD)
-#define OBJECT_NAME_UUID                                                (0x2ABE)
-#define OBJECT_TYPE_UUID                                                (0x2ABF)
-#define OBJECT_SIZE_UUID                                                (0x2AC0)
-#define OBJECT_FIRST_CREATED_UUID                                       (0x2AC1)
-#define OBJECT_LAST_MODIFIED_UUID                                       (0x2AC2)
-#define OBJECT_ID_UUID                                                  (0x2AC3)
-#define OBJECT_PROPERTIES_UUID                                          (0x2AC4)
-#define OBJECT_ACTION_CONTROL_POINT_UUID                                (0x2AC5)
-#define OBJECT_LIST_CONTROL_POINT_UUID                                  (0x2AC6)
-#define OBJECT_LIST_FILTER_POINT_UUID                                   (0x2AC7)
-#define OBJECT_CHANGED_UUID                                             (0x2AC8)
-     
-#define DEVICE_INFORMATION_SERVICE_UUID                                 (0x180A)
-#define PNPID_UUID                                                      (0x2A50)
+#define ESL_SERVICE_UUID                                              (0x1857)
+#define ESL_ADDRESS_UUID                                              (0x2BF6)
+#define AP_SYNC_KEY_MATERIAL_UUID                                     (0x2BF7)
+#define ESL_RESP_KEY_MATERIAL_UUID                                    (0x2BF8)
+#define ESL_CURR_ABS_TIME_UUID                                        (0x2BF9)
+#define ESL_CONTROL_POINT_UUID                                        (0x2BFE)
+#define ESL_DISPLAY_INFO_UUID                                         (0x2BFA)
+#define ESL_IMAGE_INFO_UUID                                           (0x2BFB)
+#define ESL_SENSOR_INFO_UUID                                          (0x2BFC)
+#define ESL_LED_INFO_UUID                                             (0x2BFD)
+
+#define OBJECT_TRANSFER_SERVICE_UUID                                  (0x1825)
+#define OTS_FEATURE_UUID                                              (0x2ABD)
+#define OBJECT_NAME_UUID                                              (0x2ABE)
+#define OBJECT_TYPE_UUID                                              (0x2ABF)
+#define OBJECT_SIZE_UUID                                              (0x2AC0)
+#define OBJECT_FIRST_CREATED_UUID                                     (0x2AC1)
+#define OBJECT_LAST_MODIFIED_UUID                                     (0x2AC2)
+#define OBJECT_ID_UUID                                                (0x2AC3)
+#define OBJECT_PROPERTIES_UUID                                        (0x2AC4)
+#define OBJECT_ACTION_CONTROL_POINT_UUID                              (0x2AC5)
+#define OBJECT_LIST_CONTROL_POINT_UUID                                (0x2AC6)
+#define OBJECT_LIST_FILTER_POINT_UUID                                 (0x2AC7)
+#define OBJECT_CHANGED_UUID                                           (0x2AC8)
+
+#define DEVICE_INFORMATION_SERVICE_UUID                               (0x180A)
+#define PNPID_UUID                                                    (0x2A50)
 
 /* USER CODE END EC */
 
@@ -126,6 +128,7 @@ uint8_t GATT_CLIENT_APP_ReadImageInfo(uint16_t connection_handle);
 uint8_t GATT_CLIENT_APP_ReadSensorInfo(uint16_t connection_handle);
 uint8_t GATT_CLIENT_APP_ReadLedInfo(uint16_t connection_handle);
 uint8_t GATT_CLIENT_APP_ReadPnPID(uint16_t connection_handle);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

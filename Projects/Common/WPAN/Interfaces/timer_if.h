@@ -153,6 +153,15 @@ void TIMER_IF_BkUp_Write_SubSeconds(uint32_t SubSeconds);
   */
 uint32_t TIMER_IF_BkUp_Read_SubSeconds(void);
 
+/**
+  * @brief Runtime RTC clock source hook.
+  * @note  Weak function - can be overridden by the application to provide a
+  *        measured runtime RTC clock frequency.
+  *        Default implementation returns TIMER_IF_RTCCLK_FREQ_HZ.
+  * @retval RTC kernel clock in Hz
+  */
+uint32_t TIMER_IF_GetRuntimeRtcClockHz(void);
+
 #ifdef __cplusplus
 }
 #endif

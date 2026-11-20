@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -80,7 +80,7 @@ typedef enum
   SVC_ID_GAP = 0,
   SVC_ID_GATT,
   /* USER CODE BEGIN svcId_t */
-
+  SVC_ID_PWR_CO,
   /* USER CODE END svcId_t */
   SVC_ID_MAX
 }svcId_t;
@@ -126,7 +126,6 @@ typedef struct
   uint16_t ServiceChangedCharDescHdl;
   uint8_t ServiceChangedCharProperties;
   /* USER CODE BEGIN BleClientAppContext_t */
-
   /* handles of the PwrCo service */
   uint16_t PwrCoServiceHdl;
   uint16_t PwrCoServiceEndHdl;
@@ -191,16 +190,13 @@ static BleClientAppContext_t a_ClientContext[CFG_BLE_NUM_CLIENT_CONTEXTS];
 static BleClientAppProcContext_t procClientContext;
 
 /* USER CODE BEGIN PV */
-
 static uint8_t Notification_Data_Buffer[USER_PAYLOAD_LENGTH];
-
 static PWR_CO_Context_t PWR_CO_Context;
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
-
 PWR_CO_GPIO_Status_t PWR_CO_GPIO_Status;
 
 /* USER CODE END GV */
@@ -220,7 +216,6 @@ static void gatt_cmd_resp_release(void);
 static uint8_t gatt_cmd_resp_wait(void);
 static uint8_t gatt_procedure(uint8_t index, ProcGattId_t GattProcId);
 /* USER CODE BEGIN PFP */
-
 void FormatingBytes(uint8_t *SendData, uint8_t nbByte);
 static void SendDataWrite(void);
 
@@ -264,7 +259,7 @@ void GATT_CLIENT_APP_Init(void)
     a_ClientContext[index].svcInfo[SVC_ID_GAP].uuid  = GAP_SERVICE_UUID;
     a_ClientContext[index].svcInfo[SVC_ID_GATT].uuid = GATT_SERVICE_UUID;
     /* USER CODE BEGIN GATT_CLIENT_APP_Init_4 */
-
+    a_ClientContext[index].svcInfo[SVC_ID_PWR_CO].uuid = ST_LPWR_CO_SERVICE_UUID;
     /* USER CODE END GATT_CLIENT_APP_Init_4 */
   }
 
@@ -275,7 +270,6 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_task);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
-
   PWR_CO_GPIO_Status = PWR_CO_GPIO_ON;
 
   for (i = 0 ; i < (USER_PAYLOAD_LENGTH) ; i++)
@@ -674,17 +668,10 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
       {
         uint16_t charPropVal = 0x0000;
 
-        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000)
+        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000
+            && ((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
         {
-          if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_NOTIFY) == CHAR_PROP_NOTIFY)
-          {
-            charPropVal = 0x0001;
-          }
-          else if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
-          {
-            charPropVal = 0x0002;
-          }
-
+          charPropVal = 0x0002;
           procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
@@ -711,7 +698,8 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
             gatt_cmd_resp_wait();
-            LOG_INFO_APP(" aci_gatt_write_char_value success PWR_CO_NotificationDescHdl =0x%04X\n",a_ClientContext[index].PWR_CO_NotificationDescHdl);
+            LOG_INFO_APP(" aci_gatt_write_char_value success PWR_CO_NotificationDescHdl =0x%04X\n",
+                           a_ClientContext[index].PWR_CO_NotificationDescHdl);
           }
           else
           {
@@ -1005,7 +993,12 @@ static void gatt_parse_services(aci_att_read_by_group_type_resp_event_rp0 *p_evt
       }
       LOG_INFO_APP("\n");
       /* USER CODE BEGIN gatt_parse_services_1 */
-
+      if (uuid == ST_LPWR_CO_SERVICE_UUID)
+      {
+        a_ClientContext[index].PwrCoServiceHdl = ServiceStartHdl;
+        a_ClientContext[index].PwrCoServiceEndHdl = ServiceEndHdl;
+        LOG_INFO_APP(", ST_LPWR_CO_SERVICE_UUID found\n");
+      }
       /* USER CODE END gatt_parse_services_1 */
 
       uuid_offset += p_evt->Attribute_Data_Length;
@@ -1199,6 +1192,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
+          a_ClientContext[index].ServiceChangedCharProperties = CharProperties;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
 /* USER CODE BEGIN gatt_parse_chars_1 */

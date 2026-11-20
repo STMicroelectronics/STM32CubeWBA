@@ -50,6 +50,7 @@ extern "C" {
 
 #define RTOS_MAX_THREAD                         (20u)
 
+#define RTOS_STACK_SIZE_XLARGE                  ( 1024u * 4u )
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
@@ -58,7 +59,7 @@ extern "C" {
 #define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_XLARGE
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
 

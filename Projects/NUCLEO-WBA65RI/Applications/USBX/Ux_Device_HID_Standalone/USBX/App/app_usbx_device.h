@@ -27,13 +27,13 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "ux_api.h"
+#include "main.h"
 #include "ux_device_class_hid.h"
 #include "ux_device_mouse.h"
 #include "ux_device_descriptors.h"
 #include "ux_dcd_stm32.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "main.h"
 #include "ux_api.h"
 #include "ux_system.h"
 #include "ux_utility.h"

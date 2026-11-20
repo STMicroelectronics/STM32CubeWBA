@@ -25,6 +25,17 @@
  * with comment.
  */
 
+/* OEMiRoT_TFM configuration */
+/*#define TFM_COMPATIBILITY*/            /* Do not edit. Automatically configured by
+                                          ROT provisioning script, depending on bootpath selected.
+                                          Defined: the project is used for OEMiRoT_TFM boot stage
+                                          Undefined: the project is used for OEMiROT or OEMuROT boot stage */
+
+#if defined(TFM_COMPATIBILITY)
+/* TFM specific flash layout configurations */
+#include "tfm_flash_layout.h"
+#else
+
 /* OEMiROT/OEMuROT configuration */
 /*#define OEMUROT_ENABLE*/                 /* Do not edit. Automatically configured by
                                           ROT provisioning script, depending on bootpath selected.
@@ -63,9 +74,8 @@
 #undef MCUBOOT_APP_IMAGE_NUMBER
 #undef MCUBOOT_S_DATA_IMAGE_NUMBER
 #undef MCUBOOT_NS_DATA_IMAGE_NUMBER
-#undef OEMIROT_EXTERNAL_FLASH_ENABLE
 #define MCUBOOT_APP_IMAGE_NUMBER 1      /* App image contains OEMuRoT code. */
-#define MCUBOOT_S_DATA_IMAGE_NUMBER 0   /* No S Data image for OEMuRoT. */
+#define MCUBOOT_S_DATA_IMAGE_NUMBER 1   /* S Data contains OEMuRoT keys. */
 #define MCUBOOT_NS_DATA_IMAGE_NUMBER 0  /* No NS Data image for OEMuRoT. */
 #endif /* OEMIROT_FIRST_BOOT_STAGE */
 
@@ -149,26 +159,34 @@
  */
 #if defined(STM32WBA65xx)
 #define OEMIROT_AREA_0_SIZE             (0x16000)       /* 88K */
+#define OEMIROT_AREA_4_SIZE             (0x2000)        /* 2K */
 #if defined(OEMIROT_FIRST_BOOT_STAGE_FOR_SWAP)
 #define OEMIROT_AREA_1_SIZE             (0x1A4000)      /* 1680K */
 #else
 #define OEMIROT_AREA_1_SIZE             (0x1B4000)      /* 1744K */
 #endif
 #define OEMIROT_AREA_2_SIZE             (0x16000)       /* 88K */
+#define OEMIROT_AREA_6_SIZE             (0x2000)        /* 2K */
 #if defined (OEMIROT_EXTERNAL_FLASH_ENABLE)
 #define OEMIROT_AREA_2_OFFSET           (0x3E8000)      /* slot 2 address when flash size: 2 MBytes */
+#define OEMIROT_AREA_6_OFFSET           (0x3FE000)      /* slot 6 address when flash size: 2 MBytes */
 #else
 #define OEMIROT_AREA_2_OFFSET           (0x1E8000)      /* slot 2 address when flash size: 2 MBytes */
+#define OEMIROT_AREA_6_OFFSET           (0x1FE000)      /* slot 6 address when flash size: 2 MBytes */
 #endif
+
 #elif defined(STM32WBA52xx) || defined(STM32WBA55xx)
 #define OEMIROT_AREA_0_SIZE             (0x16000)       /* 88K */
+#define OEMIROT_AREA_4_SIZE             (0x2000)        /* 2K */
 #if defined(OEMIROT_FIRST_BOOT_STAGE_FOR_SWAP)
 #define OEMIROT_AREA_1_SIZE             (0xA4000)       /* 656K */
 #else
 #define OEMIROT_AREA_1_SIZE             (0xB4000)       /* 720K */
 #endif
 #define OEMIROT_AREA_2_SIZE             (0x16000)       /* 88K */
+#define OEMIROT_AREA_6_SIZE             (0x2000)        /* 2K */
 #define OEMIROT_AREA_2_OFFSET           (0xE8000)       /* slot 2 address when flash size: 1 MBytes */
+#define OEMIROT_AREA_6_OFFSET           (0xFE000)       /* slot 6 address when flash size: 1 MBytes */
 #else
 #error "Offset and size not defined for another target"
 #endif
@@ -270,7 +288,7 @@
 #define FLASH_NS_PARTITION_SIZE         (0x0)
 
 #else /* OEMIROT_FIRST_BOOT_STAGE */
-#if defined(MCUBOOT_PRIMARY_ONLY)  || defined(TFM_COMPATIBILITY)
+#if defined(MCUBOOT_PRIMARY_ONLY)
 /* For PRIMARY_ONLY we need 512 KB for NS partition */
 #define FLASH_NS_PARTITION_SIZE         (0x80000)
 
@@ -278,41 +296,12 @@
 /* For Others case, we limit the size to 200 KB for NS partition (except for FULL SECURE) */
 #define FLASH_NS_PARTITION_SIZE         (0x32000)
 
-#endif /* MCUBOOT_PRIMARY_ONLY || TFM_COMPATIBILITY */
+#endif /* MCUBOOT_PRIMARY_ONLY */
 #endif /* OEMIROT_FIRST_BOOT_STAGE */
-
-#if defined(TFM_COMPATIBILITY)
-/* OTP / Non-Volatile Counters definitions */
-#define FLASH_OTP_NV_COUNTERS_SECTOR_SIZE (FLASH_AREA_IMAGE_SECTOR_SIZE)
-#define FLASH_OTP_NV_COUNTERS_AREA_OFFSET (FLASH_AREA_BL2_NOHDP_OFFSET + FLASH_AREA_BL2_NOHDP_SIZE)
-#define FLASH_OTP_NV_COUNTERS_AREA_SIZE (FLASH_OTP_NV_COUNTERS_SECTOR_SIZE + FLASH_OTP_NV_COUNTERS_SECTOR_SIZE)
-
-/* Secure Storage (PS) Service definitions */
-#define FLASH_PS_AREA_OFFSET (FLASH_OTP_NV_COUNTERS_AREA_OFFSET+FLASH_OTP_NV_COUNTERS_AREA_SIZE)
-#define FLASH_PS_AREA_SIZE (FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE)
-
-/* Control Secure Storage (PS) Service definitions*/
-#if (FLASH_PS_AREA_OFFSET % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
-#error "FLASH_PS_AREA_OFFSET not aligned on FLASH_AREA_IMAGE_SECTOR_SIZE"
-#endif /* (FLASH_PS_AREA_OFFSET % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0 */
-
-/* Internal Trusted Storage (ITS) Service definitions */
-#define FLASH_ITS_AREA_OFFSET (FLASH_PS_AREA_OFFSET+FLASH_PS_AREA_SIZE)
-#define FLASH_ITS_AREA_SIZE (FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE)
-
-/*Control Internal Trusted Storage (ITS) Service definitions */
-#if (FLASH_ITS_AREA_OFFSET % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
-#error "FLASH_ITS_AREA_OFFSET not aligned on FLASH_AREA_IMAGE_SECTOR_SIZE"
-#endif /* (FLASH_ITS_AREA_OFFSET % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0 */
-
-#endif /*(TFM_COMPATIBILITY)*/
 
 #if  defined(OEMIROT_FIRST_BOOT_STAGE)
 /* For OEMIROT_FIRST_BOOT_STAGE we need 72K KB for S partition (FLASH_AREA_BL2_SIZE+FLASH_AREA_BL2_NOHDP_SIZE) */
 #define FLASH_S_PARTITION_SIZE          (OEMIROT_AREA_0_SIZE)
-#elif defined(TFM_COMPATIBILITY)
-/* TF-M native support requires at least 168kB: allocate 256kB */
-#define FLASH_S_PARTITION_SIZE          (0x40000)
 #elif (MCUBOOT_APP_IMAGE_NUMBER == 1) && (FLASH_NS_PARTITION_SIZE == 0)
 /* For FULL SECURE case, we need at least 32 KB for S partition */
 #define FLASH_S_PARTITION_SIZE          (0x8000)
@@ -373,17 +362,14 @@
 #define OEMUROT_PERSO_SIZE              (0x2000)
 #define FLASH_AREA_BEGIN_OFFSET         (FLASH_AREA_BL2_NOHDP_OFFSET + FLASH_AREA_BL2_NOHDP_SIZE + \
                                          OEMUROT_HASH_REF_SIZE + OEMUROT_BL2_NVCNT_SIZE + \
-                                         OEMUROT_SCRATCH_SIZE + OEMUROT_PERSO_SIZE)
+                                         OEMUROT_SCRATCH_SIZE)
 #else /* OEMIROT_FIRST_BOOT_STAGE */
-#define OEMIROT_AREA_0_OFFSET           (OEMIROT_AREA_BEGIN_OFFSET + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_SCRATCH_SIZE)
+#define OEMIROT_AREA_4_OFFSET           (OEMIROT_AREA_BEGIN_OFFSET + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_SCRATCH_SIZE)
+#define OEMIROT_AREA_0_OFFSET           (OEMIROT_AREA_4_OFFSET + OEMIROT_AREA_4_SIZE)
 #if defined (OEMUROT_ENABLE)
 #define FLASH_AREA_BEGIN_OFFSET         (FLASH_AREA_BL2_NOHDP_OFFSET + FLASH_AREA_BL2_NOHDP_SIZE + BL2_TRAILER_SIZE)
 #else /* OEMUROT_ENABLE */
-#if defined(TFM_COMPATIBILITY)
-#define FLASH_AREA_BEGIN_OFFSET          (FLASH_ITS_AREA_OFFSET + FLASH_ITS_AREA_SIZE)
-#else
 #define FLASH_AREA_BEGIN_OFFSET         (FLASH_AREA_BL2_NOHDP_OFFSET + FLASH_AREA_BL2_NOHDP_SIZE)
-#endif /* TFM_COMPATIBILITY */
 #endif /* OEMUROT_ENABLE */
 #endif /* OEMIROT_FIRST_BOOT_STAGE */
 
@@ -528,11 +514,18 @@
 /* Secure data image secondary slot */
 #if defined(FLASH_AREA_6_ID)
 #if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+#if defined(OEMIROT_FIRST_BOOT_STAGE)
+#define FLASH_DEV_NAME_6                 SPI_FLASH_DEV_NAME
+#define FLASH_DEVICE_ID_6               (SPI_FLASH_DEVICE_ID)
+#define FLASH_AREA_6_OFFSET             (OEMIROT_AREA_6_OFFSET)
+#define FLASH_AREA_6_SIZE               (OEMIROT_AREA_6_SIZE)
+#else
 #define FLASH_DEV_NAME_6                 SPI_FLASH_DEV_NAME
 #define FLASH_DEVICE_ID_6               (SPI_FLASH_DEVICE_ID)
 #define FLASH_AREA_6_OFFSET             (SPI_FLASH_BASE_ADDRESS + FLASH_AREA_2_SIZE + \
                                          FLASH_AREA_3_SIZE)
 #define FLASH_AREA_6_SIZE               (FLASH_S_DATA_PARTITION_SIZE)
+#endif /* OEMIROT_FIRST_BOOT_STAGE */
 #else /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 #define FLASH_DEV_NAME_6                 FLASH_DEV_NAME
 #define FLASH_DEVICE_ID_6               (FLASH_AREAS_DEVICE_ID)
@@ -635,5 +628,7 @@
 #if (FLASH_S_PARTITION_SIZE == 0)
 #error "Config not supported: Full NonSecure Appli."
 #endif /* FLASH_S_PARTITION_SIZE */
+
+#endif /*(TFM_COMPATIBILITY)*/
 
 #endif /* __FLASH_LAYOUT_H__ */

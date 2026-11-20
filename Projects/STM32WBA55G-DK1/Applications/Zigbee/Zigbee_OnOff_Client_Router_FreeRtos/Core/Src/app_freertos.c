@@ -66,6 +66,19 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, char *pcTaskName)
 }
 /* USER CODE END 4 */
 
+/* USER CODE BEGIN 1 */
+/* Functions needed when configGENERATE_RUN_TIME_STATS is on */
+__weak void configureTimerForRunTimeStats(void)
+{
+
+}
+
+__weak unsigned long getRunTimeCounterValue(void)
+{
+return 0;
+}
+/* USER CODE END 1 */
+
 /* USER CODE BEGIN VPORT_SUPPORT_TICKS_AND_SLEEP */
 __weak void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 {

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,7 +43,7 @@ extern void profile_reset(void);
 #define LSI_RCO_CALIB_DURATION_CYCLE       (24U)    /* LSI calib duration in LL sleep timer clock cycles */
 
 /* USER CODE BEGIN PD */
-void ll_intf_apply_cte_degrad_change(void);
+
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -79,6 +79,7 @@ const osMutexAttr_t LinkLayerMutex_attributes = {
 /* Private functions prototypes-----------------------------------------------*/
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 static void ll_sys_bg_temperature_measurement_init(void);
+static void ll_sys_bg_temperature_measurement_deinit(void);
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 static void ll_sys_sleep_clock_source_selection(void);
 static uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void);
@@ -95,6 +96,7 @@ void ll_sys_reset(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
 
 /**
   * @brief  Link Layer background process initialization
@@ -109,9 +111,27 @@ void ll_sys_bg_process_init(void)
 
   if (LinkLayerMutex == NULL)
   {
-    LOG_ERROR_APP( "Link Layer FreeRTOS objects creation FAILED");
+    LOG_ERROR_APP( "Link Layer FreeRTOS objects creation FAILED\n");
     Error_Handler();
   }
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
+{
+  if (osMutexDelete(LinkLayerMutex) != osOK)
+  {
+    LOG_ERROR_APP("Link Layer mutex deletion FAILED\n");
+    Error_Handler();
+  }
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  ll_sys_bg_temperature_measurement_deinit();
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 }
 
 /**
@@ -181,6 +201,15 @@ void ll_sys_config_params(void)
   * @retval None
   */
 void ll_sys_bg_temperature_measurement_init(void)
+{
+}
+
+/**
+  * @brief  Link Layer temperature request background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_temperature_measurement_deinit(void)
 {
 }
 
@@ -291,6 +320,7 @@ void ll_sys_reset(void)
 /* USER CODE BEGIN ll_sys_reset_0 */
   drift_time = DRIFT_TIME_OPTIMIZED;
   exec_time = EXEC_TIME_OPTIMIZED;
+
 /* USER CODE END ll_sys_reset_0 */
 
   /* Apply the selected link layer sleep timer source */
@@ -303,7 +333,7 @@ void ll_sys_reset(void)
   if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
   {
     /* Configure RCO calibration */
-    ll_intf_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
+    ll_intf_cmn_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
   }
 
   /* Update link layer timings depending on selected configuration */

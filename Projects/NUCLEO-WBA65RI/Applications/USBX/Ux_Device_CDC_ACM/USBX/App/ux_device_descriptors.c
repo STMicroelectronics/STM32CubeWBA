@@ -566,6 +566,7 @@ uint8_t  USBD_FrameWork_AddToConfDesc(USBD_DevClassHandleTypeDef *pdev, uint8_t 
       break;
 
 #endif /* USBD_CDC_ACM_CLASS_ACTIVATED */
+
     /* USER CODE BEGIN FrameWork_AddToConfDesc_1 */
 
     /* USER CODE END FrameWork_AddToConfDesc_1 */
@@ -630,7 +631,7 @@ static void  USBD_FrameWork_AddConfDesc(uint32_t Conf, uint32_t *pSze)
 
 /**
   * @brief  USBD_FrameWork_AssignEp
-  *         Assign and endpoint
+  *         Assign an endpoint
   * @param  pdev: device instance
   * @param  Add: Endpoint address
   * @param  Type: Endpoint type

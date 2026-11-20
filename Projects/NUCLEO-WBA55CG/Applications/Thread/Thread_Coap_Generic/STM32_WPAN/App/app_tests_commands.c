@@ -1,8 +1,7 @@
-/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
   * File Name          : app_tests_commands.c
-  * Description        : CLI COmmands to test Concurrents Modes (BLE/Thread/Zigbee)
+  * Description        : CLI Commands to test Concurrents Modes (BLE/Thread/Zigbee)
   ******************************************************************************
   * @attention
   *
@@ -15,7 +14,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include <assert.h>
@@ -36,35 +34,17 @@
 #include "alarm.h"
 
 /* Private includes -----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 #include "app_bsp.h"
 
-/* USER CODE END Includes */
-
 /* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
 
-/* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
 /* Private macros ------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
 
 /* Private function prototypes -----------------------------------------------*/
 
-/* USER CODE BEGIN PFP */
-/* USER CODE END PFP */
-
 /* Private variables -----------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-/* USER CODE END PV */
 
 /* Functions Definition ------------------------------------------------------*/
 
@@ -153,9 +133,3 @@ bool AppTestCommand_Dispatch( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 
   return bReturn;
 }
-
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-
-
-/* USER CODE END FD_LOCAL_FUNCTIONS */
-

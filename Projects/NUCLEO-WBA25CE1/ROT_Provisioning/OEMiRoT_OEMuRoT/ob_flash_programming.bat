@@ -55,13 +55,8 @@ set wrp_protect=
 set remove_bank1_protect=-ob SECWM_PSTRT=0 SECWM_PEND=%flashsectnbr% WRPA_PSTRT=%flashsectnbr% WRPA_PEND=0 WRPB_PSTRT=%flashsectnbr% WRPB_PEND=0 %remove_protect_init%
 set remove_hdp_protection=-ob HDP_PEND=0 HDPEN=0xB4
 if %rdp_lev% GEQ 1 (
-echo "Configure wrp_protect"
-	set wrp_protect=UNLOCK_A=0 UNLOCK_B=0
-)
-:: Check if the target is selected
-IF "%remove_hdp_protection%"=="" (
-echo No target selected.
-goto :error
+  echo "Configure wrp_protect"
+  set wrp_protect=UNLOCK_A=0 UNLOCK_B=0
 )
 set erase_all=-e all
 set remove_boot_lock=-ob BOOT_LOCK=0
@@ -77,32 +72,32 @@ set sec_water_mark=SECWM_PSTRT=%sec1_start% SECWM_PEND=%sec1_end%
 set "action=Set TZEN = 1"
 echo %action%
 :: Trust zone enabled is mandatory in order to execute OEM-iRoT
-%stm32programmercli% %connect_no_reset% -ob TZEN=1
+call :log_and_run %stm32programmercli% %connect_no_reset% -ob TZEN=1
 IF !errorlevel! NEQ 0 goto :error
 
 set "action=Remove hdp protection"
 echo %action%
-%stm32programmercli% %connect_no_reset% %remove_hdp_protection%
+call :log_and_run %stm32programmercli% %connect_no_reset% %remove_hdp_protection%
 IF !errorlevel! NEQ 0 goto :error
 
 set "action=Remove bank1 protection : %remove_bank1_protect%"
 echo %action%
-%stm32programmercli% %connect% %remove_bank1_protect%
+call :log_and_run %stm32programmercli% %connect% %remove_bank1_protect%
 IF !errorlevel! NEQ 0 goto :error
 
 set "action=Erase all"
 echo %action%
-%stm32programmercli% %connect_no_reset% %erase_all%
+call :log_and_run %stm32programmercli% %connect_no_reset% %erase_all%
 IF !errorlevel! NEQ 0 goto :error
 
 set "action=Remove Boot lock"
 echo %action%
-%stm32programmercli% %connect_no_reset% %remove_boot_lock%
+call :log_and_run %stm32programmercli% %connect_no_reset% %remove_boot_lock%
 IF !errorlevel! NEQ 0 goto :error
 
 set "action=Set boot address @%secbootadd0%"
 echo %action%
-%stm32programmercli% %connect_no_reset% %boot_address%
+call :log_and_run %stm32programmercli% %connect_no_reset% %boot_address%
 IF !errorlevel! NEQ 0 goto :error
 
 :: =============================================== Download images =========================================================================
@@ -111,12 +106,12 @@ echo "Application images programming in download slots"
 IF  "%app_image_number%" == "2" (
 set "action=Write Appli Secure"
 echo %action%
-%stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%s_code_image% %slot0% -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%s_code_image% %slot0% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "TZ Appli Secure Written"
 set "action=Write Appli NonSecure"
 echo %action%
-%stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%ns_code_image% %slot1% -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%ns_code_image% %slot1% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "TZ Appli NonSecure Written"
 )
@@ -125,7 +120,7 @@ IF  "%app_image_number%" == "1" (
 IF  "%app_full_secure%" == "1" (
 set "action=Write Appli Full Secure"
 echo %action%
-%stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%s_code_image% %slot0% -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%s_code_image% %slot0% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "Appli Full Secure Written"
 )
@@ -139,7 +134,7 @@ IF not exist %rot_provisioning_path%\%bootpath%\Binary\%s_data_image% (
 goto :error
 )
 
-%stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\%bootpath%\Binary\%s_data_image% %slot4% -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\%bootpath%\Binary\%s_data_image% %slot4% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 )
 
@@ -151,13 +146,13 @@ IF not exist %rot_provisioning_path%\%bootpath%\Binary\%ns_data_image% (
 goto :error
 )
 
-%stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\%bootpath%\Binary\%ns_data_image% %slot5% -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\%bootpath%\Binary\%ns_data_image% %slot5% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 )
 
 set "action=Write Binary Keys of first boot Stage"
 echo %action%
-%stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\%bootpath%\Binary\OEMiRoT_Keys.bin 0xC004000 -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\%bootpath%\Binary\OEMiRoT_Keys.bin 0xC004000 -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "Binary Keys Written"
 
@@ -178,19 +173,19 @@ set first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA25CE_SWAP.bin
 )
 )
 
-%stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\OEMiRoT_OEMuRoT\Binary\%first_boot_stage_binary% 0xC006000 -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\OEMiRoT_OEMuRoT\Binary\%first_boot_stage_binary% 0xC006000 -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "OEMiROT_Boot Written"
 
 set "action=Write Binary Keys of the second boot stage"
 echo %action%
-%stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\OEMiRoT_OEMuRoT\Binary\OEMuRoT_Keys.bin %keyaddress% -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\OEMiRoT_OEMuRoT\Binary\OEMuRoT_Keys_init_sign.bin %keyaddress% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "Binary Keys Written"
 
 set "action=Write Write the second boot stage OEMuROT_Boot"
 echo %action%
-%stm32programmercli% %connect_no_reset% -d %boot_dir%\Binary\OEMuROT_Boot_init_sign.bin %oemirot_oemurot_slot0% -v --skipErase
+call :log_and_run %stm32programmercli% %connect_no_reset% -d %boot_dir%\Binary\OEMuROT_Boot_init_sign.bin %oemirot_oemurot_slot0% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "OEMuROT_Boot Written"
 
@@ -198,7 +193,7 @@ echo "OEMuROT_Boot Written"
 set "action=Configure Option Bytes"
 echo %action%
 echo "Configure Secure option Bytes: Write Protection, Hide Protection, boot lock and Write protection"
-%stm32programmercli% %connect_no_reset% -ob %sec_water_mark% %write_protect% %hide_protect% %boot_lock% %wrp_protect%
+call :log_and_run %stm32programmercli% %connect_no_reset% -ob %sec_water_mark% %write_protect% %hide_protect% %boot_lock% %wrp_protect%
 IF !errorlevel! NEQ 0 goto :error
 
 echo Programming success
@@ -211,3 +206,13 @@ echo      Programming aborted >CON
 echo.
 IF [%1] NEQ [AUTO] cmd /k
 exit 1
+
+:: Command to log (batch compatible)
+:log_and_run
+:: Usage: call :log_and_run <command>
+echo %*
+:: Log the command as a single string
+echo %* >> %command_log%
+:: Run the command
+call %*
+goto :eof

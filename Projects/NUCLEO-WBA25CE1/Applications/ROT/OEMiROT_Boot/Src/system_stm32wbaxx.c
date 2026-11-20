@@ -104,17 +104,6 @@
 #define HSI_VALUE     (16000000U) /*!< Value of the Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
 
-/*!< The VTOR location information is based on information from the linker with a dependency
-     on the IDE, the cortex register is updated using the INTVECT_START.
-*/
-#if defined(__ICCARM__)
-extern uint32_t __vector_table;
-#define INTVECT_START ((uint32_t)& __vector_table)
-#elif defined(__CC_ARM) || defined(__ARMCC_VERSION) || defined(__GNUC__)
-extern void * __Vectors;
-#define INTVECT_START ((uint32_t) & __Vectors)
-#endif /* __ICCARM__*/
-
 /******************************************************************************/
 
 /**
@@ -173,9 +162,6 @@ void SystemInit(void)
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   SCB->CPACR |= ((3UL << 20U)|(3UL << 22U));  /* set CP10 and CP11 Full Access */
 #endif
-
-  /* Configure the Vector Table location -------------------------------------*/
-  SCB->VTOR = INTVECT_START;
 }
 
 /**

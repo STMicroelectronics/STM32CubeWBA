@@ -229,7 +229,7 @@ static void EddystoneTLM_timCb(void *arg)
    * The background is the only place where the application can make sure a new aci command
    * is not sent if there is a pending one
    */
-  UTIL_SEQ_SetTask( 1<<CFG_TASK_EDDYSTONE_TLML_REQ_ID,CFG_SEQ_PRIO_0);
+  UTIL_SEQ_SetTask( 1 << CFG_TASK_EDDYSTONE_TLML_REQ_ID,CFG_SEQ_PRIO_0);
   return;
 }
 
@@ -281,7 +281,7 @@ tBleStatus EddystoneTLM_Process(void)
   EddystoneTLM_InitStruct.Uptime = 2000000;
   EddystoneTLM_InitStruct.AdvertisingCount = 3000000;
 
-  UTIL_SEQ_RegTask( 1<< CFG_TASK_EDDYSTONE_TLML_REQ_ID, UTIL_SEQ_RFU, EddystoneTLM);
+  UTIL_SEQ_RegTask( 1 << CFG_TASK_EDDYSTONE_TLML_REQ_ID, UTIL_SEQ_RFU, EddystoneTLM);
 
   UTIL_TIMER_Create(&(TimerTLM_Id), DEFAULT_BEACON_SEC * 10, UTIL_TIMER_ONESHOT, EddystoneTLM_timCb, 0);
 

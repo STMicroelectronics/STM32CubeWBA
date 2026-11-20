@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -125,6 +125,7 @@ typedef enum
                     ((hci_le_advertising_report_event_rp0*)(p))-> \
                     Advertising_Report[0].Length_Data))
 /* USER CODE BEGIN EM */
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 
 /* USER CODE END EM */
 

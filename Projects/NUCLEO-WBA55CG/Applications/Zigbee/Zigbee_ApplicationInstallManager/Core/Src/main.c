@@ -187,14 +187,14 @@ void MX_GPIO_Init(void)
 void BootModeCheck( void )
 {
   uint32_t  lEndAppFwAddress = 0;
-  
+
   if ( LL_RCC_IsActiveFlag_SFTRST( ) || LL_RCC_IsActiveFlag_OBLRST() )
   {
     /* The SRAM1 content is kept on Software Reset. First address of the SRAM1 indicates which kind of action has been requested */
 
     /* First, verify if FW App is valid */
     lEndAppFwAddress = CheckFwAppValidity();
-  
+
     /* Check Boot Mode from SRAM1 */
     if ( FUOTA_OTA_REBOOT_MSG == FUOTA_REBOOT_ON_APP_FW )
     {
@@ -203,7 +203,7 @@ void BootModeCheck( void )
       {
         /* The FW application is a valid application. Verify if a valid application is also ready in the download slot and copy it */
         MoveToActiveSlot( lEndAppFwAddress );
-    
+
         /* Jump now on the application */
         JumpFwApp();
       }
@@ -211,18 +211,18 @@ void BootModeCheck( void )
       {
         /* Firmware application is no valid application. Request to reboot on Application Install Manager */
         FUOTA_OTA_REBOOT_MSG = FUOTA_REBOOT_ON_UPDATE_FW;
-        
+
         /* Reboot on Update FW */
         NVIC_SystemReset();
       }
     }
-    else 
+    else
     {
       if ( FUOTA_OTA_REBOOT_MSG == FUOTA_REBOOT_ON_UPDATE_FW )
       {
         /* Update Required. Verify if a valid application is also ready in the download slot and copy it */
         MoveToActiveSlot( lEndAppFwAddress );
-        
+
         /* Jump to Fw application */
         if ( CheckFwAppValidity() != 0u )
         {
@@ -248,20 +248,19 @@ void BootModeCheck( void )
   }
 }
 
-
 /**
  * @brief   Verify if FW application is valid.
- * 
+ *
  * @return  0 if FW App not valid, else end of FW Application address.
  */
 uint32_t CheckFwAppValidity( void )
 {
   uint32_t  lMagicKeywordAddress, lEndFwAddress = 0;
   uint32_t  lEndFlashAddress;
-  
+
   lMagicKeywordAddress = *(uint32_t *)( FUOTA_APP_FW_BINARY_ADDRESS + FUOTA_APP_FW_TAG_OFFSET );
   lEndFlashAddress = ( FLASH_BASE + FLASH_SIZE ) - 4u;
-  
+
   if ( ( lMagicKeywordAddress >= FLASH_BASE) && ( lMagicKeywordAddress <= lEndFlashAddress ) )
   {
     if( ( *(uint32_t*)lMagicKeywordAddress) == FUOTA_MAGIC_KEYWORD_END_APPLI  )
@@ -274,21 +273,20 @@ uint32_t CheckFwAppValidity( void )
   return lEndFwAddress;
 }
 
-
 /**
  * @brief   Verify if FW Downloaded is valid.
- * 
+ *
  * @return  0 if FW App not valid, else end of FW Download address.
  */
 uint32_t CheckFwDownloadedValidity( void )
 {
   uint32_t  lMagicKeywordAddress, lEndFwAddress = 0;
   uint32_t  lEndFlashAddress;
-  
+
   lMagicKeywordAddress = *(uint32_t *)( FUOTA_APP_DOWNLOAD_BINARY_ADDRESS + FUOTA_APP_FW_TAG_OFFSET );
   lMagicKeywordAddress = lMagicKeywordAddress + ( FUOTA_APP_DOWNLOAD_BINARY_ADDRESS - FUOTA_APP_FW_BINARY_ADDRESS );
   lEndFlashAddress = ( FLASH_BASE + FLASH_SIZE ) - 4u;
-  
+
   if ( ( lMagicKeywordAddress >= FLASH_BASE) && ( lMagicKeywordAddress <= lEndFlashAddress ) )
   {
     if( ( *(uint32_t*)lMagicKeywordAddress) == FUOTA_MAGIC_KEYWORD_END_APPLI  )
@@ -300,7 +298,6 @@ uint32_t CheckFwDownloadedValidity( void )
 
   return lEndFwAddress;
 }
-
 
 /**
  * Jump to existing FW App in flash
@@ -325,7 +322,6 @@ void JumpFwApp( void )
   __WFI();
 }
 
-
 /**
  * Erase active or download slot
  */
@@ -335,7 +331,7 @@ static void DeleteSlot( uint32_t lStartAddress, uint32_t lEndAddress )
    * The limit can be read from the SFSA option byte which provides the first secured sector address. */
   FLASH_EraseInitTypeDef stEraseInit;
   uint32_t lPageError;
-  
+
   if ( lStartAddress < FUOTA_APP_FW_BINARY_ADDRESS )
   {
       /* Something has been wrong as there is no case we should delete the Zigbee_BootMngr application. Reboot on the active firmware application */
@@ -350,19 +346,18 @@ static void DeleteSlot( uint32_t lStartAddress, uint32_t lEndAddress )
   {
       stEraseInit.NbPages++;
   }
-    
+
 #if defined(FLASH_DBANK_SUPPORT)
   stEraseInit.Banks = FUOTA_APP_DOWNLOAD_BINARY_BANK;
 #endif
 
   /* Clear all Flash flags before write operation*/
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-  
+
   HAL_FLASH_Unlock();
   HAL_FLASHEx_Erase( &stEraseInit, &lPageError );
   HAL_FLASH_Lock();
 }
-
 
 /**
  * Move download slot to active slot
@@ -371,14 +366,14 @@ static void CopyToActiveSlot( uint32_t lAppliStartAddress, uint32_t lDownloadedS
 {
   HAL_StatusTypeDef   eStatus;
   uint32_t            lAppliAddress, lDownloadedAddress;
-      
+
   /* The flash is written by bunch of 16 bytes. Data are written in flash as long as there are at least 16 bytes */
   lAppliAddress = lAppliStartAddress;
   lDownloadedAddress = lDownloadedStartAddress;
   while ( lDownloadedAddress <= lDownloadedEndAddress )
   {
     /* Clear all Flash flags before write operation*/
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); 
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
     HAL_FLASH_Unlock();
     do
@@ -396,11 +391,10 @@ static void CopyToActiveSlot( uint32_t lAppliStartAddress, uint32_t lDownloadedS
   }
 }
 
-
 static void MoveToActiveSlot( uint32_t lEndAppFwAddress )
 {
   uint32_t  lEndDownloadFwAddress, lDownloadFwSize;
-  
+
   /* It has been requested to reboot on App Install Manager application to transfer data. */
   lEndDownloadFwAddress = CheckFwDownloadedValidity();
   if ( lEndDownloadFwAddress != 0u )
@@ -410,23 +404,21 @@ static void MoveToActiveSlot( uint32_t lEndAppFwAddress )
     {
       lEndAppFwAddress = FUOTA_APP_DOWNLOAD_BINARY_ADDRESS - 1u;
     }
-    
+
     /* Erase active slot */
     lDownloadFwSize = lEndDownloadFwAddress - FUOTA_APP_DOWNLOAD_BINARY_ADDRESS;
     DeleteSlot( FUOTA_APP_FW_BINARY_ADDRESS, ( FUOTA_APP_FW_BINARY_ADDRESS + lDownloadFwSize ) );
-    
+
     /* Move download slot to active slot */
-    CopyToActiveSlot( FUOTA_APP_FW_BINARY_ADDRESS, FUOTA_APP_DOWNLOAD_BINARY_ADDRESS, lEndDownloadFwAddress ); 
-    
+    CopyToActiveSlot( FUOTA_APP_FW_BINARY_ADDRESS, FUOTA_APP_DOWNLOAD_BINARY_ADDRESS, lEndDownloadFwAddress );
+
     if ( CheckFwAppValidity() != 0u )
     {
       /* Erase download slot */
-      DeleteSlot( FUOTA_APP_DOWNLOAD_BINARY_ADDRESS, lEndDownloadFwAddress ); 
+      DeleteSlot( FUOTA_APP_DOWNLOAD_BINARY_ADDRESS, lEndDownloadFwAddress );
     }
   }
 }
-
-
 
 static void JumpSelectionOnPowerUp( void )
 {
@@ -445,7 +437,6 @@ static void JumpSelectionOnPowerUp( void )
       FUOTA_OTA_REBOOT_MSG = FUOTA_REBOOT_ON_UPDATE_FW;
   }
 }
-
 
 /* USER CODE END 4 */
 

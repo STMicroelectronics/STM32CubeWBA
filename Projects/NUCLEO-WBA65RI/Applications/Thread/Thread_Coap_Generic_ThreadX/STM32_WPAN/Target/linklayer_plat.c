@@ -22,16 +22,21 @@
 #include "stm32wbaxx_hal_conf.h"
 #include "stm32wbaxx_ll_rcc.h"
 
+#include "app_entry.h"
 #include "app_common.h"
 #include "app_conf.h"
+#include "ll_intf_cmn.h"
 #include "linklayer_plat.h"
+#include "RTDebug.h"
 #include "scm.h"
 #include "log_module.h"
+#include "tx_api.h"
 
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
 #include "stm32_lpm_if.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
+#include "psa_plat_crypto.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -41,6 +46,8 @@
 /* 2.4GHz RADIO ISR callbacks */
 void (*radio_callback)(void) = NULL;
 void (*low_isr_callback)(void) = NULL;
+
+extern ULONG  _tx_thread_system_state;
 
 /* Radio critical sections */
 static uint32_t primask_bit = 0;
@@ -76,64 +83,6 @@ void LINKLAYER_PLAT_ClockInit()
 
   /* Enable AHB5ENR peripheral clock (bus CLK) */
   __HAL_RCC_RADIO_CLK_ENABLE();
-}
-
-/**
-  * @brief  Link Layer active waiting loop.
-  * @param  delay: delay in us
-  * @retval None
-  */
-void LINKLAYER_PLAT_DelayUs(uint32_t delay)
-{
-  static uint8_t lock = 0;
-  uint32_t t0;
-  uint32_t primask_bit;
-
-  /* Enter critical section */
-  primask_bit= __get_PRIMASK();
-  __disable_irq();
-
-  if (lock == 0U)
-  {
-    /* Initialize counter */
-    /* Reset cycle counter to prevent overflow
-       As a us counter, it is assumed than even with re-entrancy,
-       overflow will never happen before re-initializing this counter */
-    DWT->CYCCNT = 0U;
-    /* Enable DWT by safety but should be useless (as already set) */
-    SET_BIT(DCB->DEMCR, DCB_DEMCR_TRCENA_Msk);
-    /* Enable counter */
-    SET_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
-  }
-  /* Increment 're-entrance' counter */
-  lock++;
-  /* Get starting time stamp */
-  t0 = DWT->CYCCNT;
-  /* Exit critical section */
- __set_PRIMASK(primask_bit);
-
-  /* Turn us into cycles */
-  delay = delay * (SystemCoreClock / 1000000U);
-  delay += t0;
-
-  /* Busy waiting loop */
-  while (DWT->CYCCNT < delay)
-  {
-  };
-
-  /* Enter critical section */
-  primask_bit= __get_PRIMASK();
-  __disable_irq();
-  if (lock == 1U)
-  {
-    /* Disable counter */
-    CLEAR_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
-  }
-  /* Decrement 're-entrance' counter */
-  lock--;
-  /* Exit critical section */
- __set_PRIMASK(primask_bit);
-
 }
 
 /**
@@ -208,19 +157,12 @@ void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
 {
   if(enable != 0u)
   {
-#if (CFG_SCM_SUPPORTED == 1)
     /* SCM HSE BEGIN */
     /* Polling on HSE32 activation */
     SCM_HSE_WaitUntilReady();
     /* Enable RADIO baseband clock (active CLK) */
     HAL_RCCEx_EnableRadioBBClock();
     /* SCM HSE END */
-#else
-    /* Enable RADIO baseband clock (active CLK) */
-    HAL_RCCEx_EnableRadioBBClock();
-    /* Polling on HSE32 activation */
-    while ( LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
   }
   else
   {
@@ -237,23 +179,25 @@ void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
   */
 void LINKLAYER_PLAT_GetRNG(uint8_t *ptr_rnd, uint32_t len)
 {
-  uint32_t nb_remaining_rng = len;
-  uint32_t generated_rng;
+  size_t size_out;
+  psa_status_t status;
 
-  /* Get the requested RNGs (4 bytes by 4bytes) */
-  while(nb_remaining_rng >= 4)
+  if (TX_THREAD_GET_SYSTEM_STATE() != 0)
   {
-    generated_rng = 0;
-    HW_RNG_Get(1, &generated_rng);
-    memcpy((ptr_rnd+(len-nb_remaining_rng)), &generated_rng, 4);
-    nb_remaining_rng -=4;
+    status = mbedtls_psa_external_get_random(NULL, ptr_rnd, len, &size_out);
+    if (status == PSA_SUCCESS && size_out != len)
+    {
+    status = PSA_ERROR_HARDWARE_FAILURE;
+    }
+  }
+  else
+  {
+    status = psa_generate_random(ptr_rnd, len);
   }
 
-  /* Get the remaining number of RNGs */
-  if(nb_remaining_rng>0){
-    generated_rng = 0;
-    HW_RNG_Get(1, &generated_rng);
-    memcpy((ptr_rnd+(len-nb_remaining_rng)), &generated_rng, nb_remaining_rng);
+  if (status != PSA_SUCCESS)
+  {
+    assert_param(1);
   }
 }
 
@@ -496,9 +440,8 @@ void LINKLAYER_PLAT_StartRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_ENABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_HIGH);
-#if (CFG_SCM_SUPPORTED == 1)
   scm_notifyradiostate(SCM_RADIO_ACTIVE);
-#endif /* CFG_SCM_SUPPORTED */
+  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_MEAS);
 }
 
 /**
@@ -510,9 +453,8 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_DISABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW);
-#if (CFG_SCM_SUPPORTED == 1)
   scm_notifyradiostate(SCM_RADIO_NOT_ACTIVE);
-#endif /* CFG_SCM_SUPPORTED */
+  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_MEAS);
 }
 
 /**
@@ -525,10 +467,8 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
 #if (CFG_LPM_LEVEL != 0)
   UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_IDLE_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
-#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**
@@ -541,9 +481,7 @@ void LINKLAYER_PLAT_RCOStopClbr(void)
 #if (CFG_LPM_LEVEL != 0)
   UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
-#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
-#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -58,6 +58,7 @@ extern void (*low_isr_callback)(void);
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 void UartRxCpltCallback(uint8_t * pdata, uint16_t size);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -90,7 +91,6 @@ void NMI_Handler(void)
   while(1)
   {
   }
-
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -249,9 +249,7 @@ void RCC_IRQHandler(void)
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-#if (CFG_SCM_SUPPORTED == 1)
     scm_pllrdy_isr();
-#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -302,6 +300,7 @@ void USART1_IRQHandler(void)
     /* Send the data received to the user RX callback */
     UartRxCpltCallback(&read_data, 1);
   }
+
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
@@ -324,6 +323,7 @@ void PKA_IRQHandler(void)
     /* Call the PKACTRL Callback */
     PKACTRL_EndOfProcessCb();
   }
+
   /* USER CODE END PKA_IRQn 0 */
   /* USER CODE BEGIN PKA_IRQn 1 */
 

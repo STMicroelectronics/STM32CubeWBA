@@ -52,6 +52,11 @@
 
 /* USER CODE END PI */
 
+/* Global variables -----------------------------------------------------------*/
+/* USER CODE BEGIN GV */
+
+/* USER CODE END GV */
+
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
@@ -119,8 +124,6 @@ const uint8_t     pszMessageBuffer[] = "ZCL Test Message";
 /* USER CODE BEGIN PV */
 static bool       bIsSquawkStrobe = false;
 static struct ZbZclIasWdClientStartWarningReqT  stWarningRequest;
-static uint16_t   iDeviceIndex = 0;
-static uint64_t   dlDeviceExtendedAddress[10];
 
 /* USER CODE END PV */
 
@@ -192,7 +195,7 @@ void APP_ZIGBEE_ApplicationInit(void)
   /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */
   stZigbeeAppInfo.eStartupControl = ZbStartTypeForm;
   stZigbeeAppInfo.bPersistNotification = false;
-  stZigbeeAppInfo.bNwkStartup = true;
+  stZigbeeAppInfo.bNwkStartupDone = false;
 
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
   /* Initialization of used Tasks */
@@ -202,6 +205,20 @@ void APP_ZIGBEE_ApplicationInit(void)
 
   /* Initialize Zigbee stack layers */
   APP_ZIGBEE_StackLayersInit();
+
+  /* Launch the Startup to Join/Form Network */
+  if ( stZigbeeAppInfo.bWaitUserActionToJoin == false )
+  {
+    UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
+  }
+  else
+  {
+    LOG_INFO_APP( "Wait User action to start a 'Join' ..." );
+
+    /* In this case, the 'User Code' (by example button management) must launch
+     * UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
+     * to start the Join process. */
+  }
 }
 
 /**
@@ -327,7 +344,7 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
  */
 void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
-  /* Attempt to join a zigbee network */
+  /* Setting to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
   /* Using the default HA preconfigured Link Key */
@@ -356,17 +373,45 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
  * @brief  Manage a New Device on Network (called only if Coord or Router).
  * @param  iShortAddress      Short Address of new Device
  * @param  dlExtendedAddress  Extended Address of new Device
- * @param  cCapability        Capability of new Device
- * @retval Group Address
+ * @retval None
  */
-void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
+void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
 {
-  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+  LOG_INFO_APP( "New Device on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
-  dlDeviceExtendedAddress[iDeviceIndex++] = dlExtendedAddress;
-
+  
   /* USER CODE END APP_ZIGBEE_SetNewDevice */
+}
+
+/**
+ * @brief  Manage a Device on Network that Rejoin Network.
+ * @param  iShortAddress      Short Address of Device
+ * @param  dlExtendedAddress  Extended Address of Device
+ * @retval None
+ */
+void APP_ZIGBEE_SetRejoinDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
+{
+  LOG_INFO_APP( "Device Rejoin Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+
+  /* USER CODE BEGIN APP_ZIGBEE_SetRejoinDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetRejoinDevice */
+}
+
+/**
+ * @brief  Manage a Device on Network that Leave Network.
+ * @param  iShortAddress      Short Address of Device
+ * @param  dlExtendedAddress  Extended Address of Device
+ * @retval None
+ */
+void APP_ZIGBEE_SetLeaveDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
+{
+  LOG_INFO_APP( "Device Leave Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+
+  /* USER CODE BEGIN APP_ZIGBEE_SetLeaveDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetLeaveDevice */
 }
 
 /**
@@ -414,7 +459,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclCluste
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT)
   {
     LOG_INFO_APP( "[ONOFF] Led 'OFF'" );
-    APP_LED_OFF( LED_WORK );
+    APP_BSP_LED_Off( LED_WORK );
     (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 0 );
   }
   else
@@ -440,7 +485,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclCluster
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT )
   {
     LOG_INFO_APP( "[ONOFF] Led 'ON'" );
-    APP_LED_ON( LED_WORK );
+    APP_BSP_LED_On( LED_WORK );
     (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 1 );
   }
   else
@@ -593,12 +638,12 @@ static enum ZclStatusCodeT APP_ZIGBEE_ZclAttributesWriteCallback( struct ZbZclCl
         if ( pDataInput[0] == 1 ) 
         {
           LOG_INFO_APP( "Light 'ON'" );
-          APP_LED_ON( LED_WORK );
+          APP_BSP_LED_On( LED_WORK );
         }
         else 
         {
           LOG_INFO_APP(  "Light 'OFF'" );
-          APP_LED_OFF( LED_WORK );
+          APP_BSP_LED_Off( LED_WORK );
         }
         return ZCL_STATUS_SUCCESS;
 
@@ -662,9 +707,9 @@ static void APP_ZIGBEE_IasWdServerAlarmProcessing( void )
     if ( stWarningRequest.strobe ) 
     {
       /* strobe enabled */
-      APP_LED_ON(LED_WORK);
+      APP_BSP_LED_On(LED_WORK);
       HAL_Delay( stWarningRequest.strobe_dutycycle*10); /* time in ms corresponding to strobe duty cycle */
-      APP_LED_OFF(LED_WORK);
+      APP_BSP_LED_Off(LED_WORK);
       HAL_Delay(1000 - stWarningRequest.strobe_dutycycle*10); /* remaining time in 1s */
     } 
     else 
@@ -692,14 +737,14 @@ static void APP_ZIGBEE_IasWdServerSquawkProcessing( void )
     LOG_INFO_APP( "[IAS WD] Squawk!" );
     if ( bIsSquawkStrobe != false ) 
     {
-      APP_LED_ON(LED_WORK);
+      APP_BSP_LED_On(LED_WORK);
     }
     
     HAL_Delay(100);
 
     if ( bIsSquawkStrobe != false ) 
     {
-      APP_LED_OFF(LED_WORK);
+      APP_BSP_LED_Off(LED_WORK);
     }
     
     HAL_Delay(100);
@@ -752,7 +797,6 @@ void APP_BSP_Button1Action( void )
 void APP_BSP_Button2Action( void )
 {
   struct ZbZclMsgMessageT   stMessage;
-  struct ZbApsAddrT         stDestAddress;
   enum ZclStatusCodeT       eZclStatus;
   
   /* First, verify if Appli has already Join a Network  */ 
@@ -760,13 +804,6 @@ void APP_BSP_Button2Action( void )
   {
     LOG_INFO_APP( "SW2 PUSHED : Send New Message" );
     
-    /* Set Address */
-    memset( &stDestAddress, 0, sizeof( stDestAddress ) );
-    
-    stDestAddress.mode = ZB_APSDE_ADDRMODE_EXT;
-    stDestAddress.extAddr = dlDeviceExtendedAddress[0];
-    stDestAddress.endpoint = 12;
-          
     /* Set Message */
     memset( &stMessage, 0, sizeof( stMessage ) );
 
@@ -775,8 +812,7 @@ void APP_BSP_Button2Action( void )
     stMessage.message_str = (uint8_t *)pszMessageBuffer;
     stMessage.message_len = sizeof( pszMessageBuffer );
     
-    //eZclStatus = ZbZclMsgServerDisplayMessageUnsolic( stZigbeeAppInfo.MessagingServer, ZbApsAddrBinding, &stMessage, NULL, NULL );
-    eZclStatus = ZbZclMsgServerDisplayMessageUnsolic( stZigbeeAppInfo.MessagingServer, &stDestAddress, &stMessage, NULL, NULL );
+    eZclStatus = ZbZclMsgServerDisplayMessageUnsolic( stZigbeeAppInfo.MessagingServer, ZbApsAddrBinding, &stMessage, NULL, NULL );
     if ( eZclStatus != ZCL_STATUS_SUCCESS) 
     {
       LOG_ERROR_APP( "Failed to display New message (0x%02X)", eZclStatus );

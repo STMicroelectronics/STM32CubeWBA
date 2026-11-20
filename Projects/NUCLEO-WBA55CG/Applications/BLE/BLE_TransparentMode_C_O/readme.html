@@ -19,7 +19,10 @@
 <body>
 <div class="row">
 <div class="col-sm-12 col-lg-8">
+<h2 id="ble_transparentmode_c_o-application-description"><strong>BLE_TransparentMode_C_O Application Description</strong></h2>
+<p>How to communicate with the STM32CubeWise - Bluetooth LE Explorer tool using the transparent mode.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
+<p>Connectivity, BLE, BLE protocol.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
 <li><p>This application runs on STM32WBA55xx Nucleo board.</p></li>
@@ -32,6 +35,14 @@
 <li>Rebuild all files and load your image into target memory.</li>
 <li>Run the example.</li>
 </ul>
+<p>To test the BLE Transparent Mode Controller Only application, use the STM32CubeWise - Bluetooth LE Explorer tool:</p>
+<ul>
+<li>Make the connection between STM32CubeWise - Bluetooth LE Explorer tool and BLE_TransparentMode_C_O application</li>
+<li>Send some ACI commands from STM32CubeWise - Bluetooth LE Explorer tool as HCI_RESET, HCI_LE_RECEIVER_TEST, HCI_LE_TRANSMITTER_TEST, …</li>
+<li>the application must acknowledge the command with a “Command Complete” answer</li>
+</ul>
+<p>### <strong>Notes</strong></p>
+<p>Refer to STM32CubeWise - Bluetooth LE Explorer tool documentation and information about how to interact with the tool.</p>
 </div>
 </div>
 </body>

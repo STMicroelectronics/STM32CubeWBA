@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    HRS.h
+  * @file    hrs.h
   * @author  MCD Application Team
-  * @brief   Header for HRS.c
+  * @brief   Header for hrs.c
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -35,6 +35,29 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for HRS */
+#define HRS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for HRS (service declaration not counted in attributes)
+  *                + 2 for HRME
+  *                + 2 for BSL
+  *                + 2 for HRCP
+  *                + 1 for HRME CCCD
+  *                = 7
+**/
+#define HRS_NUM_GATT_ATTRIBUTES (7)
+
+/**
+  * Size_Attributes = 0 for HRS (service declaration not counted in attributes)
+  *                 + 5 for HRME declaration + 23 for HRME size
+  *                 + 5 for BSL declaration + 1 for BSL size
+  *                 + 5 for HRCP declaration + 1 for HRCP size
+  *                 + 2 for HRME CCCD * CFG_BLE_NUM_LINK
+  *                 = 40 + 2 * CFG_BLE_NUM_LINK
+**/
+#define HRS_ATT_VALUE_ARRAY_SIZE  (40 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 #define HRS_MAX_NBR_RR_INTERVAL_VALUES                     (9)
 /* USER CODE END ED */

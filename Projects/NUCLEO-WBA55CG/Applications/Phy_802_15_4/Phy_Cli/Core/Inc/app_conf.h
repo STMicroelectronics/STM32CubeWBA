@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -34,56 +34,54 @@
  * Application Config
  ******************************************************************************/
 /**< generic parameters ******************************************************/
+/* USER CODE BEGIN Generic_Parameters */
 #define CFG_SMPS_SUPPORTED 1
 
-/******************************************************************************
- * UART interfaces
- ******************************************************************************/
-/* CLI UART interface (*UART_HandleTypeDef vtype expected) */
 extern UART_HandleTypeDef huart1;
-#define CLI_UART &huart1
+#define CLI_UART                    (&huart1)
 
-/******************************************************************************
- * USB interface
- ******************************************************************************/
+/* USER CODE END Generic_Parameters */
 
-/**
- * Enable/Disable USB interface
- */
-#define CFG_USB_INTERFACE_ENABLE    0
+/**< specific parameters */
+/*****************************************************/
+
+/* USER CODE BEGIN Specific_Parameters */
+
+/* USER CODE END Specific_Parameters */
 
 /******************************************************************************
  * Low Power
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, mode selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 1 : Low power active, mode(s) selected with CFG_LPM_mode_SUPPORTED
  *   - 2 : In addition log and debug are disabled to reach lowest power figures.
- *
- * When CFG_LPM_STDBY_SUPPORTED is set to:
- *   - 2 : Stop mode 2 is used as low power mode (if supported by target)
- *   - 1 : Standby is used as low power mode.
- *   - 0 : Stop mode 1 is used as low power mode.
- *
  ******************************************************************************/
-#define CFG_LPM_LEVEL            (0)
-#define CFG_LPM_STDBY_SUPPORTED  (0)
+#define CFG_LPM_LEVEL               (0U)
+
+#define CFG_LPM_STOP1_SUPPORTED     (0U)
+#define CFG_LPM_STANDBY_SUPPORTED   (0U)
+
 /**
  * Defines to use dynamic low power wakeup time profilling.
  * With this option at boot wake up time is profiled and then is used.
  */
-#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1U)
+
+/* USER CODE BEGIN Low_Power 0 */
+
+/* USER CODE END Low_Power 0 */
 
 /**
- * Defines time to wake up from standby before radio event to meet timings
- * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ * Supported requester to the MCU Low Power Manager - can be increased up  to 32
+ * It list a bit mapping of all user of the Low Power Manager
  */
-#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
-
 typedef enum
 {
   CFG_LPM_APP,
-  CFG_LPM_PKA_OVR_IT,
+  CFG_LPM_LOG,
+  CFG_LPM_LL_DEEPSLEEP,
+  CFG_LPM_LL_HW_RCO_CLBR,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -92,6 +90,14 @@ typedef enum
 /* USER CODE BEGIN Low_Power 1 */
 
 /* USER CODE END Low_Power 1 */
+
+/******************************************************************************
+ * RTC
+ ******************************************************************************/
+
+/* USER CODE BEGIN RTC */
+
+/* USER CODE END RTC */
 
 /*****************************************************************************
  * Logs
@@ -106,18 +112,20 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
  */
-#define CFG_LOG_SUPPORTED           (0U)
+#define CFG_LOG_SUPPORTED           (1U)
+
+/* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
 
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
 #define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
 
-/* macro ensuring retrocompatibility with old applications */
-#define APP_DBG                     LOG_INFO_APP
-#define APP_DBG_MSG                 LOG_INFO_APP
+#define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
+#define CFG_LOG_TRACE_BUF_SIZE      (256U)
 
 /* USER CODE BEGIN Logs */
 
@@ -125,9 +133,21 @@ typedef enum
 
 /******************************************************************************
  * Configure Log level for Application
+ *
+ * APPLI_CONFIG_LOG_LEVEL can be any value of the Log_Verbose_Level_t enum.
+ *
+ * APPLI_CONFIG_LOG_REGION can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
-#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
-
+#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
+#define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
@@ -142,27 +162,27 @@ typedef enum
  */
 typedef enum
 {
-  CFG_TASK_TRACES,
-  CFG_TASK_LINK_LAYER_TEMP_MEAS,
-
-  /* PHY TASKS */
+  CFG_TASK_HW_RNG,
   CFG_TASK_LINK_LAYER,
-  CFG_TASK_PKT_CB,
+  CFG_TASK_MAC_LAYER,
+  /* USER CODE BEGIN CFG_Task_Id_t */
+  CFG_TASK_BSP_BUTTON_B1,
+  CFG_TASK_BSP_BUTTON_B2,
+  CFG_TASK_BSP_BUTTON_B3,
   CFG_TASK_PHY_CLI_PROCESS,
   CFG_TASK_PHY_CLI_RX_PRINT,
 
-  CFG_TASK_HW_RNG,
-
-  CFG_TASK_NBR  /**< Shall be last in the list */
-} CFG_IdleTask_Id_t;
-
+  /* USER CODE END CFG_Task_Id_t */
+  CFG_TASK_NBR /* Shall be LAST in the list */
+} CFG_Task_Id_t;
 
 /* USER CODE BEGIN DEFINE_TASK */
 
 /* USER CODE END DEFINE_TASK */
+
 /**
  * This is the list of priority required by the application
- * Each Id shall be in the range 0..31
+ * Shall be in the range 0..31
  */
 typedef enum
 {
@@ -174,16 +194,20 @@ typedef enum
   CFG_SEQ_PRIO_NBR /* Shall be LAST in the list */
 } CFG_SEQ_Prio_Id_t;
 
-  /**
-   * This is a bit mapping over 32bits listing all events id supported in the application
-   */
-typedef enum
-{
-  CFG_EVT_TEST
-  /* USER CODE BEGIN CFG_IdleEvt_Id_t */
+/* Sequencer configuration */
+#define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
 
-  /* USER CODE END CFG_IdleEvt_Id_t */
-} CFG_IdleEvt_Id_t;
+/* Sequencer defines */
+#define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
+#define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
+#define TASK_MAC_LAYER                      ( 1u << CFG_TASK_MAC_LAYER )
+/* USER CODE BEGIN TASK_ID_Define */
+#define CFG_SCH_PHY_CLI_PROCESS             CFG_SEQ_PRIO_1
+
+#define TASK_BSP_BUTTON_B1                  ( 1u << CFG_TASK_BSP_BUTTON_B1 )
+#define TASK_BSP_BUTTON_B2                  ( 1u << CFG_TASK_BSP_BUTTON_B2 )
+#define TASK_BSP_BUTTON_B3                  ( 1u << CFG_TASK_BSP_BUTTON_B3 )
+/* USER CODE END TASK_ID_Define */
 
 /**
  * These are the lists of events id registered to the sequencer
@@ -191,21 +215,20 @@ typedef enum
  */
 typedef enum
 {
-  CFG_PKA_MUTEX,
-  CFG_PKA_END_OF_PROCESS,
-  CFG_FLASH_MUTEX,
+  CFG_EVENT_LINK_LAYER,
+  CFG_EVENT_MAC_LAYER,
   /* USER CODE BEGIN CFG_Event_Id_t */
 
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
 
-/* Sequencer priorities by default  */
-#define CFG_TASK_PRIO_HW_RNG                CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_LINK_LAYER            CFG_SEQ_PRIO_0
-/* USER CODE BEGIN TASK_Priority_Define */
-#define CFG_SCH_PHY_CLI_PROCESS CFG_SEQ_PRIO_1
-/* USER CODE END TASK_Priority_Define */
+/**< Events defines */
+#define EVENT_LINK_LAYER                ( 1U << CFG_EVENT_LINK_LAYER )
+#define EVENT_MAC_LAYER                 ( 1U << CFG_EVENT_MAC_LAYER )
+/* USER CODE BEGIN EVENT_ID_Define */
+
+/* USER CODE END EVENT_ID_Define */
 
 /******************************************************************************
  * Debugger
@@ -216,52 +239,35 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (0)
+#define CFG_DEBUGGER_LEVEL                  (2)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
  ******************************************************************************/
 
-#define CFG_RT_DEBUG_GPIO_MODULE         (0)
-#define CFG_RT_DEBUG_DTB                 (1)
-
-/******************************************************************************
- * System Clock Manager module configuration
- ******************************************************************************/
-
-#define CFG_SCM_SUPPORTED            (1)
+#define CFG_RT_DEBUG_GPIO_MODULE            (0)
+#define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
-/* Do not modify - must be 1 */
-#define USE_RADIO_LOW_ISR                   (1)
-
-/* Do not modify - must be 1 */
-#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
-
-/* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
-#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (0)
-
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
-#if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
-#endif /* USE_RADIO_LOW_ISR */
-
-/* Link Layer supported number of antennas */
-#define RADIO_NUM_OF_ANTENNAS               (4)
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm
- *   1 -> RF TX output level from -20 dBm to +3 dBm
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +2.6 dBm. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
+
+/* Radio sleep clock LSE accuracy configuration */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -271,7 +277,7 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
 
 /* Threshold of random numbers available before triggering pool refill */
@@ -281,30 +287,44 @@ typedef enum
 
 /* USER CODE END HW_RNG_Configuration */
 
-/******************************************************************************
- * PKA configuration
- ******************************************************************************/
-/* PKA IRQ priority of the PKA end of process */
-#define PKA_INTR_PRIO_PROCEND               (7)
+/* USER CODE BEGIN Defines */
 
-/* USER CODE BEGIN RTC */
+/* USER CODE END Defines */
 
-/* USER CODE END RTC */
+/**
+ * Overwrite some configuration imposed by Low Power level selected.
+ */
+#if (CFG_LPM_LEVEL > 1)
+  #if CFG_LOG_SUPPORTED
+    #undef  CFG_LOG_SUPPORTED
+    #define CFG_LOG_SUPPORTED       (0U)
+  #endif /* CFG_LOG_SUPPORTED */
+  #if CFG_DEBUGGER_LEVEL
+    #undef  CFG_DEBUGGER_LEVEL
+    #define CFG_DEBUGGER_LEVEL      (0U)
+  #endif /* CFG_DEBUGGER_LEVEL */
+#endif /* CFG_LPM_LEVEL */
 
-/******************************************************************************
- * MEMORY MANAGER
- ******************************************************************************/
+#if (CFG_LPM_LEVEL == 0)
+  #undef CFG_LPM_STOP1_SUPPORTED
+  #define CFG_LPM_STOP1_SUPPORTED   (0U)
+  #undef CFG_LPM_STANDBY_SUPPORTED
+  #define CFG_LPM_STANDBY_SUPPORTED (0U)
+#endif
 
-#define CFG_MM_POOL_SIZE                          (4000)
-#define CFG_PWR_VOS2_SUPPORTED                    (0)   /* VOS2 power configuration not currently supported with radio activity */
-#define CFG_AMM_VIRTUAL_MEMORY_NUMBER             (2u)
-#define CFG_AMM_VIRTUAL_STACK_BLE                   (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE       (400U)
-#define CFG_AMM_VIRTUAL_APP_BLE                   (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE       (200U)
-#define CFG_AMM_POOL_SIZE                      DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                               + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
-                                                
+/*********************************************************************
+ * CAUTION: CFG_LPM_STDBY_SUPPORTED is deprecated and must be removed
+ * Please use a combination of previous defines instead
+ * Temporary define for backward compatibility
+ *********************************************************************/
+ #if (CFG_LPM_STANDBY_SUPPORTED == 1U)
+ #define CFG_LPM_STDBY_SUPPORTED (1U)
+ #else
+ #define CFG_LPM_STDBY_SUPPORTED (0U)
+ #endif
+
+/* USER CODE BEGIN Defines_2 */
+
+/* USER CODE END Defines_2 */
+
 #endif /*APP_CONF_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

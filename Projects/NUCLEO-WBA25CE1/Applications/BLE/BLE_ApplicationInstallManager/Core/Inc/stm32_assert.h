@@ -2,11 +2,12 @@
 /**
   ******************************************************************************
   * @file    stm32_assert.h
+  * @author  MCD Application Team
   * @brief   STM32 assert file.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2018 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file

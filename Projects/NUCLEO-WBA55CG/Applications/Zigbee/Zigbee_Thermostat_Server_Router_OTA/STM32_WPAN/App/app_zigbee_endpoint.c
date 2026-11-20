@@ -53,6 +53,11 @@
 
 /* USER CODE END PI */
 
+/* Global variables -----------------------------------------------------------*/
+/* USER CODE BEGIN GV */
+
+/* USER CODE END GV */
+
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
@@ -82,11 +87,10 @@
 #define TEMP_MEASURED_MAX                 (int16_t)0x30d4   /* Sensor limit : +125 degrees Celsius  */
 #define TEMP_TOLERANCE                    (int16_t)0x0032   /* Temp tolerance : +/-0.5 degrees Celsius */
 #define TEMP_DISPLAY_SCALE                (int16_t)100u     /* Temperature Display divider */
-#define TEMP_INERTIA                      10u               /* Temperature echange every 10 secs */
 
 /* Temperature Simulation */
-#define TEMP_SIMU_START_DEFAULT           TEMP_MEASURED_DEFAULT
-#define TEMP_SIMU_INCREMENT               (int16_t)0x000A   /* Temp Simutation change : +/-0.1 degrees Celsius */
+#define TEMP_SIMU_START_DEFAULT           ( TEMP_MEASURED_DEFAULT / 2u )  /* Temp Simutation start : +12.5 degrees Celsius */
+#define TEMP_SIMU_INCREMENT               (int16_t)0x00A                  /* Temp Simutation change : +/-0.1 degrees Celsius */
 
 /* Relay State (On/Off) & Play (Cooling/Heating) */
 #define RELAY_STATE_OPEN                  0x00u
@@ -96,8 +100,8 @@
 #define RELAY_PLAY_HEATING                0x01u
 #define RELAY_PLAY_COOLING                0x02u
 
-//#define TEMP_SENSOR_UPDATE_PERIOD         500u              /* 500 ms */
-#define TEMP_SENSOR_UPDATE_PERIOD         5000u              /* 5 s */
+#define TEMP_SENSOR_UPDATE_PERIOD         10000u            /* 10 s */
+#define TEMP_INERTIA                      1u                /* Temperature change every 'Update Period' */
 
 /* Tmperature for menu */
 #define MENU_TEMP_MIN                     (int16_t)( TEMP_MEASURED_MIN / 100 ) 
@@ -222,8 +226,8 @@ static const struct MenuButtonsT stMenuButtonList[] =
 {
   { "Menu Cooling", "Cooling Temp " , NULL,           &stThermSettings.iTempCooling, TEMP_MEASURED_MIN,                TEMP_MEASURED_MAX,  TEMP_TOLERANCE, TEMP_DISPLAY_SCALE },
   { "Menu Heating", "Heating Temp " , NULL,           &stThermSettings.iTempHeating, TEMP_MEASURED_MIN,                TEMP_MEASURED_MAX,  TEMP_TOLERANCE, TEMP_DISPLAY_SCALE },
-  { "Menu Control", "Control: " ,     szControlList,  &stThermSettings.iControlOper,        ZCL_THERM_CONTROL_OPERCOOL_ONLY,  ZCL_THERM_CONTROL_OPERCOOL_HEAT_REHEAT, 1, 1 },
-  { "Menu SysMode", "SysMode: " ,     szSysModeList,  &stThermSettings.iSysMode,            ZCL_THERM_SYSMODE_OFF,            ZCL_THERM_SYSMODE_SLEEP,                1, 1 },
+  { "Menu Control", "Control: " ,     szControlList,  &stThermSettings.iControlOper, ZCL_THERM_CONTROL_OPERCOOL_ONLY,  ZCL_THERM_CONTROL_OPERCOOL_HEAT_REHEAT, 1, 1 },
+  { "Menu SysMode", "SysMode: " ,     szSysModeList,  &stThermSettings.iSysMode,     ZCL_THERM_SYSMODE_OFF,            ZCL_THERM_SYSMODE_SLEEP,                1, 1 },
   { APP_MENU_EXIT,  "" ,              NULL,           NULL,                 0,                                0,                  0,              0 },
 };
 
@@ -268,7 +272,7 @@ void APP_ZIGBEE_ApplicationInit(void)
   /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */
   stZigbeeAppInfo.eStartupControl = ZbStartTypeJoin;
   stZigbeeAppInfo.bPersistNotification = false;
-  stZigbeeAppInfo.bNwkStartup = true;
+  stZigbeeAppInfo.bNwkStartupDone = false;
 
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
   /* Initialization of used Tasks */
@@ -278,6 +282,20 @@ void APP_ZIGBEE_ApplicationInit(void)
 
   /* Initialize Zigbee stack layers */
   APP_ZIGBEE_StackLayersInit();
+
+  /* Launch the Startup to Join/Form Network */
+  if ( stZigbeeAppInfo.bWaitUserActionToJoin == false )
+  {
+    UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
+  }
+  else
+  {
+    LOG_INFO_APP( "Wait User action to start a 'Join' ..." );
+
+    /* In this case, the 'User Code' (by example button management) must launch
+     * UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
+     * to start the Join process. */
+  }
 }
 
 /**
@@ -382,7 +400,7 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
  */
 void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
-  /* Attempt to join a zigbee network */
+  /* Setting to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
   /* Using the default HA preconfigured Link Key */
@@ -410,16 +428,45 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
  * @brief  Manage a New Device on Network (called only if Coord or Router).
  * @param  iShortAddress      Short Address of new Device
  * @param  dlExtendedAddress  Extended Address of new Device
- * @param  cCapability        Capability of new Device
- * @retval Group Address
+ * @retval None
  */
-void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
+void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
 {
-  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+  LOG_INFO_APP( "New Device on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
 
   /* USER CODE END APP_ZIGBEE_SetNewDevice */
+}
+
+/**
+ * @brief  Manage a Device on Network that Rejoin Network.
+ * @param  iShortAddress      Short Address of Device
+ * @param  dlExtendedAddress  Extended Address of Device
+ * @retval None
+ */
+void APP_ZIGBEE_SetRejoinDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
+{
+  LOG_INFO_APP( "Device Rejoin Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+
+  /* USER CODE BEGIN APP_ZIGBEE_SetRejoinDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetRejoinDevice */
+}
+
+/**
+ * @brief  Manage a Device on Network that Leave Network.
+ * @param  iShortAddress      Short Address of Device
+ * @param  dlExtendedAddress  Extended Address of Device
+ * @retval None
+ */
+void APP_ZIGBEE_SetLeaveDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress )
+{
+  LOG_INFO_APP( "Device Leave Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
+
+  /* USER CODE BEGIN APP_ZIGBEE_SetLeaveDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetLeaveDevice */
 }
 
 /**
@@ -495,14 +542,14 @@ static void APP_ZIGBEE_ApplicationTaskInit( void )
 static void APP_ZIGBEE_ThermostatServerStart( void )
 {
   enum ZclStatusCodeT eStatus;
-  int8_t   cTemp;
+  uint8_t  cTemp;
   int16_t  iTemperature;
   
   /* Normally, Read Temperature from sensor */
   
   /* Simulation of a Sensor. Start Temp in default Temp +/- 13 degrees Celsius */
-  ZIGBEE_PLAT_RngGet( 1, (uint8_t *)&cTemp );
-  iTemperature = TEMP_SIMU_START_DEFAULT + ( cTemp * 10 );
+  ZIGBEE_PLAT_RngGet( 1, &cTemp );
+  iTemperature = (int16_t)( TEMP_SIMU_START_DEFAULT + ( cTemp * 10 / 2 ) );
   
   /* Update default values for Thermostats. Diff between heating/cooling setpoint is 5 degrees Celsius and default mode is 'Auto'. */
   stThermSettings.iTempCurrent = iTemperature;
@@ -552,6 +599,21 @@ static void APP_ZIGBEE_TimerMenuExitCallback( void * arg )
   UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_MENU_UPDATE, TASK_ZIGBEE_APP_MENU_UPDATE_PRIORITY );
 }
 
+/**
+ * @brief  Display the current status of the Thermostat Server
+ * @param  None
+ * @retval None
+ */
+static void APP_BSP_DisplayStatus(void)
+{
+  LOG_INFO_APP( "Thermostat Server Status :" );
+  LOG_INFO_APP( "  Current Temp : %d.%02d C", ( stThermSettings.iTempCurrent / TEMP_DISPLAY_SCALE ),  (uint8_t)( stThermSettings.iTempCurrent % TEMP_DISPLAY_SCALE ) );
+  LOG_INFO_APP( "  Cooling Temp : %d.%02d C", ( stThermSettings.iTempCooling / TEMP_DISPLAY_SCALE ),  (uint8_t)( stThermSettings.iTempCooling % TEMP_DISPLAY_SCALE ) );
+  LOG_INFO_APP( "  Heating Temp : %d.%02d C", ( stThermSettings.iTempHeating / TEMP_DISPLAY_SCALE ),  (uint8_t)( stThermSettings.iTempHeating % TEMP_DISPLAY_SCALE ) );
+  LOG_INFO_APP( "  Control Oper : %s", szControlList[stThermSettings.iControlOper].szSentence );
+  LOG_INFO_APP( "  Sys Mode     : %s", szSysModeList[stThermSettings.iSysMode].szSentence );
+  LOG_INFO_APP( "  Relay        : %s %s", szRelayState[stThermSettings.cRelayState], szRelayPlay[stThermSettings.cRelayPlay] );
+}
 
 /**
  * @brief  Management of the SW1 button. Play 'Enter' button of Menu.
@@ -560,8 +622,18 @@ static void APP_ZIGBEE_TimerMenuExitCallback( void * arg )
  */
 void APP_BSP_Button1Action(void)
 {
-  eUsedButton = MENU_BUTTON_ENTER;
-  UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_MENU_UPDATE, TASK_ZIGBEE_APP_MENU_UPDATE_PRIORITY );
+  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
+  {
+    if ( APP_BSP_ButtonIsLongPressed( B1 ) != false )
+    {
+      APP_BSP_DisplayStatus();
+    }
+    else
+    {
+      eUsedButton = MENU_BUTTON_ENTER;
+      UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_MENU_UPDATE, TASK_ZIGBEE_APP_MENU_UPDATE_PRIORITY );
+    }
+  }
 }
 
 
@@ -572,8 +644,11 @@ void APP_BSP_Button1Action(void)
  */
 void APP_BSP_Button2Action(void)
 {
-  eUsedButton = MENU_BUTTON_ARROW_LOW;
-  UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_MENU_UPDATE, TASK_ZIGBEE_APP_MENU_UPDATE_PRIORITY );
+  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
+  {
+    eUsedButton = MENU_BUTTON_ARROW_LOW;
+    UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_MENU_UPDATE, TASK_ZIGBEE_APP_MENU_UPDATE_PRIORITY );
+  }
 }
 
 
@@ -584,8 +659,11 @@ void APP_BSP_Button2Action(void)
  */
 void APP_BSP_Button3Action(void)
 {
-  eUsedButton = MENU_BUTTON_ARROW_HIGH;
-  UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_MENU_UPDATE, TASK_ZIGBEE_APP_MENU_UPDATE_PRIORITY );
+  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
+  {
+    eUsedButton = MENU_BUTTON_ARROW_HIGH;
+    UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_MENU_UPDATE, TASK_ZIGBEE_APP_MENU_UPDATE_PRIORITY );
+  }
 }
 
 

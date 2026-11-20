@@ -107,7 +107,7 @@ static void AppZbUtil_RequestNwkAddressCallback(struct ZbZdoNwkAddrRspT * pstRes
   eCallbackStatus = pstResponse->status;
   if ( pstResponse->status != ZB_STATUS_SUCCESS )
   {
-    LOG_INFO_APP( "Error during Network Address Callback. Status : 0x%02X\n\n", pstResponse->status );
+    LOG_ERROR_APP( "Error during Network Address Callback. Status : 0x%02X\n\n", pstResponse->status );
     AppZbUtil_WaitReceiveCallbackSemaphoreSet();
     return;
   }
@@ -117,14 +117,14 @@ static void AppZbUtil_RequestNwkAddressCallback(struct ZbZdoNwkAddrRspT * pstRes
     *pNwkAddress = pstResponse->nwkAddr;
   }
 
-  LOG_INFO_APP( "Network Address Response\n");
-  LOG_INFO_APP( "   ExtAddr: " LOG_DISPLAY64() "\n", LOG_NUMBER64( pstResponse->extAddr ) );
-  LOG_INFO_APP( "   NwkAddr: 0x%04x\n", pstResponse->nwkAddr );
+  LOG_DEBUG_APP( "Network Address Response\n");
+  LOG_DEBUG_APP( "   ExtAddr: " LOG_DISPLAY64() "\n", LOG_NUMBER64( pstResponse->extAddr ) );
+  LOG_DEBUG_APP( "   NwkAddr: 0x%04x\n", pstResponse->nwkAddr );
   for ( iIndex = 0; iIndex < pstResponse->deviceCount; iIndex++ )
   {
-    LOG_INFO_APP( "   Device List[%d]: 0x%04x\n", iIndex, pstResponse->deviceList[iIndex] );
+    LOG_DEBUG_APP( "   Device List[%d]: 0x%04x\n", iIndex, pstResponse->deviceList[iIndex] );
   }
-  LOG_INFO_APP( "\n" );
+  LOG_DEBUG_APP( "\n" );
 
   AppZbUtil_WaitReceiveCallbackSemaphoreSet();
 }
@@ -142,7 +142,7 @@ bool AppZbUtil_RequestNwkAddress( struct ZigBeeT * pstZigbee, uint64_t dlExtende
   struct ZbZdoNwkAddrReqT   stRequest;
   enum ZbStatusCodeT        eStatus;
 
-  LOG_INFO_APP( "\nPerforming ZDO Network Address Request...\n" );
+  LOG_DEBUG_APP( "\nPerforming ZDO Network Address Request...\n" );
 
   memset( &stRequest, 0, sizeof( stRequest ) );
 
@@ -154,7 +154,7 @@ bool AppZbUtil_RequestNwkAddress( struct ZigBeeT * pstZigbee, uint64_t dlExtende
   eStatus = ZbZdoNwkAddrReq( pstZigbee, &stRequest, AppZbUtil_RequestNwkAddressCallback, piNwkAddressOut );
   if ( eStatus != ZB_STATUS_SUCCESS )
   {
-    LOG_INFO_APP( "Error : Nwk Address Request Fail (0x%02x)\n", eStatus);
+    LOG_ERROR_APP( "Error : Nwk Address Request Fail (0x%02x)\n", eStatus);
     return false;
   }
 
@@ -181,7 +181,7 @@ static void AppZbUtil_RequestExtendedAddressCallback( struct ZbZdoIeeeAddrRspT *
   eCallbackStatus = pstResponse->status;
   if ( pstResponse->status != ZB_STATUS_SUCCESS )
   {
-    LOG_INFO_APP( "Error during IEEE/Extended Address Callback. Status : 0x%02X\n\n", pstResponse->status );
+    LOG_ERROR_APP( "Error during IEEE/Extended Address Callback. Status : 0x%02X\n\n", pstResponse->status );
     AppZbUtil_WaitReceiveCallbackSemaphoreSet();
   }
   else
@@ -191,14 +191,14 @@ static void AppZbUtil_RequestExtendedAddressCallback( struct ZbZdoIeeeAddrRspT *
       *pIeeeAddress = pstResponse->extAddr;
     }
 
-    LOG_INFO_APP( "IEEE/Extended Address Response :\n" );
-    LOG_INFO_APP( "   ExtAddr: " LOG_DISPLAY64() "\n", LOG_NUMBER64( pstResponse->extAddr ) );
-    LOG_INFO_APP( "   NwkAddr: 0x%04x\n", pstResponse->nwkAddr );
+    LOG_DEBUG_APP( "IEEE/Extended Address Response :\n" );
+    LOG_DEBUG_APP( "   ExtAddr: " LOG_DISPLAY64() "\n", LOG_NUMBER64( pstResponse->extAddr ) );
+    LOG_DEBUG_APP( "   NwkAddr: 0x%04x\n", pstResponse->nwkAddr );
     for ( iIndex = 0; iIndex < pstResponse->deviceCount; iIndex++ )
     {
-      LOG_INFO_APP( "   Device List[%d]: 0x%04x\n", iIndex, pstResponse->deviceList[iIndex] );
+      LOG_DEBUG_APP( "   Device List[%d]: 0x%04x\n", iIndex, pstResponse->deviceList[iIndex] );
     }
-    LOG_INFO_APP( "\n" );
+    LOG_DEBUG_APP( "\n" );
 
     AppZbUtil_WaitReceiveCallbackSemaphoreSet();
   }
@@ -217,7 +217,7 @@ bool AppZbUtil_RequestExtendedAddress( struct ZigBeeT * pstZigbee, uint16_t iNwk
   enum ZbStatusCodeT        eStatus;
   bool                      bReturn = true;
 
-  LOG_INFO_APP( "\nPerforming ZDO IEEE_Addr_Request...\n" );
+  LOG_DEBUG_APP( "\nPerforming ZDO IEEE_Addr_Request...\n" );
 
   memset( &stRequest, 0, sizeof( stRequest ) );
 
@@ -229,7 +229,7 @@ bool AppZbUtil_RequestExtendedAddress( struct ZigBeeT * pstZigbee, uint16_t iNwk
   eStatus = ZbZdoIeeeAddrReq( pstZigbee, &stRequest, AppZbUtil_RequestExtendedAddressCallback, pdlExtendedAddressOut );
   if ( eStatus != ZB_STATUS_SUCCESS )
   {
-    LOG_INFO_APP( "Error : Ieee Address Request Fail (0x%02x)\n", eStatus);
+    LOG_ERROR_APP( "Error : Ieee Address Request Fail (0x%02x)\n", eStatus);
     bReturn = false;
   }
   else
@@ -263,7 +263,7 @@ static void AppZbUtil_RequestMatchDescriptionCallback( struct ZbZdoMatchDescRspT
     }
     else
     {
-      LOG_INFO_APP( "End of Match-Multi Description Callbacks." );
+      LOG_DEBUG_APP( "End of Match-Multi Description Callbacks." );
       pstMatchedEndpoint->iListSize = pstMatchedEndpoint->iListIndex;
       eCallbackStatus = ZB_STATUS_SUCCESS;
     }
@@ -272,8 +272,8 @@ static void AppZbUtil_RequestMatchDescriptionCallback( struct ZbZdoMatchDescRspT
   }
   else
   {
-    LOG_INFO_APP( "  Nwk Address  : 0x%04X\n", pstResponse->nwkAddr );
-    LOG_INFO_APP( "    Num Entries : %d\n", pstResponse->matchLength );
+    LOG_DEBUG_APP( "  Nwk Address  : 0x%04X\n", pstResponse->nwkAddr );
+    LOG_DEBUG_APP( "    Num Entries : %d\n", pstResponse->matchLength );
     if ( pstResponse->matchLength != 0u )
     {
       if ( pstMatchedEndpoint != NULL )
@@ -291,10 +291,10 @@ static void AppZbUtil_RequestMatchDescriptionCallback( struct ZbZdoMatchDescRspT
       /* Just for Display */
       for ( iIndex = 0; iIndex < pstResponse->matchLength; iIndex++ )
       {
-        LOG_INFO_APP( "    Endpoint List[%d] : 0x%02x\n", iIndex, pstResponse->matchList[iIndex] );
+        LOG_DEBUG_APP( "    Endpoint List[%d] : 0x%02x\n", iIndex, pstResponse->matchList[iIndex] );
       }
     }
-    LOG_INFO_APP( "\n" );
+    LOG_DEBUG_APP( "\n" );
   }
 }
 
@@ -319,7 +319,7 @@ bool AppZbUtil_RequestMatchDescription( struct ZbZclClusterT * pstCluster, struc
   eClusterId = ZbZclClusterGetClusterId( pstCluster );
 
   /* Match Descriptor for the Cluster on the Device */
-  LOG_INFO_APP( "Send a Match Request for Cluster 0x%03X on others Devices ...\n", eClusterId );
+  LOG_DEBUG_APP( "Send a Match Request for Cluster 0x%03X on others Devices ...\n", eClusterId );
 
   memset( &stRequest, 0, sizeof( stRequest ) );
   stRequest.nwkAddrOfInterest = 0xFFFF;
@@ -347,7 +347,7 @@ bool AppZbUtil_RequestMatchDescription( struct ZbZclClusterT * pstCluster, struc
   eStatus = ZbZdoMatchDescMulti( pstCluster->zb, &stRequest, AppZbUtil_RequestMatchDescriptionCallback, &stMatchDescription );
   if ( eStatus != ZB_STATUS_SUCCESS )
   {
-    LOG_INFO_APP( "ZbZdoMatchDescReq Return (status = 0x%02x)\n", eStatus );
+    LOG_ERROR_APP( "ZbZdoMatchDescReq Return (status = 0x%02x)\n", eStatus );
     bReturn = false;
   }
   else
@@ -372,7 +372,7 @@ bool AppZbUtil_RequestMatchDescription( struct ZbZclClusterT * pstCluster, struc
  */
 static void AppZbUtil_RequestBindWithDeviceCallback( struct ZbZdoBindRspT * pstResponse, void * arg )
 {
-  LOG_INFO_APP( "Bind Response (status = 0x%02x)\n\n", pstResponse->status );
+  LOG_DEBUG_APP( "Bind Response (status = 0x%02x)\n\n", pstResponse->status );
 
   eCallbackStatus = pstResponse->status;
   AppZbUtil_WaitReceiveCallbackSemaphoreSet();
@@ -398,7 +398,7 @@ bool AppZbUtil_RequestBindWithDevice( struct ZbZclClusterT * pstCluster, uint64_
   /* Retrieve Cluster ID */
   eClusterId = ZbZclClusterGetClusterId( pstCluster );
 
-  LOG_INFO_APP( "Send a Bind Request for Cluster 0x%03X on EndPoint %d ...\n", eClusterId, cDeviceEnpoint );
+  LOG_DEBUG_APP( "Send a Bind Request for Cluster 0x%03X on EndPoint %d ...\n", eClusterId, cDeviceEnpoint );
 
   /* Request Bind with our Cluster on Device */
   memset( &stRequest, 0, sizeof( stRequest ) );
@@ -415,7 +415,7 @@ bool AppZbUtil_RequestBindWithDevice( struct ZbZclClusterT * pstCluster, uint64_
   eStatus = ZbZdoBindReq( pstCluster->zb, &stRequest, AppZbUtil_RequestBindWithDeviceCallback, NULL );
   if ( eStatus != ZB_STATUS_SUCCESS )
   {
-    LOG_INFO_APP( "ZbZdoBindReq Return (status = 0x%02x)\n", eStatus );
+    LOG_ERROR_APP( "ZbZdoBindReq Return (status = 0x%02x)\n", eStatus );
     bReturn = false;
   }
   else
@@ -450,7 +450,7 @@ bool AppZbUtil_RequestMyBind( struct ZbZclClusterT * pstCluster, uint64_t dlMyEx
   /* Retrieve Cluster ID */
   eClusterId = ZbZclClusterGetClusterId( pstCluster );
 
-  LOG_INFO_APP( "Call a Bind Request on this Device for Cluster 0x%03X on EndPoint %d\n", eClusterId, cDeviceEnpoint );
+  LOG_DEBUG_APP( "Call a Bind Request on this Device for Cluster 0x%03X on EndPoint %d\n", eClusterId, cDeviceEnpoint );
 
   /* Request Bind with our Cluster on this Device */
   memset( &stConfig, 0, sizeof( stConfig ) );
@@ -467,12 +467,12 @@ bool AppZbUtil_RequestMyBind( struct ZbZclClusterT * pstCluster, uint64_t dlMyEx
   ZbApsmeBindReq( pstCluster->zb, &stRequest, &stConfig );
   if ( stConfig.status != ZB_STATUS_SUCCESS )
   {
-    LOG_INFO_APP( "ZbApsmeBindReq Return (status = 0x%02x)\n", stConfig.status );
+    LOG_ERROR_APP( "ZbApsmeBindReq Return (status = 0x%02x)\n", stConfig.status );
     bReturn = false;
   }
   else
   {
-    LOG_INFO_APP( "Done\n\n" );
+    LOG_DEBUG_APP( "Done\n\n" );
   }
 
   return bReturn;
@@ -509,7 +509,7 @@ uint16_t AppZbUtil_DisplayBindingTable( struct ZigBeeT * pstZigbee, bool bDispla
     {
       if ( eStatus != ZB_APS_STATUS_INVALID_INDEX )
       {
-        LOG_INFO_APP( "ERROR ! ZbApsGetIndex failed (0x%02X)\n", eStatus );
+        LOG_ERROR_APP( "ERROR ! ZbApsGetIndex failed (0x%02X)\n", eStatus );
       }
       bEndDone = true;
     }
@@ -571,7 +571,7 @@ uint16_t AppZbUtil_SearchServersOnBindingTable( struct ZbZclClusterT * pstCluste
       /* If empty, ignore */
       if ( stEntry.srcExtAddr != 0u )
       {
-        if ( stEntry.clusterId == iClusterId )
+        if ( ( stEntry.clusterId == iClusterId ) && ( stEntry.dst.extAddr != ZbExtendedAddress( pstCluster->zb ) ) )
         {
           memcpy( &pstServerList[iNbServer], &stEntry.dst, sizeof(struct ZbApsAddrT) );
           iNbServer++;
@@ -634,9 +634,111 @@ bool AppZbUtil_AddDeviceWithInstallCode( struct ZigBeeT * pstZigbee, uint64_t dl
   }
   else
   {
-    LOG_INFO_APP( "Add of Device Link Key OK." );
+    LOG_DEBUG_APP( "Add of Device Link Key OK." );
     bReturn = true;
   }
 
   return bReturn;
+}
+
+/**
+ * @brief Add the LinkKey of a Device on LinkKey List.
+ *
+ * @param   pstZigbee           Pointer to Zigbee Stack.
+ * @param   dlExtendedAddress   Device Extended Address
+ * @param   pszLinkKey          Device Link Key
+ * @return
+ */
+bool AppZbUtil_AddDeviceWithLinkKey( struct ZigBeeT * pstZigbee, uint64_t dlExtendedAddress, const uint8_t * pszLinkKey )
+{
+  bool      bReturn = false;
+  struct ZbApsmeAddKeyReqT  stAddKeyReq;
+  struct ZbApsmeAddKeyConfT stAddKeyConf;
+  struct ZbApsmeGetKeyReqT  stGetKeyReq;
+  struct ZbApsmeGetKeyConfT stGetKeyConf;
+
+  /* First, add the Link Key of the Device */
+
+  /* Fill the AddKey Confirmation */
+  memset( &stAddKeyConf, 0, sizeof( stAddKeyConf ) );
+
+  /* Fiil the AddKey Request */
+  memset( &stAddKeyReq, 0, sizeof( stAddKeyReq ) );
+  stAddKeyReq.keyType = ZB_SEC_KEYTYPE_APP_LINK;
+  stAddKeyReq.keyAttribute = ZB_APS_KEY_ATTR_VERIFIED_KEY;
+  stAddKeyReq.apsLinkKeyType = ZB_APS_LINK_KEY_TYPE_UNIQUE_LINK_KEY;
+  stAddKeyReq.partnerAddr = dlExtendedAddress;
+  memcpy( stAddKeyReq.key, pszLinkKey, ZB_SEC_KEYSIZE );
+#if ( CONFIG_ZB_REV >= 23 )
+  memcpy( stAddKeyReq.passphrase, pszLinkKey, ZB_SEC_KEYSIZE );
+#endif // ( CONFIG_ZB_REV >= 23 )
+
+  /* Add the new Link Key */
+  ZbApsmeAddKeyReq( pstZigbee, &stAddKeyReq, &stAddKeyConf );
+  if ( stAddKeyConf.status != ZB_STATUS_SUCCESS )
+  {
+    LOG_ERROR_APP( "Error durring 'Add Application Link Key' (0x%02X)", stAddKeyConf.status );
+  }
+  else
+  {
+    /* Verify if the Link Key is correctly added */
+
+    /* Fill the GetKey Confirmation */
+    memset( &stGetKeyConf, 0, sizeof( stGetKeyConf ) );
+
+    /* Fill the GetKey Request */
+    memset( &stGetKeyReq, 0, sizeof( stGetKeyReq ) );
+    stGetKeyReq.keyType = ZB_SEC_KEYTYPE_APP_LINK;
+    stGetKeyReq.partnerAddr = dlExtendedAddress;
+
+    /* Get Key from the list */
+    ZbApsmeGetKeyReq( pstZigbee, &stGetKeyReq, &stGetKeyConf );
+    if ( stGetKeyConf.status != ZB_STATUS_SUCCESS )
+    {
+      LOG_ERROR_APP( "APS key lookup failed for " LOG_DISPLAY64() " (0x%02X)", LOG_NUMBER64( dlExtendedAddress ), stGetKeyConf.status );
+    }
+    else
+    {
+      LOG_DEBUG_APP( "APS key verified for " LOG_DISPLAY64() " (attribute 0x%02X).", LOG_NUMBER64( dlExtendedAddress ), stGetKeyConf.apsKeyAttribute );
+      bReturn = true;
+    }
+  }
+
+  return bReturn;
+}
+
+/**
+ * @brief Get the Device Type.
+ *
+ * @return 0xFF if error, else ZB_ZDP_NODE_TYPE_xxx
+ */
+uint8_t AppZbUtil_GetDeviceType( struct ZigBeeT * pstZigbee )
+{
+  uint8_t cIsCoordinator = 0;
+  uint8_t cCapability = 0;
+  uint8_t cReturn = 0xFFu;
+
+  if ( ZbApsGet( pstZigbee, ZB_APS_IB_ID_DESIGNATED_COORD, &cIsCoordinator, sizeof(cIsCoordinator) ) == ZB_STATUS_SUCCESS )
+  {
+    if ( cIsCoordinator != 0U )
+    {
+      cReturn = ZB_ZDP_NODE_TYPE_COORDINATOR;
+    }
+    else
+    {
+      if ( ZbNwkGet( pstZigbee, ZB_NWK_NIB_ID_CapabilityInformation, &cCapability, sizeof(cCapability) ) == ZB_STATUS_SUCCESS )
+      {
+        if ( ( cCapability & MCP_ASSOC_CAP_DEV_TYPE ) != 0U )
+        {
+          cReturn = ZB_ZDP_NODE_TYPE_ROUTER;
+        }
+        else
+        {
+          cReturn = ZB_ZDP_NODE_TYPE_END_DEVICE;
+        }
+      }
+    }
+  }
+
+  return cReturn;
 }

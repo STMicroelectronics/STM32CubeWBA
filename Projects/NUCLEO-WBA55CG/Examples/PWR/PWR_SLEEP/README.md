@@ -21,6 +21,15 @@ LD1 is used to monitor the system state as follows:
 
 These steps are repeated in an infinite loop.
 
+## <b>Measured Current Consumption</b>
+
+| Mode  | Current Consumption |
+|-------|---------------------|
+| Run   | 6.16 mA             |
+| Sleep | 2.8 mA              |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
+
 #### <b>Notes</b>
 
  1. To measure the current consumption in SLEEP mode, please refer to

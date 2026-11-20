@@ -79,6 +79,7 @@ void HRS_APP_Init(void);
 void HRS_APP_EvtRx(HRS_APP_ConnHandleNotEvt_t *p_Notification);
 /* USER CODE BEGIN EFP */
 void HRS_APP_Measurements(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

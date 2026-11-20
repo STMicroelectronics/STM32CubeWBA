@@ -2,9 +2,8 @@
 
 Demonstrate Point-to-Point communication using Bluetooth Low Energy GATT component.
 
-The Nucleo board flashed with BLE_SerialPort_Client application acts as GAP central.
-
-BLE_SerialPort_Client application scans and connects to BLE_SerialPort_Server device.
+The Nucleo board flashed with BLE_SerialPort_Client application acts as GAP central.<br />
+The BLE_SerialPort_Client application scans and connects to BLE_SerialPort_Server device.
 
 Once connected, BLE_SerialPort_Client can write to the BLE_SerialPort_Server and receive notification from it.
 
@@ -28,7 +27,7 @@ In order to make the program work:
 
 This is a demo that shows how to implement a simple 2-way Bluetooth LE communication between two STM32WBA nucleo boards emulating serial communication.
 
-One board must be configured as a Central with BLE_SerialPort_Client application and the other as a Peripheral with BLE_SerialCom_Peripheral.
+One board must be configured as a Central with BLE_SerialPort_Client application and the other as a Peripheral with BLE_SerialPort_Peripheral.
 
 Open a serial terminal on Central and Peripheral side (ST Link Com Port, @115200 bauds).
 

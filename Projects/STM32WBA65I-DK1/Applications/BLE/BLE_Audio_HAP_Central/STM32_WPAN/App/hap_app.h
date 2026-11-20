@@ -54,7 +54,8 @@ extern "C" {
 #define LC3_48_5                14
 #define LC3_48_6                15
 
-#define NUM_LC3_QoSConf         32
+#define NUM_LC3_BRD_QOSCONF     32
+#define NUM_LC3_UNICAST_QOSCONF 38
 #define LC3_QOS_8_1_1           0
 #define LC3_QOS_8_2_1           1
 #define LC3_QOS_16_1_1          2
@@ -87,6 +88,12 @@ extern "C" {
 #define LC3_QOS_48_4_2          29
 #define LC3_QOS_48_5_2          30
 #define LC3_QOS_48_6_2          31
+#define LC3_QOS_16_1_3          32
+#define LC3_QOS_16_2_3          33
+#define LC3_QOS_24_1_3          34
+#define LC3_QOS_24_2_3          35
+#define LC3_QOS_32_1_3          36
+#define LC3_QOS_32_2_3          37
 
 /*Audio Configuration specified in Basic Audio Profile Specification*/
 #define NUM_USR_AUDIO_CONF      (16u)
@@ -350,6 +357,22 @@ typedef struct
 
 typedef struct
 {
+  uint8_t               NumRecords;
+  uint8_t               SpecificCapLength;                              /* Length, in octets, of the codec specific capability */
+  uint8_t               MetadataLength;                                 /* Length, in octets, of the metadata */
+  uint8_t               aData[APP_MAX_SUPPORTED_PAC_RECORD_LEN];        /* Buffer containing PAC Record Data */
+  uint16_t              DataLength;                                     /* Length of the stored data */
+  uint8_t               State;                                          /* State of the parsing :
+                                                                         *      0x00 : Codec ID
+                                                                         *      0x01 : Codec Specific Capabilitie Length
+                                                                         *      0x02 : Codec Specific Capabilities
+                                                                         *      0x03 : Metadata Length
+                                                                         *      0x04 : Metadata
+                                                                         */
+}APP_RX_PAC_Record;
+
+typedef struct
+{
   BAP_Role_t                    bap_role;
 
   APP_ACL_Conn_t                ACL_Conn[CFG_BLE_NUM_LINK];
@@ -392,6 +415,10 @@ typedef struct
   HAPAPP_InitState_t            InitState;
 
   uint16_t                      OperationConnHandle;
+
+  /*Parsing PAC Characteristic information*/
+  APP_RX_PAC_Record             RxPACRecord;
+
 } HAPAPP_Context_t;
 
 typedef struct

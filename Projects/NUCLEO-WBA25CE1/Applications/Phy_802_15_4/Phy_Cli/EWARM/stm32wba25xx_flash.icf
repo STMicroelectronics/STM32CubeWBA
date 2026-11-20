@@ -7,20 +7,13 @@ define symbol __ICFEDIT_intvec_start__ = 0x08000000;
 define symbol __ICFEDIT_region_ROM_start__ = 0x08000000;
 define symbol __ICFEDIT_region_ROM_end__   = 0x0807FFFF;
 define symbol __ICFEDIT_region_RAM_start__ = 0x20000000;
-/*-define symbol __ICFEDIT_region_RAM_end__   = 0x2000FFFF;-*/
-/*-Overwrite SRAM2 because not enough place...-*/
-define symbol __ICFEDIT_region_RAM_end__   = 0x20017FFF;
+define symbol __ICFEDIT_region_RAM_end__   = 0x2000FFFF;
 define symbol __region_SRAM2_start__       = 0x20010000;
 define symbol __region_SRAM2_end__         = 0x20017FFF;
 
 /*-Sizes-*/
-/*-Sizes we have by default in the .icf file-*/
-/*-define symbol __ICFEDIT_size_cstack__ = 0x400;-*/
-/*-define symbol __ICFEDIT_size_heap__   = 0x200;-*/
-
-/*-Sizes needed by the official CubeFW BLE TM app-*/
-define symbol __ICFEDIT_size_cstack__ = 0x1000;
-define symbol __ICFEDIT_size_heap__   = 0x3000;
+define symbol __ICFEDIT_size_cstack__ = 0x400;
+define symbol __ICFEDIT_size_heap__   = 0x200;
 /**** End of ICF editor section. ###ICF###*/
 
 define memory mem with size = 4G;

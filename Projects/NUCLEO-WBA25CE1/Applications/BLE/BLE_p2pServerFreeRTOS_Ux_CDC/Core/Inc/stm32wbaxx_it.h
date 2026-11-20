@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -54,9 +54,6 @@ void UsageFault_Handler(void);
 void DebugMon_Handler(void);
 void RTC_IRQHandler(void);
 void RCC_IRQHandler(void);
-void LPDMA1_Channel0_IRQHandler(void);
-void LPDMA1_Channel1_IRQHandler(void);
-void USART1_IRQHandler(void);
 void PKA_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void WKUP_IRQHandler(void);

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -21,11 +21,13 @@
 #ifndef PERIPHERAL_INIT_H
 #define PERIPHERAL_INIT_H
 
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 /**
   * @brief  Configure the SoC peripherals at Standby mode exit.
   * @param  None
   * @retval None
   */
 void MX_StandbyExit_PeripheralInit(void);
+#endif
 
 #endif /* PERIPHERAL_INIT_H */

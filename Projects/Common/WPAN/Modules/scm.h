@@ -27,7 +27,6 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-#if (CFG_SCM_SUPPORTED == 1)
 #include "stm32wbaxx_hal.h"
 #include "stm32wbaxx_ll_pwr.h"
 #include "stm32wbaxx_ll_rcc.h"
@@ -265,13 +264,6 @@ extern void SCM_HSI_SwithSystemClock_Entry(void);
  */
 extern void SCM_HSI_SwithSystemClock_Exit(void);
 /* SCM HSE END */
-#else /* CFG_SCM_SUPPORTED */
-
-/* Unused empty functions */
-void scm_hserdy_isr(void);
-void scm_pllrdy_isr(void);
-
-#endif /* CFG_SCM_SUPPORTED */
 
 #ifdef __cplusplus
 }

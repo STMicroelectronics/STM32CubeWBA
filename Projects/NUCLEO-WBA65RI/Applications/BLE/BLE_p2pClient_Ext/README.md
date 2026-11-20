@@ -1,6 +1,6 @@
 ## __BLE_p2pClient_Ext Application Description__
 
-Demontrates a BLE scanner with connections from extended and legacy advertising.
+Demonstrates a BLE scanner with connections from extended and legacy advertising.
 
 The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits).<br />
 For more information, please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Client_application"> STM32WBA Peer To Peer Client Applications.</a>

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -230,7 +230,9 @@ static void System_Init( void )
   UTIL_TIMER_Init();
 
   /* USER CODE BEGIN System_Init_1 */
-
+#if ((CFG_RT_DEBUG_DTB == 1) && (CFG_BUTTON_SUPPORTED == 1))
+#warning "DTB signal tx_on may be overwritten by buttons IOs configuration on PA1 pin"
+#endif
   /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -276,15 +278,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -321,10 +316,8 @@ static void SystemPower_Config(void)
   LL_DBGMCU_EnableDBGStopMode();
 #endif /* CFG_DEBUGGER_LEVEL */
 
-#if (CFG_SCM_SUPPORTED == 1)
   /* Set the HSE clock to 32MHz */
   scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -372,11 +365,9 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
-#if (CFG_SCM_SUPPORTED == 1)
   /* SCM HSE BEGIN */
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -404,21 +395,6 @@ void UTIL_SEQ_PreIdle( void )
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
-
-#if defined(STM32WBAXX_SI_CUT1_0)
-  /* Wait until HSE is ready */
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_WaitUntilReady();
-  /* SCM HSE END */
-#else
-  while (LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
-
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
-  scm_hserdy_isr();
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* STM32WBAXX_SI_CUT1_0 */
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
 
@@ -463,7 +439,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -475,7 +450,6 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)

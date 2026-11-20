@@ -694,10 +694,6 @@ void ESL_APP_AdvPayloadReceived(uint16_t pa_event, uint8_t *p_adv_data, uint8_t 
     /* Accept only (well formatted) encrypted advertising data. */
     return;
   }
-
-  /* If the ESL has received a valid ESL message in a synchronization message from
-     the AP then the ESL stop the Synchronized Timer. */  
-  UTIL_TIMER_Stop(&ESLS_APP_Context.Synchronized_timer_Id);
   
   /* p_adv_data[0] contains the ADV packet length (see Fig 5.1 ESL profile spec) */
   encrypted_data_length = p_adv_data[0] - 1;
@@ -1117,6 +1113,14 @@ static void synch_packet_received(uint16_t pa_event, uint8_t *p_esl_data, uint8_
       resp_idx = TLV_OpCode_handling(p_cmd, opcode, esl_cmd_id, esl_payload_resp, param_length, resp_idx);
     }
     p_cmd += (param_length + 1); /* increment the iterator to go on next element*/
+  }
+  
+  if(tlv_num >= 0)
+  {
+    /* If the ESL has received a valid ESL message in a synchronization message from
+    the AP then the ESL restarts the Synchronized Timer. */  
+    UTIL_TIMER_Stop(&ESLS_APP_Context.Synchronized_timer_Id);
+    UTIL_TIMER_Start(&ESLS_APP_Context.Synchronized_timer_Id);
   }
   
   if(relevant_cmd_tlv_num >= 0)

@@ -3,11 +3,11 @@
   ******************************************************************************
   * @file    peripheral_init.c
   * @author  MCD Application Team
-  * @brief   tbd module
+  * @brief   peripheral init module
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -35,6 +35,8 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
+#include "app_usbx.h"
+
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
@@ -60,7 +62,6 @@ void MX_StandbyExit_PeripheralInit(void)
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STANDBY_SUPPORTED == 1)
   /* Do not configure sysTick if currently used by wakeup time profiling mechanism */
   if(LPM_is_wakeup_time_profiling_done() != 0)
   {
@@ -73,7 +74,6 @@ void MX_StandbyExit_PeripheralInit(void)
       assert_param(0);
     }
   }
-#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #else
   /* Select SysTick source clock */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
@@ -103,6 +103,7 @@ void MX_StandbyExit_PeripheralInit(void)
   memset(&huart1, 0, sizeof(huart1));
 
   MX_GPIO_Init();
+  MX_LPDMA1_Init();
   MX_RAMCFG_Init();
   MX_USART1_UART_Init();
   MX_ICACHE_Init();
@@ -118,6 +119,7 @@ void MX_StandbyExit_PeripheralInit(void)
   BSP_PB_Init(B2, BUTTON_MODE_EXTI);
   BSP_PB_Init(B3, BUTTON_MODE_EXTI);
 #endif
+
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */

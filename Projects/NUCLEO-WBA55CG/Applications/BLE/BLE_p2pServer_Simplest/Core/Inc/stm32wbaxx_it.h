@@ -62,6 +62,7 @@ void RADIO_IRQHandler(void);
 void HASH_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 extern void APP_BLE_Key_Button1_Action(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

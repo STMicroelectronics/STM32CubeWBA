@@ -29,20 +29,20 @@ extern "C" {
 #include "stm32_rtos.h"
 
 #ifdef CFG_BSP_ON_DISCOVERY
-#ifdef STM32WBA55xx
+#ifdef STM32WBA5xxx
 #include "stm32wba55g_discovery.h"
 #if (CFG_LCD_SUPPORTED == 1)
 #include "stm32wba55g_discovery_lcd.h"
 #include "stm32_lcd.h"
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-#endif /* STM32WBA55xx */
-#ifdef STM32WBA65xx
+#endif /* STM32WBA5xxx */
+#ifdef STM32WBA6xxx
 #include "stm32wba65i_discovery.h"
 #if (CFG_LCD_SUPPORTED == 1)
 #include "stm32wba65i_discovery_lcd.h"
 #include "stm32_lcd.h"
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-#endif /* STM32WBA65xx */
+#endif /* STM32WBA6xxx */
 #endif /* CFG_BSP_ON_DISCOVERY */
 
 #ifdef CFG_BSP_ON_CEB
@@ -71,10 +71,10 @@ extern "C" {
 #define    LCD1                           (0u)
 #endif /* (CFG_LCD_SUPPORTED == 1) */
 
-#if (defined CFG_BSP_ON_DISCOVERY) && (defined STM32WBA65xx)
+#if (defined CFG_BSP_ON_DISCOVERY) && (defined STM32WBA6xxx)
 /* No Led Blue on Discovery for STM32WBA65I. Replaced by Red Led */
 #define    LED_BLUE                       LED_RED
-#endif /* (defined CFG_BSP_ON_DISCOVERY) && (defined STM32WBA65xx) */
+#endif /* (defined CFG_BSP_ON_DISCOVERY) && (defined STM32WBA6xxx) */
 
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 #define JOYSTICK_USE_AS_JOYSTICK          (0u)    /* When Joystick is not 'none', call according 'Joystick Action' every JOYSTICK_PRESS_SAMPLE_MS. */
@@ -154,10 +154,10 @@ void      APP_BSP_Button3Action           ( void );
 void      BSP_PB_Callback                 ( Button_TypeDef button );
 
 #ifdef CFG_BSP_ON_NUCLEO 
-#ifdef STM32WBA65xx
+#ifdef STM32WBA6xxx
 void      EXTI4_IRQHandler                (void);
 void      EXTI5_IRQHandler                (void);
-#endif /* STM32WBA65xx */
+#endif /* STM32WBA6xxx */
 #endif /* CFG_BSP_ON_NUCLEO */ 
 
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */

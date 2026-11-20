@@ -369,6 +369,7 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
+
   /* USER CODE END ICACHE_Init 1 */
 
   /** Full retention for ICACHE in stop mode
@@ -380,6 +381,7 @@ void MX_ICACHE_Init(void)
   LL_ICACHE_SetMode(LL_ICACHE_1WAY);
   LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
+
   /* USER CODE END ICACHE_Init 2 */
 
 }
@@ -598,8 +600,8 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(TM_SPI_IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI12_IRQn, 4, 0);
-  HAL_NVIC_EnableIRQ(EXTI12_IRQn);
+  HAL_NVIC_SetPriority(TM_SPI_CS_EXTI_IRQn, 4, 0);
+  HAL_NVIC_EnableIRQ(TM_SPI_CS_EXTI_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    HRS_app.h
+  * @file    hrs_app.h
   * @author  MCD Application Team
-  * @brief   Header for HRS_app.c
+  * @brief   Header for hrs_app.c
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file

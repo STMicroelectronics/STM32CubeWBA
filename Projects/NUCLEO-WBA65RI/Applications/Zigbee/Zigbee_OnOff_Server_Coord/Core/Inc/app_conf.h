@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -175,7 +175,8 @@ typedef enum
   CFG_TASK_LINK_LAYER,
   CFG_TASK_MAC_LAYER,
   CFG_TASK_ZIGBEE_LAYER,
-  CFG_TASK_ZIGBEE_NETWORK_FORM,   /* Tasks linked to Zigbee Start. */
+  CFG_TASK_ZIGBEE_NETWORK_FORM,
+  CFG_TASK_ZIGBEE_NETWORK_REJOIN,
   CFG_TASK_ZIGBEE_APP_START,
   CFG_TASK_ZIGBEE_PERSISTENCE,
   CFG_TASK_ZIGBEE_OTA_REQUEST_UPGRADE,
@@ -185,7 +186,7 @@ typedef enum
   CFG_TASK_ZIGBEE_APP3,
   CFG_TASK_ZIGBEE_APP4,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BSP_BUTTON_B1,         /* Task linked to push-button. */
+  CFG_TASK_BSP_BUTTON_B1,
   CFG_TASK_BSP_BUTTON_B2,
   CFG_TASK_BSP_BUTTON_B3,
 
@@ -220,6 +221,7 @@ typedef enum
 #define TASK_MAC_LAYER                      ( 1u << CFG_TASK_MAC_LAYER )
 #define TASK_ZIGBEE_LAYER                   ( 1u << CFG_TASK_ZIGBEE_LAYER )
 #define TASK_ZIGBEE_NETWORK_FORM            ( 1u << CFG_TASK_ZIGBEE_NETWORK_FORM )
+#define TASK_ZIGBEE_NETWORK_REJOIN          ( 1u << CFG_TASK_ZIGBEE_NETWORK_REJOIN )
 #define TASK_ZIGBEE_APP_START               ( 1u << CFG_TASK_ZIGBEE_APP_START )
 #define TASK_ZIGBEE_PERSISTENCE             ( 1u << CFG_TASK_ZIGBEE_PERSISTENCE )
 #define TASK_ZIGBEE_OTA_REQUEST_UPGRADE     ( 1u << CFG_TASK_ZIGBEE_OTA_REQUEST_UPGRADE )
@@ -229,10 +231,10 @@ typedef enum
 #define TASK_ZIGBEE_APP3                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
 #define TASK_ZIGBEE_APP4                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
 /* USER CODE BEGIN TASK_ID_Define */
+
 #define TASK_BSP_BUTTON_B1                  ( 1u << CFG_TASK_BSP_BUTTON_B1 )
 #define TASK_BSP_BUTTON_B2                  ( 1u << CFG_TASK_BSP_BUTTON_B2 )
 #define TASK_BSP_BUTTON_B3                  ( 1u << CFG_TASK_BSP_BUTTON_B3 )
-
 /* USER CODE END TASK_ID_Define */
 
 /**
@@ -254,7 +256,6 @@ typedef enum
   CFG_EVENT_ZIGBEE_APP3,
   CFG_EVENT_ZIGBEE_APP4,
   /* USER CODE BEGIN CFG_Event_Id_t */
-
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -293,19 +294,6 @@ typedef enum
 
 #define CFG_RT_DEBUG_GPIO_MODULE            (0)
 #define CFG_RT_DEBUG_DTB                    (0)
-
-/******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -347,6 +335,7 @@ typedef enum
 /* USER CODE END HW_RNG_Configuration */
 
 /* USER CODE BEGIN Defines */
+
 /**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
@@ -366,16 +355,6 @@ typedef enum
   #undef  CFG_LED_SUPPORTED
   #define CFG_LED_SUPPORTED         (0)
 #endif /* CFG_FULL_LOW_POWER */
-
-#if ( CFG_LED_SUPPORTED == 1 )
-#define APP_LED_ON( LED )           BSP_LED_On( LED )
-#define APP_LED_OFF( LED )          BSP_LED_Off( LED )
-#define APP_LED_TOGGLE( LED )       BSP_LED_Toggle( LED )
-#else /* ( CFG_LED_SUPPORTED == 1 ) */
-#define APP_LED_ON( LED )
-#define APP_LED_OFF( LED )
-#define APP_LED_TOGGLE( LED )
-#endif  /* ( CFG_LED_SUPPORTED == 1 ) */
 
 /* USER CODE END Defines */
 

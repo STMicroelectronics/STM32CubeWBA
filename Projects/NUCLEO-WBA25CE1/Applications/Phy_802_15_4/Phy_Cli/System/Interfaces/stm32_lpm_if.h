@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -61,11 +61,6 @@ typedef enum
   UTIL_LPM_STOP1_MODE,           /**< Stop 1 mode */
   /* USER CODE BEGIN MT4 */
   /* USER CODE END MT4 */
-#endif
-#if (CFG_LPM_STOP2_SUPPORTED == 1)
-  UTIL_LPM_STOP2_MODE,           /**< Stop 2 mode */
-  /* USER CODE BEGIN MT5 */
-  /* USER CODE END MT5 */
 #endif
 #if (CFG_LPM_STANDBY_SUPPORTED == 1)
   UTIL_LPM_STANDBY_MODE,         /**< Standby mode */
@@ -122,13 +117,6 @@ void LPM_SleepMode(uint32_t param);
   * @brief Handle enter and exit of Stop1 mode
   */
 void LPM_Stop1Mode(uint32_t param);
-
-#endif
-#if (CFG_LPM_STOP2_SUPPORTED == 1)
-/**
-  * @brief Handle enter and exit of Stop2 mode
-  */
-void LPM_Stop2Mode(uint32_t param);
 
 #endif
 #if (CFG_LPM_STANDBY_SUPPORTED == 1)

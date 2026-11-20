@@ -93,6 +93,9 @@
 #define BSP_I2C_Init()                   BSP_I2C3_Init()
 #define BSP_I2C_DeInit()                 BSP_I2C3_DeInit()
 
+#define BSP_IC2_PRECALC_TIMING_98304KHZ     0x70b03839
+#define BSP_IC2_PRECALC_TIMING_90317KHZ     0xa0702426
+
 /* USER CODE END PM */
 
 /* Private constants ---------------------------------------------------------*/
@@ -262,9 +265,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   APP_BLE_Init();
 
-  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
-
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
@@ -371,15 +371,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -432,6 +425,7 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
+
   /* USER CODE END SystemPower_Config */
 }
 
@@ -612,6 +606,7 @@ void APP_BSP_JoystickSelectAction( void )
   */
 void AudioClock_Init(uint32_t audio_frequency_type)
 {
+  extern uint32_t I2c_timing; //pre-set BSP value for faster initialization
   uint32_t target_freq;
   if (audio_frequency_type == SAMPLE_FREQ_44100_HZ)
   {
@@ -638,17 +633,21 @@ void AudioClock_Init(uint32_t audio_frequency_type)
     /* PLL fractionnal should allows to cover +/-550ppm around the targeted frequency*/
     if (target_freq == 90316800)
     {
-      pll_config.PLLN = 67;  /* VCO = HSE/M * N * (1 + Nfrac / 8192) < 32 / 6 * (67 + 1) = 362.7 MHz */
+      pll_config.PLLN = 67;  /* VCO = HSE/M * (N + Nfrac / 8192) < 32 / 6 * (67 + 1) = 362.7 MHz */
       pll_config.PLLFractional = 6042;
       pll_config.AHB5_PLL1_CLKDivider = LL_RCC_AHB5_DIV_3;
       /* PLLSYS = 90.31673 MHz */
+
+      I2c_timing = BSP_IC2_PRECALC_TIMING_90317KHZ;
     }
     else
     {
-      pll_config.PLLN = 73;  /* VCO = HSE/M * N * (1 + Nfrac / 8192) < 32 / 6 * (73 + 1) = 394.7 MHz */
+      pll_config.PLLN = 73;  /* VCO = HSE/M * (N + Nfrac / 8192) < 32 / 6 * (73 + 1) = 394.7 MHz */
       pll_config.PLLFractional = 5964;
       pll_config.AHB5_PLL1_CLKDivider = LL_RCC_AHB5_DIV_4;
-      /* PLLSYS = 98.30396 MHz */
+      /* PLLSYS = 98.30404 MHz */
+
+      I2c_timing = BSP_IC2_PRECALC_TIMING_98304KHZ;
     }
 
     UTIL_LPM_SetMaxMode(1 << CFG_LPM_AUDIO, UTIL_LPM_SLEEP_MODE);
@@ -691,16 +690,16 @@ void PLL_Ready_Task(void)
 
   CODEC_CLK_Init();
 
-  AUDIO_PLLConfig_t pll_config;
+  CODEC_PLLConfig_t pll_config;
   pll_config.PLLTargetFreq = PLL_Target_Clock_Freq;
   pll_config.VCOInputFreq = (32000000.0f / 6.0f); /* HSE / PLL_M */
   pll_config.PLLOutputDiv = 4; /* PLL_P */
 
-  AUDIO_CorrectorConfig_t corrector_config;
+  CODEC_CorrectorConfig_t corrector_config;
   corrector_config.initialMinSampling = 500;
   corrector_config.minSampling = 4000;
   corrector_config.mode = CORRECTOR_MODE_DEFAULT;
-  AUDIO_InitializeClockCorrector(&pll_config, &corrector_config);
+  CODEC_InitializeClockCorrector(&pll_config, &corrector_config);
 
   /* I2C init takes a long time, it is better to do it before CIS establishement */
   BSP_I2C_Init();
@@ -723,8 +722,8 @@ static void AudioClock_Deinit( void )
 {
   /* back to default timings */
   Evnt_timing_t event_time;
-  event_time.drift_time    = DRIFT_TIME_DEFAULT;
-  event_time.exec_time     = EXEC_TIME_DEFAULT;
+  event_time.drift_time    = DRIFT_TIME_OPTIMIZED;
+  event_time.exec_time     = EXEC_TIME_OPTIMIZED;
   event_time.schdling_time = SCHDL_TIME_DEFAULT;
 
 #if defined(__GNUC__) && defined(DEBUG)
@@ -736,7 +735,7 @@ static void AudioClock_Deinit( void )
 
   LOG_INFO_APP("Audio Clock Deinitialization\n");
 
-  AUDIO_DeinitializeClockCorrector();
+  CODEC_DeinitializeClockCorrector();
 }
 
 HAL_StatusTypeDef MX_SAI1_ClockConfig(SAI_HandleTypeDef *hsai, uint32_t SampleRate)
@@ -988,27 +987,21 @@ int32_t Start_TxAudio(void)
         case SAMPLE_FREQ_8000_HZ:
           Menu_SetStreamingPage("8KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_16000_HZ:
           Menu_SetStreamingPage("16KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_24000_HZ:
           Menu_SetStreamingPage("24KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_32000_HZ:
           Menu_SetStreamingPage("32KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_44100_HZ:
           Menu_SetStreamingPage("44.1KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_48000_HZ:
           Menu_SetStreamingPage("48KHz", Audio_Role);
           break;
-
         default:
           Menu_SetStreamingPage("Unknown Frequency", Audio_Role);
           break;
@@ -1080,27 +1073,21 @@ int32_t Start_RxAudio(void)
         case SAMPLE_FREQ_8000_HZ:
           Menu_SetStreamingPage("8KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_16000_HZ:
           Menu_SetStreamingPage("16KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_24000_HZ:
           Menu_SetStreamingPage("24KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_32000_HZ:
           Menu_SetStreamingPage("32KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_44100_HZ:
           Menu_SetStreamingPage("44.1KHz", Audio_Role);
           break;
-
         case SAMPLE_FREQ_48000_HZ:
           Menu_SetStreamingPage("48KHz", Audio_Role);
           break;
-
         default:
           Menu_SetStreamingPage("Unknown Frequency", Audio_Role);
           break;
@@ -1169,11 +1156,9 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
-#if (CFG_SCM_SUPPORTED == 1)
   /* SCM HSE BEGIN */
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -1201,21 +1186,6 @@ void UTIL_SEQ_PreIdle( void )
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
-
-#if defined(STM32WBAXX_SI_CUT1_0)
-  /* Wait until HSE is ready */
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_WaitUntilReady();
-  /* SCM HSE END */
-#else
-  while (LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
-
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
-  scm_hserdy_isr();
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* STM32WBAXX_SI_CUT1_0 */
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
 
@@ -1303,7 +1273,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -1315,7 +1284,6 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)

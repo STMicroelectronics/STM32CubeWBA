@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,7 +23,7 @@
 #include "arm_compat.h"
 #endif /*(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
 #include "main.h"
-#include "scm.h"
+
 #include "app_sys.h"
 #include "stm32_lpm_if.h"
 #include "stm32_lpm.h"
@@ -38,32 +38,59 @@
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
 #include "assert.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#define LL_DEEPSLEEP_EXIT_TIME_US     180     /* Time in us needed for Link Layer deepsleep exit */
-#define DEVICE_WAKEUP_STANDBY_TIME_US 60      /* Time in us needed by the device to exit from standby */
-#if defined(RCC_LSI2_SUPPORT)
-#define LSI2_FREQ_WORST_VALUE         24000   /* Worst value of LSI2 frequency */
-#endif /* RCC_LSI2_SUPPORT */
+typedef enum {
+  NO_PLL,
+  PLL_INTEGER_MODE,
+  PLL_FRACTIONAL_MODE,
+} pll_mode_t;
 
-#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+typedef struct clock_switch_context_s {
+  uint8_t HSE_StabilizationStarted;
+  uint32_t sysTick_clk_source;
+  uint32_t sysTick_load;
+  uint32_t sysTick_ctrl;
+  uint8_t pll_params_initialized;
+  pll_mode_t pll_mode;
+  uint32_t PLLM;
+  uint32_t PLLN;
+  uint32_t PLLP;
+  uint32_t PLLQ;
+  uint32_t PLLR;
+  uint32_t PLLFractional;
+  uint32_t AHB5_PLL1_CLKDivider;
+} clock_switch_context_t;
+
 /* USER CODE BEGIN PTD */
-#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
- #undef LL_DEEPSLEEP_EXIT_TIME_US          
- #define LL_DEEPSLEEP_EXIT_TIME_US     170 /* Time in us needed for Link Layer deepsleep exit optimized */
-#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#define LL_DEEPSLEEP_EXIT_TIME_US     0   /* Time in us needed for Link Layer deepsleep exit */
+#define DEVICE_WAKEUP_STANDBY_TIME_US 60   /* Time in us needed by the device to exit from standby */
+#if defined(RCC_LSI2_SUPPORT)
+#define LSI2_FREQ_WORST_VALUE         24000   /* Worst value of LSI2 frequency */
+#endif /* RCC_LSI2_SUPPORT */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+
+#define PLL_INPUTRANGE0_FREQMAX         8000000u  /* 8 MHz is maximum frequency for VCO input range 0 */
+#define NMB_32K_CYCLE_TO_WAIT 5
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
+
+/* Private constants ---------------------------------------------------------*/
+clock_switch_context_t clock_switch_ctxt={0};
+
+/* USER CODE BEGIN PC */
+
+/* USER CODE END PC */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
@@ -138,7 +165,7 @@ static uint32_t boot_after_standby;
 /* USER CODE END EV */
 
 /* Private variables ---------------------------------------------------------*/
-#if (CFG_SCM_SUPPORTED == 0)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)
 /* If SCM is not supported, SRAM handles for waitsate configurations are defined here */
 static RAMCFG_HandleTypeDef sram1_ns =
 {
@@ -153,7 +180,7 @@ static RAMCFG_HandleTypeDef sram2_ns =
   HAL_RAMCFG_STATE_READY, /* RAMCFG State */
   0U,                     /* RAMCFG Error Code */
 };
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
 #if (CFG_LPM_STANDBY_SUPPORTED == 1)
@@ -311,16 +338,225 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 
-#if (CFG_SCM_SUPPORTED != 1) && ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
+
+OPTIMIZED static void SysTick_ApplContextSave(uint32_t *ctrl_reg, uint32_t *load_reg, uint32_t *clock_source_reg)
+{
+  /* SysTick context save */
+  *ctrl_reg = SysTick->CTRL;
+  *load_reg = SysTick->LOAD;
+  *clock_source_reg = LL_RCC_GetSystickClockSource();
+}
+
+OPTIMIZED static void SysTick_ApplContextRestore(uint32_t ctrl_reg, uint32_t load_reg, uint32_t clock_source_reg)
+{
+  /* SysTick context restore */
+  LL_RCC_SetSystickClockSource(clock_source_reg);
+  SysTick->CTRL = ctrl_reg;
+  SysTick->LOAD = load_reg;
+}
+
+OPTIMIZED static void SysTick_ConfigureClockSource(void)
+{
+  if(LL_RCC_LSE_IsReady() == 1UL)
+  {
+    LL_RCC_SetSystickClockSource(LL_RCC_SYSTICK_CLKSOURCE_LSE);
+  }
+  else
+  {
+#if defined(RCC_LSI2_SUPPORT)
+    /* Enable LSI2 clock if not already done */
+    if(LL_RCC_LSI2_IsReady() == 0UL)
+    {
+      uint8_t pwrclkchanged = 0;
+      if (__HAL_RCC_PWR_IS_CLK_ENABLED() != 1U)
+      {
+        __HAL_RCC_PWR_CLK_ENABLE();
+        pwrclkchanged = 1;
+      }
+
+      /* Enable write access to Backup domain */
+      LL_PWR_EnableBkUpAccess();
+      while (LL_PWR_IsEnabledBkUpAccess() == 0UL);
+
+      LL_RCC_LSI2_Enable();
+      while (LL_RCC_LSI2_IsReady() != 1UL);
+
+      if (pwrclkchanged == 1)
+      {
+        __HAL_RCC_PWR_CLK_DISABLE();
+      }
+    }
+
+    /* Configure sysTick clock source to LSI2 */
+    LL_RCC_SetSystickClockSource(LL_RCC_SYSTICK_CLKSOURCE_LSI);
+#else
+    Error_Handler();
+#endif /* RCC_LSI2_SUPPORT */
+  }
+}
+
+OPTIMIZED static void HSE_StartStabilization(void)
+{
+
+  /* Skip the HSE stabilization. */
+  if (!(((LL_PWR_IsActiveFlag_SB() == 1UL ) && (READ_REG(RCC->CSR) == 0U)) && ((SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) != SysTick_CTRL_ENABLE_Msk))
+      && !(LL_PWR_IsActiveFlag_STOP() == 1UL)
+#if defined(PWR_STOP2_SUPPORT)
+      && !(LL_PWR_IsActiveFlag_STOP2() == 1UL)
+#endif
+     )
+  {
+    return;
+  }
+
+  /* The HSE stabilization procedure is executed only in the following cases:
+     1- If wakeup from STOP1 or STOP2 happens
+     2- If wakeup from Standby happens and the wakeup time profiling procedure is already done */
+
+  /* Save the application sysTick clock source configuration becuase retained in STOP mode */
+  SysTick_ApplContextSave(&clock_switch_ctxt.sysTick_ctrl, &clock_switch_ctxt.sysTick_load, &clock_switch_ctxt.sysTick_clk_source);
+
+  /* Configure the SysTick to wait 153 us for the HSE stabilization */
+  CLEAR_BIT(SysTick->CTRL, SysTick_CTRL_CLKSOURCE_Msk);
+
+  /* Configure sysTick clock source to LSE or LSI */
+  SysTick_ConfigureClockSource();
+
+  /* Configure SysTick to wait 5 cycles */
+  WRITE_REG(SysTick->LOAD, NMB_32K_CYCLE_TO_WAIT); //~153us
+
+  /* Enable SysTick Timer, starts to count */
+  WRITE_REG(SysTick->VAL, 0UL);
+  SET_BIT(SysTick->CTRL, SysTick_CTRL_TICKINT_Msk);
+  SET_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk);
+  clock_switch_ctxt.HSE_StabilizationStarted = 1;
+}
+
+OPTIMIZED static void HSE_WaitStabilization(void)
+{
+  /* Wait the HSE stabilization in WFI mode to save power */
+  if (clock_switch_ctxt.HSE_StabilizationStarted) {
+    __WFI();
+    CLEAR_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk);
+    /* Restore the application sysTick clock source configuration becuase retained in STOP mode */
+    SysTick_ApplContextRestore(clock_switch_ctxt.sysTick_ctrl, clock_switch_ctxt.sysTick_load, clock_switch_ctxt.sysTick_clk_source);
+    clock_switch_ctxt.HSE_StabilizationStarted = 0;
+  }
+}
+
+OPTIMIZED static void HSE_EnableProcedure(void)
+{
+  /* Enable HSE and wait until ready in WFI to save power */
+  LL_RCC_ClearFlag_HSERDY();
+  LL_RCC_EnableIT_HSERDY();
+  HAL_NVIC_EnableIRQ(RCC_IRQn);
+  LL_RCC_HSE_Enable();
+  __WFI();
+  LL_RCC_ClearFlag_HSERDY();
+  LL_RCC_DisableIT_HSERDY();
+  HAL_NVIC_DisableIRQ(RCC_IRQn);
+}
+
+OPTIMIZED static void PLL_ContextSave(void)
+{
+  /* Initial PLL configuration */
+  clock_switch_ctxt.PLLM = LL_RCC_PLL1_GetDivider();
+  clock_switch_ctxt.PLLN = LL_RCC_PLL1_GetN();
+  clock_switch_ctxt.PLLP = LL_RCC_PLL1_GetP();
+  clock_switch_ctxt.PLLQ = LL_RCC_PLL1_GetQ();
+  clock_switch_ctxt.PLLR = LL_RCC_PLL1_GetR();
+  clock_switch_ctxt.PLLFractional = LL_RCC_PLL1_GetFRACN();
+  clock_switch_ctxt.AHB5_PLL1_CLKDivider = LL_RCC_GetAHB5Prescaler();
+  if(clock_switch_ctxt.PLLFractional == PLL_FRACTIONAL_MODE)
+  {
+    clock_switch_ctxt.pll_mode = PLL_FRACTIONAL_MODE;
+  }
+  else
+  {
+    clock_switch_ctxt.pll_mode = PLL_INTEGER_MODE;
+  }
+
+  clock_switch_ctxt.pll_params_initialized = 1;
+}
+
+OPTIMIZED static void ConfigStartPll(void)
+{
+  /* Enable PLL1 output for SYSCLK (PLL1R) */
+  LL_RCC_PLL1_EnableDomain_PLL1R();
+
+  /* Configure and start the PLL */
+  LL_RCC_PLL1_SetMainSource(LL_RCC_PLL1SOURCE_HSE);
+
+  /* Enable PLL1 */
+  LL_RCC_PLL1_Enable();
+
+  /* Wait PLL is enabled and ready */
+  while(LL_RCC_PLL1_IsReady() == 0);
+}
+
+OPTIMIZED static void ConfigHwPll(void)
+{
+  uint32_t freq_vco_in = 0;
+
+  /* Apply user PLL mode */
+  if(clock_switch_ctxt.pll_mode == PLL_FRACTIONAL_MODE)
+  {
+    /* PLL1FRACEN set to 0 */
+    LL_RCC_PLL1FRACN_Disable();
+
+    /* Update PLL1FRACR register */
+    LL_RCC_PLL1_SetFRACN(clock_switch_ctxt.PLLFractional);
+
+    /* PLL1FRACEN set to 1 */
+    LL_RCC_PLL1FRACN_Enable();
+  }
+  else
+  {
+    /* Integer configuration will be used for PLL mode */
+    LL_RCC_PLL1FRACN_Disable();
+  }
+
+  /* Apply correct frequency range for VCO_IN */
+  /* Note as PLL clock source is always HSE 32MHz, only PLL1M value impact VCO_IN */
+
+  freq_vco_in = 32000000UL/clock_switch_ctxt.PLLM;
+  if (freq_vco_in > PLL_INPUTRANGE0_FREQMAX)
+  {
+    freq_vco_in = RCC_PLL_VCOINPUT_RANGE1;
+  }
+  else
+  {
+    freq_vco_in = RCC_PLL_VCOINPUT_RANGE0;
+  }
+  __HAL_RCC_PLL1_VCOINPUTRANGE_CONFIG(freq_vco_in);
+
+  __HAL_RCC_PLL1_CONFIG(RCC_PLLSOURCE_HSE, /* PLL clock source is always HSE 32MHz */
+                        clock_switch_ctxt.PLLM,
+                        clock_switch_ctxt.PLLN,
+                        clock_switch_ctxt.PLLP,
+                        clock_switch_ctxt.PLLQ,
+                        clock_switch_ctxt.PLLR
+                        );
+
+  LL_RCC_SetAHB5Prescaler(clock_switch_ctxt.AHB5_PLL1_CLKDivider);
+}
+
 OPTIMIZED static void Clock_Switching(void)
 {
-  /* Activate HSE clock */
-  LL_RCC_HSE_Enable();
-  while(LL_RCC_HSE_IsReady() == 0);
-  /* Apply PWR VOS1_5 power level */
+  /* Activate HSE clock, start stabilization, change VOS setting */
+  if (LL_RCC_HSE_IsReady() == 0) {
+    /* Enable HSE and wait until the Ready flag is high */
+    HSE_EnableProcedure();
+
+    /* Start HSE stabilization procedure */
+    HSE_StartStabilization();
+
+  /* first switch to VOS1_5 */
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1_5);
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1_5); /* Double write for flag readiness to cope with hw latency */
-  while (LL_PWR_IsActiveFlag_VOS() == 0);
+    while (LL_PWR_IsActiveFlag_VOS() == 0);
+  }
 
   /* Switch HSE frequency from HSE16 to HSE32 */
   LL_RCC_HSE_DisablePrescaler();
@@ -335,18 +571,41 @@ OPTIMIZED static void Clock_Switching(void)
   HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_0);
   HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_0);
 
+  if (clock_switch_ctxt.pll_params_initialized)
+  {
+    /* Configure the RCC PLL registers */
+    ConfigHwPll();
+
+    /* Start the PLL */
+    ConfigStartPll();
+
+    /* Configure the Flash Latency for the PLL conifguration */
+    __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_3);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_3);
+
+    /* Switch to PLL */
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1R);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1R);
+
+    /* Clear flag initialized during the PLL context save */
+    clock_switch_ctxt.pll_params_initialized = 0;
+  }
+
   /* Set HDIV 5 */
   LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1); /* divided by 1 */
 
+#if (CFG_LOG_SUPPORTED == 0) && ((OT_CLI_USE == 0) || !defined(OT_CLI_USE))
   /* Switched to HSE, so disable HSI */
   LL_RCC_HSI_Disable();
+#endif
 
   /* Ensure time base clock coherency */
   SystemCoreClockUpdate();
-}
-#endif /* (CFG_SCM_SUPPORTED != 1) && ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
 
-#if (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)
+  /* Wait HSE stabilization */
+  HSE_WaitStabilization();
+}
+
 OPTIMIZED static void Enter_Stop_Standby_Mode(void)
 {
   /* Disabling ICACHE */
@@ -359,15 +618,17 @@ OPTIMIZED static void Enter_Stop_Standby_Mode(void)
   while(LL_ICACHE_IsActiveFlag_BSYEND() == 0U);
 #endif /* STM32WBAXX_SI_CUT1_0 */
 
-#if (CFG_SCM_SUPPORTED == 1)
-  scm_setwaitstates(LP);
-#else
+  /* Save PLL configuration in the context */
+  if (LL_RCC_GetSysClkSource() == LL_RCC_SYS_CLKSOURCE_STATUS_PLL1R)
+  {
+    PLL_ContextSave();
+  }
+
   /* SCM module is not supported, apply low power compatible waitstates */
   __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_3);
   while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_3);
   HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_1);
   HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_1);
-#endif /* CFG_SCM_SUPPORTED */
 
   LL_LPM_EnableDeepSleep();
 
@@ -378,16 +639,7 @@ OPTIMIZED static void Exit_Stop_Standby_Mode(void)
 {
   LL_ICACHE_Enable();
   while(LL_ICACHE_IsEnabled() == 0U);
-#if (CFG_SCM_SUPPORTED == 1)
-  if (LL_PWR_IsActiveFlag_STOP() == 1U)
-  {
-    scm_setup();
-  }
-  else
-  {
-    scm_setwaitstates( RUN );
-  }
-#else
+
   if (LL_PWR_IsActiveFlag_STOP() == 1U)
   {
     Clock_Switching();
@@ -400,7 +652,6 @@ OPTIMIZED static void Exit_Stop_Standby_Mode(void)
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_0);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_0);
   }
-#endif /* CFG_SCM_SUPPORTED */
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
@@ -504,6 +755,8 @@ OPTIMIZED static void PWR_ExitOffMode( void )
   if ( 1UL == boot_after_standby )
   {
     boot_after_standby = 0;
+    Clock_Switching();
+
     HAL_NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW, 0);
     HAL_NVIC_EnableIRQ(RADIO_INTR_NUM);
     HAL_NVIC_SetPriority(RADIO_SW_LOW_INTR_NUM, RADIO_SW_LOW_INTR_PRIO, 0);
@@ -546,11 +799,6 @@ OPTIMIZED static void PWR_ExitOffMode( void )
     MX_StandbyExit_PeripheralInit();
 
     /* Restore system clock configuration */
-#if (CFG_SCM_SUPPORTED == 1)
-    scm_standbyexit();
-#else
-    Clock_Switching();
-#endif /* CFG_SCM_SUPPORTED */
 
     /* Enable RTC peripheral clock */
     LL_PWR_EnableBkUpAccess();

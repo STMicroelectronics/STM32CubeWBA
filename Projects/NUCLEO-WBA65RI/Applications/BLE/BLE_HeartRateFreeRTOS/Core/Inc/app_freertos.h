@@ -18,8 +18,8 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __APP_FREERTOS_H__
-#define __APP_FREERTOS_H__
+#ifndef __APP_FREERTOS_H
+#define __APP_FREERTOS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -91,4 +91,4 @@ unsigned long getRunTimeCounterValue(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /* __APP_FREERTOS_H__ */
+#endif /* __APP_FREERTOS_H */

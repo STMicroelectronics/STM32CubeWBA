@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -59,8 +59,8 @@ DMA_HandleTypeDef handle_LPDMA1_Channel1;
 /* Private function prototypes -----------------------------------------------*/
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_LPDMA1_Init(void);
 /* USER CODE BEGIN PFP */
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -114,11 +114,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -263,7 +265,7 @@ void MX_ICACHE_Init(void)
   * @param None
   * @retval None
   */
-static void MX_LPDMA1_Init(void)
+void MX_LPDMA1_Init(void)
 {
 
   /* USER CODE BEGIN LPDMA1_Init 0 */
@@ -439,12 +441,14 @@ void MX_USART1_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -456,24 +460,10 @@ static void MX_GPIO_Init(void)
 
 void MPU_Config(void)
 {
-  MPU_Region_InitTypeDef MPU_InitStruct = {0};
   MPU_Attributes_InitTypeDef MPU_AttributesInit = {0};
 
   /* Disables the MPU */
   HAL_MPU_Disable();
-
-  /** Initializes and configures the Region 0 and the memory to be protected
-  */
-  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0x08100000;
-  MPU_InitStruct.LimitAddress = 0x081FFFFF;
-  MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RO;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
   /** Initializes and configures the Attribute 0 and the memory to be protected
   */

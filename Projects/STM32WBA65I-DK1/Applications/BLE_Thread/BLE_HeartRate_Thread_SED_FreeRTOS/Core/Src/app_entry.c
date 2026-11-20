@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,7 +43,6 @@
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
-#include "pka_ctrl.h"
 #include "blestack.h"
 #include "ble_timer.h"
 #include "flash_driver.h"
@@ -58,6 +57,11 @@
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
+#include "psa_plat_crypto.h"
+#include "mbedtls_threading_alt.h"
+#include "psa/crypto.h"
+#include "entropy_hardware_alt.h"
+#include "storage_interface.h"
 #include "timer_if.h"
 extern void xPortSysTickHandler (void);
 extern void vPortSetupTimerInterrupt(void);
@@ -67,6 +71,7 @@ extern void vPortSetupTimerInterrupt(void);
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,9 +103,14 @@ extern void vPortSetupTimerInterrupt(void);
 #if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
 
-static uint8_t rtos_tick_less_IDLE_state = 1U;
+static uint8_t rtos_tick_less_IDLE_state = RTOS_TICK_LESS_ACTIVE;
 static uint8_t rtos_tick_less_IDLE_flag = 0U;
 #endif /* ( CFG_LPM_LEVEL != 0) */
+
+#if (HAL_TICK_RTC == 1)
+/* Timer for HAL tick declaration */
+static UTIL_TIMER_Object_t TimerHalTick_Id;
+#endif /* HAL_TICK_RTC */
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration
@@ -142,24 +152,6 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
-static osMutexId_t PkaMutex;
-
-static const osMutexAttr_t PkaMutex_attributes = {
-  .name         = "PKA Mutex",
-  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
-  .cb_mem       = TASK_DEFAULT_CB_MEM,
-  .cb_size      = TASK_DEFAULT_CB_SIZE
-};
-
-static osSemaphoreId_t PkaEndOfOperationSemaphore;
-
-static const osSemaphoreAttr_t PkaEndOfOperationSemaphore_attributes = {
-  .name         = "PKA End of Operation Semaphore",
-  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
-  .cb_mem       = TASK_DEFAULT_CB_MEM,
-  .cb_size      = TASK_DEFAULT_CB_SIZE
-};
-
 static osSemaphoreId_t FlashSemaphore;
 
 static const osSemaphoreAttr_t FlashSemaphore_attributes = {
@@ -171,10 +163,6 @@ static const osSemaphoreAttr_t FlashSemaphore_attributes = {
 
 /* Timer for OS tick declaration */
 static UTIL_TIMER_Object_t TimerOsTick_Id;
-#if (HAL_TICK_RTC == 1)
-/* Timer for HAL tick declaration */
-static UTIL_TIMER_Object_t TimerHalTick_Id;
-#endif /* HAL_TICK_RTC */
 
 #if ( CFG_LPM_LEVEL != 0)
 /* Holds maximum number of FreeRTOS tick periods that can be suppressed */
@@ -234,6 +222,8 @@ static void System_Init( void );
 static void SystemPower_Config( void );
 static void Config_HSE(void);
 static void APPE_RNG_Init( void );
+static void APPE_PSA_CRYPTO_Init(void);
+void PKA_NOTIF_Trigger(void);
 
 static void APPE_AMM_Init(void);
 static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
@@ -244,22 +234,16 @@ static void APPE_FLASH_MANAGER_Init( void );
 FM_Cmd_Status_t FM_MutexTake(void);
 FM_Cmd_Status_t FM_MutexRelease(void);
 
-static void APPE_PKACTRL_Init( void );
-int PKACTRL_MutexTake(void);
-int PKACTRL_MutexRelease(void);
-int PKACTRL_TakeSemEndOfOperation(void);
-int PKACTRL_ReleaseSemEndOfOperation(void);
-
 static void Wpan_Task_Entry(void* argument);
 static void TimerOsTickCb(void *arg);
-#if (HAL_TICK_RTC == 1)
-static void TimerHalTickCb(void *arg);
-static void HAL_StartTick(void);
-#endif /* HAL_TICK_RTC */
 #if ( CFG_LPM_LEVEL != 0)
 static void TimerOSwakeupCB(void *arg);
 static uint32_t getCurrentTime(void);
 #endif /* CFG_LPM_LEVEL */
+#if (HAL_TICK_RTC == 1)
+static void TimerHalTickCb(void *arg);
+static void HAL_StartTick(void);
+#endif /* HAL_TICK_RTC */
 
 /* USER CODE BEGIN PFP */
 
@@ -319,31 +303,9 @@ uint32_t MX_APPE_Init(void *p_param)
     Error_Handler();
   }
 
-  /* Create PKA mutex */
-  PkaMutex = osMutexNew(&PkaMutex_attributes);
-  if (PkaMutex == NULL)
-  {
-    LOG_ERROR_APP( "PKA Mutex FreeRTOS objects creation FAILED");
-    Error_Handler();
-  }
-  /* Create PKA end of operation flag semaphore */
-  PkaEndOfOperationSemaphore = osSemaphoreNew(1U,
-                                              1U,
-                                              &PkaEndOfOperationSemaphore_attributes);
-  if (PkaEndOfOperationSemaphore == NULL)
-  {
-    LOG_ERROR_APP( "PKA End of Operation Semaphore FreeRTOS objects creation FAILED");
-    Error_Handler();
-  }
   /* USER CODE BEGIN APPE_Init_1 */
-  /* Initialize Peripherals */
   APP_BSP_Init();
-#if (CFG_LED_SUPPORTED == 1)
-  APP_BSP_LedInit();
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  APP_BSP_JoystickInit();
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
   /* USER CODE END APPE_Init_1 */
 
   WpanTaskHandle = osThreadNew(Wpan_Task_Entry, NULL, &WpanTask_attributes);
@@ -365,19 +327,16 @@ uint32_t MX_APPE_Init(void *p_param)
   }
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
-  /* Initialize the Public Key Accelerator module */
-  APPE_PKACTRL_Init();
-
   /* Initialize the Simple Non Volatile Memory Arbiter */
   if( SNVMA_Init((uint32_t *)(FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))) != SNVMA_ERROR_OK )
   {
     Error_Handler();
   }
 
-  APP_BLE_Init();
+  /* Initialize PSA crypto subsystem */
+  APPE_PSA_CRYPTO_Init();
 
-  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
+  APP_BLE_Init();
 
   /* Thread Initialisation */
   APP_THREAD_Init();
@@ -390,6 +349,9 @@ uint32_t MX_APPE_Init(void *p_param)
 
   maximumPossibleSuppressedTicks = UINT32_MAX;
 #endif /* ( CFG_LPM_LEVEL != 0) */
+
+  MBEDTLS_THREADING_ALT_EarlyDeInit();
+  MBEDTLS_THREADING_ALT_Init();
 
   /* USER CODE BEGIN APPE_Init_2 */
 
@@ -514,15 +476,8 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
-#else
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -598,7 +553,7 @@ static void Wpan_Task_Entry(void* lArgument)
 
     if( actual_flags & (1U << CFG_RTOS_FLAG_PKA) )
     {
-      PKACTRL_BG_Process();
+      PSA_PLAT_CRYPTO_PkaNotifier();
     }
 
     if( actual_flags & (1U << CFG_RTOS_FLAG_FlashManager) )
@@ -681,7 +636,8 @@ static void Wpan_Task_Entry(void* lArgument)
 static void APPE_RNG_Init(void)
 {
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Start();
+  /* Fill RNG pool */
+  HW_RNG_Process();
 }
 
 /**
@@ -700,13 +656,6 @@ static void APPE_FLASH_MANAGER_Init(void)
   FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
 
   return;
-}
-
-/**
- * @brief Initialize Public Key Accelerator module
- */
-static void APPE_PKACTRL_Init(void)
-{
 }
 
 static void APPE_AMM_Init(void)
@@ -729,6 +678,25 @@ static void TimerOsTickCb(void *arg)
   return;
 }
 
+#if ( CFG_LPM_LEVEL != 0)
+/* OS wakeup callback */
+static void TimerOSwakeupCB(void *arg)
+{
+  /* USER CODE BEGIN TimerOSwakeupCB */
+
+  /* USER CODE END TimerOSwakeupCB */
+  return;
+}
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
+#if ( CFG_LPM_LEVEL != 0)
+/* return current time since boot, continue to count in standby low power mode */
+static uint32_t getCurrentTime(void)
+{
+  return TIMER_IF_GetTimerValue();
+}
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
 #if (HAL_TICK_RTC == 1)
 /* Timer HAL tick callback */
 static void TimerHalTickCb(void *arg)
@@ -741,22 +709,21 @@ static void TimerHalTickCb(void *arg)
 }
 #endif /* HAL_TICK_RTC */
 
-#if ( CFG_LPM_LEVEL != 0)
-/* OS wakeup callback */
-static void TimerOSwakeupCB(void *arg)
+static void APPE_PSA_CRYPTO_Init(void)
 {
-  /* USER CODE BEGIN TimerOSwakeupCB */
+  /* USER CODE BEGIN PsaCryptoInit */
 
-  /* USER CODE END TimerOSwakeupCB */
-  return;
-}
+  /* USER CODE END PsaCryptoInit */
 
-/* return current time since boot, continue to count in standby low power mode */
-static uint32_t getCurrentTime(void)
-{
-  return TIMER_IF_GetTimerValue();
+  MBEDTLS_THREADING_ALT_EarlyInit();
+
+  storage_init();
+
+  if (psa_crypto_init() != PSA_SUCCESS)
+  {
+    Error_Handler();
+  }
 }
-#endif /* ( CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
@@ -768,7 +735,7 @@ static uint32_t getCurrentTime(void)
  *
  *************************************************************/
 
-void PKACTRL_CB_Process( void )
+void PKA_NOTIF_Trigger(void)
 {
   osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_PKA);
 }
@@ -829,7 +796,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -841,7 +807,6 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -878,6 +843,9 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
 
+  /* Threat USART Command to simulate button press for instance. */
+  (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
+
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
 }
 
@@ -909,6 +877,7 @@ void vPortSetupTimerInterrupt( void )
   {
     uwTickFreq = HAL_TICK_FREQ_DEFAULT;
   }
+
   /* USER CODE END vPortSetupTimerInterrupt */
   return;
 }
@@ -924,7 +893,7 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
   }
 
   rtos_tick_less_IDLE_flag = 0U;
-  if(rtos_tick_less_IDLE_state != 0)
+  if(rtos_tick_less_IDLE_state != RTOS_TICK_LESS_INACTIVE)
   {
     rtos_tick_less_IDLE_flag = 1U;
     /* Stop the timer that is generating the OS tick interrupt. */
@@ -1061,7 +1030,7 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
       }
 
       /* USER CODE BEGIN vPortSuppressTicksAndSleep */
-    APP_BSP_PostIdle();
+      APP_BSP_PostIdle();
       /* USER CODE END vPortSuppressTicksAndSleep */
     }
   }
@@ -1243,82 +1212,6 @@ static void HAL_StartTick(void)
   return;
 }
 #endif /* HAL_TICK_RTC */
-
-int PKACTRL_MutexTake(void)
-{
-  int error = 0;
-  osStatus_t os_status;
-
-  /* Take the mutex */
-  os_status = osMutexAcquire(PkaMutex,
-                             osWaitForever);
-
-  if(os_status != osOK)
-  {
-    error = -1; /* Error */
-  }
-
-  return error;
-}
-
-int PKACTRL_MutexRelease(void)
-{
-  int error = 0;
-  osStatus_t os_status;
-
-  /* Release the mutex */
-  os_status = osMutexRelease(PkaMutex);
-
-  if(os_status != osOK)
-  {
-    error = -1; /* Error */
-  }
-
-  return error;
-}
-
-int PKACTRL_TakeSemEndOfOperation(void)
-{
-  int error = 0;
-  osStatus_t os_status;
-
-#if (CFG_LPM_LEVEL != 0)
-  /* Avoid going in low power during computation */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-
-  /* Take the semaphore */
-  os_status = osSemaphoreAcquire(PkaEndOfOperationSemaphore,
-                                 osWaitForever);
-
-  if(os_status != osOK)
-  {
-    error = -1; /* Error */
-  }
-
-  return error;
-}
-
-int PKACTRL_ReleaseSemEndOfOperation(void)
-{
-  int error = 0;
-  osStatus_t os_status;
-
-  /* Release the semaphore */
-  os_status = osSemaphoreRelease(PkaEndOfOperationSemaphore);
-
-#if (CFG_LPM_LEVEL != 0)
-  /* Restore low power */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-
-  if(os_status != osOK)
-  {
-    error = -1; /* Error */
-  }
-
-  return error;
-}
 
 FM_Cmd_Status_t FM_MutexTake(void)
 {

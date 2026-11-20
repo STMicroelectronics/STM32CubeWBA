@@ -35,6 +35,31 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for HIDS */
+#define HIDS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for HIDS (service declaration not counted in attributes)
+  *                + 2 for INPUTREP
+  *                + 2 for REM
+  *                + 2 for HII
+  *                + 2 for HCP
+  *                + 1 for INPUTREP CCCD
+  *                = 9
+**/
+#define HIDS_NUM_GATT_ATTRIBUTES (9)
+
+/**
+  * Size_Attributes = 0 for HIDS (service declaration not counted in attributes)
+  *                 + 5 for INPUTREP declaration + 80 for INPUTREP size
+  *                 + 5 for REM declaration + 80 for REM size
+  *                 + 5 for HII declaration + 4 for HII size
+  *                 + 5 for HCP declaration + 1 for HCP size
+  *                 + 2 for INPUTREP CCCD * CFG_BLE_NUM_LINK
+  *                 = 185 + 2 * CFG_BLE_NUM_LINK
+**/
+#define HIDS_ATT_VALUE_ARRAY_SIZE  (185 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -35,6 +35,27 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for P2P_Server */
+#define P2P_SERVER_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for P2P_Server (service declaration not counted in attributes)
+  *                + 2 for LED_C
+  *                + 2 for SWITCH_C
+  *                + 1 for SWITCH_C CCCD
+  *                = 5
+**/
+#define P2P_SERVER_NUM_GATT_ATTRIBUTES (5)
+
+/**
+  * Size_Attributes = 0 for P2P_Server (service declaration not counted in attributes)
+  *                 + 19 for LED_C declaration + 2 for LED_C size
+  *                 + 19 for SWITCH_C declaration + 2 for SWITCH_C size
+  *                 + 2 for SWITCH_C CCCD * CFG_BLE_NUM_LINK
+  *                 = 42 + 2 * CFG_BLE_NUM_LINK
+**/
+#define P2P_SERVER_ATT_VALUE_ARRAY_SIZE  (42 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

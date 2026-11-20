@@ -354,6 +354,7 @@ static void APP_THREAD_DeviceConfig(void)
 
   APP_THREAD_InitPayloadWrite();
 #endif 
+
   /* USER CODE END DEVICECONFIG */
 }
 
@@ -968,10 +969,8 @@ void APP_BSP_Button2Action(void)
 {
   APP_THREAD_SendCoapMsgWithConf();
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
-  /* USER CODE BEGIN Button2Action */
   osTimerStop(APP_Thread_transmitTimerHandle);
   LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
-  /* USER CODE END Button2Action */
 #endif
 }
 #endif

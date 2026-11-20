@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -49,6 +49,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -68,13 +69,14 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void MX_GPDMA1_Init(void);
 void MX_ICACHE_Init(void);
 void MX_RAMCFG_Init(void);
 void MX_RNG_Init(void);
 void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
-void MX_USART2_UART_Init(void);
 void MX_CRC_Init(void);
+void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -115,8 +117,6 @@ void MX_CRC_Init(void);
 #define D_C_DISP_GPIO_Port GPIOE
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
-#define JTDI_Pin GPIO_PIN_15
-#define JTDI_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
 #define SWCLK_GPIO_Port GPIOA
 #define SWDIO_Pin GPIO_PIN_13

@@ -119,6 +119,13 @@
 
 #define OEMIROT_AREA_2_SIZE            0x0   /* Secure app image secondary slot size for OEMuRoT boot stage */
 
+#define OEMIROT_AREA_4_OFFSET          0x0   /* Secure data image primary slot for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_4_SIZE            0x0   /* Secure data image primary slot size for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_6_OFFSET          0x0   /* Secure data image secondary slot for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_6_SIZE            0x0   /* Secure data image secondary slot size for OEMuRoT boot stage */
 /********** All define are updated automatically from ROT_BOOT project : End **********/
 
 #define FLASH_TOTAL_SIZE               (FLASH_B_SIZE + FLASH_B_SIZE) /* total flash size: 512 KBytes */

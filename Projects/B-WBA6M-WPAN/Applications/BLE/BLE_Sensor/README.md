@@ -24,10 +24,10 @@ In order to make the program work:
 
 Use one of the following remote interfaces to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
 "> Bluetooth LE collector applications for STM32WBA.</a>
-Reset the B-WBA6M-WPAN Nucleo board and launch remote interface on PC/android/ios device.
+Reset the B-WBA6M-WPAN CEB board and launch remote interface on PC/android/ios device.
 
  - Click on WBA6M_xx to connect the board.
  - Select Environmental Data to display temperature and humidity.
  - Display Plot Data and play the accelerometer data (moving the board will modify the displayed values).
 
-For more informations, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA6M_Discovery_Kit_Out_Of_Box_Demonstration"> B-WBA6M-WPAN ST BLE Sensor application.</a>
+For more information, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA6M_Discovery_Kit_Out_Of_Box_Demonstration"> B-WBA6M-WPAN ST BLE Sensor application.</a>

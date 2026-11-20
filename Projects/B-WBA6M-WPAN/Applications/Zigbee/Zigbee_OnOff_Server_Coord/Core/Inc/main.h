@@ -69,6 +69,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 void MX_GPIO_Init(void);
+void MX_GPDMA1_Init(void);
 void MX_ICACHE_Init(void);
 void MX_RAMCFG_Init(void);
 void MX_RTC_Init(void);

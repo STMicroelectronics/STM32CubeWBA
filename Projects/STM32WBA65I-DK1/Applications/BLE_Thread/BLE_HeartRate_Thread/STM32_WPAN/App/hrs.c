@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    HRS.c
+  * @file    hrs.c
   * @author  MCD Application Team
-  * @brief   HRS definition.
+  * @brief   hrs definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -150,7 +150,7 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* USER CODE BEGIN Service1_Char_1 */
-                LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HRS_NOTIFICATION_DISABLED\n");
+            LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HRS_NOTIFICATION_DISABLED\n");
 
             /* USER CODE END Service1_Char_1 */
             switch(p_attribute_modified->Attr_Data[0])
@@ -407,7 +407,6 @@ void HRS_Init(void)
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
-  /* Place holder for Characteristic Descriptors */
 
   /* USER CODE END SVCCTL_InitService1Char1 */
 
@@ -435,7 +434,6 @@ void HRS_Init(void)
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
-  /* Place holder for Characteristic Descriptors */
 
   /* USER CODE END SVCCTL_InitService1Char2 */
 
@@ -463,7 +461,6 @@ void HRS_Init(void)
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
-  /* Place holder for Characteristic Descriptors */
 
   /* USER CODE END SVCCTL_InitService1Char3 */
 

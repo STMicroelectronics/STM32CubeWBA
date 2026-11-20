@@ -25,14 +25,14 @@ In order to make the program work:
 Use one of the following remote interfaces to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
 "> Bluetooth LE collector applications for STM32WBA.</a>
 
-Reset the B-WBA5M-WPAN Nucleo board and launch the remote interface on PC/android/ios device.
+Reset the B-WBA5M-WPAN CEB board and launch the remote interface on PC/android/ios device.
 
  - Click on WBA5M_xx to connect the board, where xx are the last 2 digits of the BD ADDRESS.
  - Heart Rate service:
    - Select the Heart Rate service.
    - Sensor position, Heart Rate values and energy measurement are launched and displayed in graphs, the energy measurement can be reset.
 
-For more informations, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> Bluetooth LE - Heart Rate Sensor ST wiki.</a>
+For more information, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> Bluetooth LE - Heart Rate Sensor ST wiki.</a>
 
  - P2P service:
    - Select the P2P Server service.

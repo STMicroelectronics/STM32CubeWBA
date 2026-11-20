@@ -40,11 +40,10 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc4;
-
-CRC_HandleTypeDef hcrc;
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
+
+RNG_HandleTypeDef hrng;
 
 RTC_HandleTypeDef hrtc;
 
@@ -59,6 +58,8 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
+static void SystemPower_Config(void);
+static void MX_RNG_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -74,6 +75,7 @@ void PeriphCommonClock_Config(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -92,8 +94,11 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-/* Configure the peripherals common clocks */
+  /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
+
+  /* Configure the System Power */
+  SystemPower_Config();
 
   /* USER CODE BEGIN SysInit */
 
@@ -102,12 +107,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_GPDMA1_Init();
-  MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_USART1_UART_Init();
-  MX_ADC4_Init();
   MX_ICACHE_Init();
-
+  MX_RAMCFG_Init();
+  MX_RNG_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -138,7 +141,7 @@ void SystemClock_Config(void)
 
   /** Supply configuration update enable
   */
-  //HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+  HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY);
 
   /** Configure the main internal regulator output voltage
   */
@@ -180,19 +183,19 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV1;
   RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
 
    /* Select SysTick source clock */
-   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
 
    /* Re-Initialize Tick with new clock source */
-   if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
-   {
-     Error_Handler();
-   }
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
@@ -205,8 +208,7 @@ void PeriphCommonClock_Config(void)
 
   /** Initializes the peripherals clock
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RADIOST|RCC_PERIPHCLK_SYSTICK;
-  PeriphClkInit.SystickClockSelection = RCC_SYSTICKCLKSOURCE_HCLK_DIV8;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RADIOST;
   PeriphClkInit.RadioSlpTimClockSelection = RCC_RADIOSTCLKSOURCE_LSE;
 
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -216,84 +218,16 @@ void PeriphCommonClock_Config(void)
 }
 
 /**
-  * @brief ADC4 Initialization Function
-  * @param None
+  * @brief Power Configuration
   * @retval None
   */
-void MX_ADC4_Init(void)
+static void SystemPower_Config(void)
 {
-
-  /* USER CODE BEGIN ADC4_Init 0 */
-
-  /* USER CODE END ADC4_Init 0 */
-
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC4_Init 1 */
-  memset(&hadc4, 0, sizeof(hadc4));
-  /* USER CODE END ADC4_Init 1 */
-
-  /** Common config
-  */
-  hadc4.Instance = ADC4;
-  hadc4.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
-  hadc4.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc4.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc4.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc4.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  hadc4.Init.LowPowerAutoPowerOff = DISABLE;
-  hadc4.Init.LowPowerAutonomousDPD = ADC_LP_AUTONOMOUS_DPD_DISABLE;
-  hadc4.Init.LowPowerAutoWait = DISABLE;
-  hadc4.Init.ContinuousConvMode = DISABLE;
-  hadc4.Init.NbrOfConversion = 1;
-  hadc4.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc4.Init.DMAContinuousRequests = DISABLE;
-  hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_LOW;
-  hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
-  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_814CYCLES_5;
-  hadc4.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_1CYCLE_5;
-  hadc4.Init.OversamplingMode = DISABLE;
-  if (HAL_ADC_Init(&hadc4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
-  if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC4_Init 2 */
-
-  /* USER CODE END ADC4_Init 2 */
-
-}
-
-/**
-  * @brief CRC Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_CRC_Init(void)
-{
-
-  /* USER CODE BEGIN CRC_Init 0 */
-
-  /* USER CODE END CRC_Init 0 */
-
-  /* USER CODE BEGIN CRC_Init 1 */
-
-  /* USER CODE END CRC_Init 1 */
-
-  /* USER CODE BEGIN CRC_Init 2 */
-
-  /* USER CODE END CRC_Init 2 */
-
+  /* WKUP_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(WKUP_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
+/* USER CODE BEGIN PWR */
+/* USER CODE END PWR */
 }
 
 /**
@@ -343,16 +277,14 @@ void MX_ICACHE_Init(void)
   LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
   /* USER CODE END ICACHE_Init 1 */
 
+  /** Full retention for ICACHE in stop mode
+  */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
+
   /** Enable instruction cache in 1-way (direct mapped cache)
   */
-  if (HAL_ICACHE_ConfigAssociativityMode(ICACHE_1WAY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_ICACHE_Enable() != HAL_OK)
-  {
-    Error_Handler();
-  }
+  LL_ICACHE_SetMode(LL_ICACHE_1WAY);
+  LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
@@ -382,12 +314,42 @@ void MX_RAMCFG_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN RAMCFG_Init 2 */
 
   /* USER CODE END RAMCFG_Init 2 */
 
 }
 
+/**
+  * @brief RNG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RNG_Init(void)
+{
+
+  /* USER CODE BEGIN RNG_Init 0 */
+
+  /* USER CODE END RNG_Init 0 */
+
+  /* USER CODE BEGIN RNG_Init 1 */
+
+  /* USER CODE END RNG_Init 1 */
+  hrng.Instance = RNG;
+  hrng.Init.ClockErrorDetection = RNG_CED_DISABLE;
+  if (HAL_RNG_Init(&hrng) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RNG_Init 2 */
+
+  /* USER CODE END RNG_Init 2 */
+
+}
 
 /**
   * @brief RTC Initialization Function
@@ -475,11 +437,7 @@ void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-#if (FULL_CERTIFICATION_CAPABLE == 1)
-  huart1.Init.BaudRate = 576000;
-#else
   huart1.Init.BaudRate = 115200;
-#endif
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -517,20 +475,17 @@ void MX_USART1_UART_Init(void)
   */
 void MX_GPIO_Init(void)
 {
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
-  /*RT DEBUG GPIO_Init */
-  RT_DEBUG_GPIO_Init();
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -539,6 +494,7 @@ void MX_GPIO_Init(void)
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)
@@ -551,8 +507,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

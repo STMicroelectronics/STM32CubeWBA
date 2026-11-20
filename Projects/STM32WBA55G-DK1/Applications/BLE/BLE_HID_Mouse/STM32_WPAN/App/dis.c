@@ -36,7 +36,6 @@ typedef struct{
   uint16_t  DisSvcHdle;                  /**< Dis Service Handle */
   uint16_t  PniCharHdle;                  /**< PNI Characteristic Handle */
 /* USER CODE BEGIN Context */
-  /* Place holder for Characteristic Descriptors Handle*/
 
 /* USER CODE END Context */
 }DIS_Context_t;
@@ -248,7 +247,6 @@ void DIS_Init(void)
   max_attr_record = 3;
 
   /* USER CODE BEGIN SVCCTL_InitService */
-  /* max_attr_record to be updated if descriptors have been added */
 
   /* USER CODE END SVCCTL_InitService */
 

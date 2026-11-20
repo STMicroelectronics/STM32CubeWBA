@@ -58,7 +58,7 @@ extern "C" {
 #define WPAN_FW_BUILD              (0)
 #define WPAN_FW_BRANCH             (0)
 #define WPAN_FW_SUBVERSION         (0)
-#define WPAN_FW_MINOR_VERSION      (10)
+#define WPAN_FW_MINOR_VERSION      (11)
 #define WPAN_FW_MAJOR_VERSION      (1)
 
 /* USER CODE END EC */
@@ -72,6 +72,13 @@ extern TX_EVENT_FLAGS_GROUP WpanEventFlag;
 /* USER CODE END EV */
 
 /* Exported macros ------------------------------------------------------------*/
+#if TX_TIMER_TICKS_PER_SECOND == 100
+#define TX_TIMER_TICKS_PERIOD_MS 10
+#elif TX_TIMER_TICKS_PER_SECOND == 1000
+#define TX_TIMER_TICKS_PERIOD_MS 1
+#else
+#define TX_TIMER_TICKS_PERIOD_MS (1000 / TX_TIMER_TICKS_PER_SECOND)
+#endif
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */

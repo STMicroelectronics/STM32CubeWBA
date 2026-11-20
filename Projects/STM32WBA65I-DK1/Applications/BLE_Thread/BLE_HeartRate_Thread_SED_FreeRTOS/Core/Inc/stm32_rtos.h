@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -44,12 +44,14 @@ extern "C" {
 #define TASK_PRIO_WPAN                          osPriorityNormal
 
 /* USER CODE BEGIN TASK_Priority_Define */
-#define TASK_PRIO_JOYSTICK_x                     osPriorityNormal3
+#define TASK_PRIO_JOYSTICK_x                    osPriorityNormal3
 #define TASK_PRIO_SEND_COAP_MSG                 osPriorityHigh
+
 /* USER CODE END TASK_Priority_Define */
 
 #define RTOS_MAX_THREAD                         (20u)
 
+#define RTOS_STACK_SIZE_XLARGE                  ( 1024u * 4u )
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
@@ -58,10 +60,11 @@ extern "C" {
 #define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_XLARGE
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_STACK_SIZE_JOYSTICK_x              RTOS_STACK_SIZE_NORMAL
-#define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL  
+#define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL
+
 /* USER CODE END TASK_Size_Define */
 
 /* Attributes needed by CMSIS */

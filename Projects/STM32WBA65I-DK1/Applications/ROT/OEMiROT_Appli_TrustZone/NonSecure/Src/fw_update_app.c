@@ -82,9 +82,9 @@ static void FW_Install_SecureAppImage(SFU_FwSecureImageTypeDef FwSecureImageType
 static void FW_Valid_AppImage(void);
 static void FW_Install_AppImage(void);
 #endif /* defined(MCUBOOT_OVERWRITE_ONLY) */
-#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
-static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(void);
-#if !defined(MCUBOOT_OVERWRITE_ONLY)
+#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) || defined(OEMUROT_ENABLE)
+static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(SFU_FwSecureImageTypeDef FwSecureImageType);
+#if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
 static void FW_Valid_SecureDataImage(void);
 static void FW_Install_SecureDataImage(void);
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) */
@@ -140,7 +140,7 @@ void FW_UPDATE_Run(void)
 #endif /*  (MCUBOOT_APP_IMAGE_NUMBER == 2) */
 #if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
       case '4' :
-          FW_UPDATE_SECURE_DATA_IMAGE();
+          FW_UPDATE_SECURE_DATA_IMAGE(SECURE_DATA);
           break;
 #endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 #if (MCUBOOT_NS_DATA_IMAGE_NUMBER == 1)
@@ -196,12 +196,15 @@ void FW_UPDATE_Run(void)
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_NS_DATA_IMAGE_NUMBER == 1) */
 #if defined(OEMUROT_ENABLE)
       case 'e':
-          FW_UPDATE_SECURE_APP_IMAGE(SECURE_BOOT);
+          FW_UPDATE_SECURE_APP_IMAGE(SECURE_APP_BOOT);
+          break;
+      case 'g':
+          FW_UPDATE_SECURE_DATA_IMAGE(SECURE_DATA_BOOT);
           break;
 #endif /* OEMUROT_ENABLE */
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 2)
       case 'f':
-          FW_Install_SecureAppImage(SECURE_BOOT);
+          FW_Install_SecureAppImage(SECURE_APP_BOOT);
           break;
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && defined(MCUBOOT_APP_IMAGE_NUMBER == 2)  */
       case 'x' :
@@ -229,7 +232,7 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_APP_IMAGE(SFU_FwSecureImageTypeDef FwS
   ARM_FLASH_INFO *data = FLASH_SECONDARY_DEV_NAME.GetInfo();
 
   /* Print Firmware Update welcome message */
-  if (FwSecureImageType == SECURE_BOOT)
+  if (FwSecureImageType == SECURE_APP_BOOT)
   {
     printf("Download Secure Boot Image\r\n");
   } else {
@@ -241,7 +244,7 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_APP_IMAGE(SFU_FwSecureImageTypeDef FwS
   }
 
   /* Get Info about the download area */
-  if (FwSecureImageType == SECURE_BOOT)
+  if (FwSecureImageType == SECURE_APP_BOOT)
   {
     fw_image_dwl_area.DownloadAddr =  OEMIROT_AREA_2_OFFSET;
     fw_image_dwl_area.MaxSizeInBytes = OEMIROT_AREA_2_SIZE;
@@ -258,7 +261,7 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_APP_IMAGE(SFU_FwSecureImageTypeDef FwS
 
   if (HAL_OK == ret)
   {
-    if (FwSecureImageType == SECURE_BOOT)
+    if (FwSecureImageType == SECURE_APP_BOOT)
     {
       printf("  -- Secure Boot Image correctly downloaded \r\n\n");
     } else {
@@ -322,7 +325,7 @@ static void FW_Install_SecureAppImage(SFU_FwSecureImageTypeDef FwSecureImageType
 {
   uint32_t MagicAddress;
 
-  if (FwSecureImageType == SECURE_BOOT)
+  if (FwSecureImageType == SECURE_APP_BOOT)
   {
     MagicAddress = OEMIROT_AREA_2_OFFSET  + OEMIROT_AREA_2_SIZE - sizeof(MagicTrailerValue);
   } else {
@@ -342,13 +345,15 @@ static void FW_Install_SecureAppImage(SFU_FwSecureImageTypeDef FwSecureImageType
 #endif /* MCUBOOT_OVERWRITE_ONLY */
 #endif /* (MCUBOOT_APP_IMAGE_NUMBER == 2) */
 
-#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
+
+
+#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) || defined(OEMUROT_ENABLE)
 /**
   * @brief  Run FW Update process.
   * @param  None
   * @retval HAL Status.
   */
-static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(void)
+static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(SFU_FwSecureImageTypeDef FwSecureImageType)
 {
   HAL_StatusTypeDef ret = HAL_ERROR;
   SFU_FwImageFlashTypeDef fw_image_dwl_area;
@@ -356,8 +361,17 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(void)
   /* Print Firmware Update welcome message */
   printf("Download Secure Data Image\r\n");
   /* Get Info about the download area */
-  fw_image_dwl_area.DownloadAddr =  FLASH_AREA_6_OFFSET;
-  fw_image_dwl_area.MaxSizeInBytes = FLASH_AREA_6_SIZE;
+  if (FwSecureImageType == SECURE_DATA_BOOT)
+  {
+    fw_image_dwl_area.DownloadAddr = OEMIROT_AREA_6_OFFSET;
+    fw_image_dwl_area.MaxSizeInBytes = OEMIROT_AREA_6_SIZE;
+  }
+  else
+  {
+    fw_image_dwl_area.DownloadAddr = FLASH_AREA_6_OFFSET;
+    fw_image_dwl_area.MaxSizeInBytes = FLASH_AREA_6_SIZE;
+  }
+
   fw_image_dwl_area.ImageOffsetInBytes = 0x0;
   m_uFlashSectorSize = data->sector_size;
   m_uFlashMinWriteSize = data->program_unit;
@@ -372,6 +386,8 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(void)
 
   return ret;
 }
+#endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) || OEMUROT_ENABLE  */
+#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
 #if !defined(MCUBOOT_OVERWRITE_ONLY)
 static void FW_Valid_SecureDataImage(void)
 {
@@ -532,6 +548,7 @@ static void FW_UPDATE_PrintWelcome(void)
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 #if defined(OEMUROT_ENABLE)
   printf("  Download Secure Boot Image ---------------------------- e\r\n\n");
+  printf("  Download Secure Data Image ---------------------------- g\r\n\n");
 #endif /* OEMUROT_ENABLE */
   printf("  Previous Menu ----------------------------------------- x\r\n\n");
 }

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -40,12 +40,14 @@
 #include "otp_client.h"
 #include "stm32_timer.h"
 #include "nvm_db.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 
 /* USER CODE BEGIN PTD */
 #define ECP_TIMEOUT_MS         (30 * 1000)  // 30 seconds
+
 /* USER CODE END PTD */
 
 typedef enum
@@ -53,6 +55,7 @@ typedef enum
   NOTIFICATION_INFO_RECEIVED_EVT,
   /* USER CODE BEGIN GATT_CLIENT_APP_Opcode_t */
   ESL_NOTIFICATION_INFO_RECEIVED_EVT
+
   /* USER CODE END GATT_CLIENT_APP_Opcode_t */
 }GATT_CLIENT_APP_Opcode_t;
 
@@ -76,6 +79,7 @@ typedef enum
   SVC_ID_ESL,
   SVC_ID_OTS,
   SVC_ID_DIS,
+
   /* USER CODE END svcId_t */
   SVC_ID_MAX
 }svcId_t;
@@ -104,6 +108,7 @@ typedef struct
   svcInfoStatus_t status;
   uint8_t findIncludedServices; /* Set to TRUE to search for included services */
   /* USER CODE BEGIN SvcInfo_t */
+
   /* USER CODE END SvcInfo_t */
 
 }SvcInfo_t;
@@ -120,34 +125,33 @@ typedef struct
   uint16_t ServiceChangedCharDescHdl;
   uint8_t ServiceChangedCharProperties;
   /* USER CODE BEGIN BleClientAppContext_t */
-
   /* SVC_ID_ESL characteristics handle */
   /* Handles of ESL Address characteristic */
   uint16_t ESLAddressCharHdl;
   uint16_t ESLAddressValueHdl;
-  
+
   /* Handles of AP Sync Material characteristic */
   uint16_t APSyncKeyMaterialCharHdl;
   uint16_t APSyncKeyMaterialValueHdl;
-  
+
   /* Handles of ESL Resp Key Material characteristic */
   uint16_t ESLRespKeyMaterialCharHdl;
   uint16_t ESLRespKeyMaterialValueHdl;
-  
+
   /* Handles of ESL Current Absolute Time characteristic */
   uint16_t ESLCurrAbsTimeCharHdl;
   uint16_t ESLCurrAbsTimeValueHdl;
-  
+
   /* handles of the Rx characteristic - Notification From Server */
   /* Handles of ESL Control Point characteristic */
   uint16_t ESLControlPointCharHdl;
   uint16_t ESLControlPointValueHdl;
   uint16_t ESLControlPointCCCDHdl;
-    
+
   /* Handles of ESL Display Information characteristic */
   uint16_t ESLDisplayInfoCharHdl;
   uint16_t ESLDisplayInfoValueHdl;
-  
+
   /* Handles of ESL Image Information characteristic */
   uint16_t ESLImageInfoCharHdl;
   uint16_t ESLImageInfoValueHdl;
@@ -155,20 +159,21 @@ typedef struct
   /* Handles of ESL LED Information characteristic */
   uint16_t ESLSensorInfoCharHdl;
   uint16_t ESLSensorInfoValueHdl;
-  
+
   /* Handles of ESL LED Information characteristic */
   uint16_t ESLLedInfoCharHdl;
   uint16_t ESLLedInfoValueHdl;
-  
+
   OTSHandleContext_t OTSHandles;
-  
+
   uint16_t DISPNPIdCharHdl;
   uint16_t DISPNPIdValueHdl;
-  
+
   /* ESL Control Point (ECP) timeout timerID*/
   UTIL_TIMER_Object_t ECP_timer_Id;
-  
-  bool b_ECP_failed; 
+
+  bool b_ECP_failed;
+
   /* USER CODE END BleClientAppContext_t */
 
 }BleClientAppContext_t;
@@ -223,6 +228,7 @@ static BleClientAppProcContext_t procClientContext;
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
 extern ESL_AP_context_t ESL_AP_Context;
+
 /* USER CODE END GV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -244,6 +250,7 @@ static void context_init(uint8_t index);
 static void ECPTimeout(void *arg);
 static void print_Info_Char(void);
 static uint8_t ReadLongCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t Offset);
+
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -294,11 +301,10 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_task);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
-  
   TIMEREF_SetAbsoluteTime(0);
-  
+
   OTP_CLIENT_Init();
-  
+
   /* USER CODE END GATT_CLIENT_APP_Init_2 */
   return;
 }
@@ -687,17 +693,10 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
       {
         uint16_t charPropVal = 0x0000;
 
-        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000)
+        if (a_ClientContext[index].ServiceChangedCharDescHdl != 0x0000
+            && ((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
         {
-          if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_NOTIFY) == CHAR_PROP_NOTIFY)
-          {
-            charPropVal = 0x0001;
-          }
-          else if(((a_ClientContext[index].ServiceChangedCharProperties) & CHAR_PROP_INDICATE) == CHAR_PROP_INDICATE)
-          {
-            charPropVal = 0x0002;
-          }
-
+          charPropVal = 0x0002;
           procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
@@ -714,13 +713,12 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
           }
         }
         /* USER CODE BEGIN PROC_GATT_PROPERTIES_ENABLE_ALL */
-        
         LOG_INFO_APP("Enable notifications on ECP (handle 0x%04X)\n", a_ClientContext[index].ESLControlPointCCCDHdl);
-        
+
         if(a_ClientContext[index].ESLControlPointCCCDHdl != 0x0000)
         {
           charPropVal = 0x0001;
-          procClientContext.gatt_error_code = 0;          
+          procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ESLControlPointCCCDHdl,
                                                 2,
@@ -911,7 +909,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
             a_ClientContext[index].att_mtu = exchange_mtu_resp->Server_RX_MTU;
           }
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
-          
+
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         break;
@@ -929,7 +927,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
         case ACI_ATT_READ_RESP_VSEVT_CODE:
         {
           aci_att_read_resp_event_rp0 * read_resp;
-          read_resp = (aci_att_read_resp_event_rp0 *)p_blecore_evt->data;          
+          read_resp = (aci_att_read_resp_event_rp0 *)p_blecore_evt->data;
           procClientContext.read_char_len = read_resp->Event_Data_Length;
           memcpy(procClientContext.read_char, read_resp->Attribute_Value, procClientContext.read_char_len);
           procClientContext.read_char_offset = procClientContext.read_char_len;
@@ -941,10 +939,11 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           read_resp = (aci_att_read_blob_resp_event_rp0 *)p_blecore_evt->data;
           LOG_INFO_APP("  GATT Read Blob Response length: 0x%02x \n", read_resp->Event_Data_Length);
           procClientContext.read_char_len += read_resp->Event_Data_Length;
-          memcpy(procClientContext.read_char + procClientContext.read_char_offset, read_resp->Attribute_Value, procClientContext.read_char_len);
+          memcpy(procClientContext.read_char + procClientContext.read_char_offset, read_resp->Attribute_Value, read_resp->Event_Data_Length);
           procClientContext.read_char_offset = procClientContext.read_char_len;
         }
         break;
+
         /* USER CODE END VENDOR_SPECIFIC_DEBUG_EVT_CODE_1 */
         default:
         /* USER CODE BEGIN VENDOR_SPECIFIC_DEBUG_EVT_CODE_DEFAULT */
@@ -977,10 +976,11 @@ __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif
     /* USER CODE BEGIN Client_Evt_Opcode */
     case ESL_NOTIFICATION_INFO_RECEIVED_EVT:
       {
-        //ECP notify: response of ESL to AT command sent writing the ECP      
+        /* ECP notify: response of ESL to AT command sent writing the ECP */
         ESL_AP_ECPNotificationReceived(p_Notif->DataTransfered.p_Payload);
       }
       break;
+
     /* USER CODE END Client_Evt_Opcode */
 
     case NOTIFICATION_INFO_RECEIVED_EVT:
@@ -1266,6 +1266,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
+          a_ClientContext[index].ServiceChangedCharProperties = CharProperties;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
 /* USER CODE BEGIN gatt_parse_chars_1 */
@@ -1287,7 +1288,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
           a_ClientContext[index].APSyncKeyMaterialCharHdl = CharStartHdl;
           a_ClientContext[index].APSyncKeyMaterialValueHdl = CharValueHdl;
           LOG_INFO_APP(", AP_SYNC_KEY_MATERIAL_UUID charac found\n");
-        }       
+        }
         else if (uuid == ESL_RESP_KEY_MATERIAL_UUID)
         {
           a_ClientContext[index].ESLRespKeyMaterialCharHdl = CharStartHdl;
@@ -1502,6 +1503,7 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
           a_ClientContext[index].OTSHandles.ObjListCPCCCDHdl = handle;
           LOG_INFO_APP(", Object List Control Point CCCD found: handle=0x%04X\n", handle);
         }
+
 /* USER CODE END gatt_parse_descs_1 */
         else
         {
@@ -1570,7 +1572,7 @@ static int gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
   {
     if (p_evt->Attribute_Handle == a_ClientContext[index].ESLControlPointValueHdl)
     {
-      /* The AP shall stop the timer when a notification of the ESL Control Point 
+      /* The AP shall stop the timer when a notification of the ESL Control Point
          characteristic is received in response to the command.*/
       UTIL_TIMER_Stop(&a_ClientContext[index].ECP_timer_Id);
 
@@ -1580,7 +1582,7 @@ static int gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
       Notification.DataTransfered.p_Payload = &p_evt->Attribute_Value[0];
 
       gatt_Notification(&Notification);
-      
+
       ret = 0;
     }
   }
@@ -1651,8 +1653,7 @@ static void client_discover_task(void)
       GATT_CLIENT_APP_DiscoverServicesWithIndex(index);
 
       /* USER CODE BEGIN client_discover_2 */
-      
-#ifndef PTS_OTP  
+#ifndef PTS_OTP
       if (ESL_AP_Context.configuring)
       {
         GATT_CLIENT_APP_ReadAllInfo(a_ClientContext[index].connHdl);
@@ -1662,6 +1663,7 @@ static void client_discover_task(void)
         }
        }
 #endif
+
       /* USER CODE END client_discover_2 */
 
       /* Check if in the meantime another server has been connected. */
@@ -1813,20 +1815,19 @@ tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint1
 }
 
 /* USER CODE BEGIN LF */
-
 static void context_init(uint8_t index)
-{  
+{
   memset(&a_ClientContext[index], 0, sizeof(BleClientAppContext_t));
-  
+
   a_ClientContext[index].svcInfo[SVC_ID_GAP].uuid  = GAP_SERVICE_UUID;
   a_ClientContext[index].svcInfo[SVC_ID_GATT].uuid = GATT_SERVICE_UUID;
   a_ClientContext[index].svcInfo[SVC_ID_ESL].uuid  = ESL_SERVICE_UUID;
   a_ClientContext[index].svcInfo[SVC_ID_ESL].findIncludedServices = TRUE;
   a_ClientContext[index].svcInfo[SVC_ID_OTS].uuid  = OBJECT_TRANSFER_SERVICE_UUID;
   a_ClientContext[index].svcInfo[SVC_ID_DIS].uuid  = DEVICE_INFORMATION_SERVICE_UUID;
-  
-    /* When the AP writes to the ECP, the AP shall start a timer with the value 
-     set to the ESL Control Point Timeout period (30 seconds). If the timer 
+
+    /* When the AP writes to the ECP, the AP shall start a timer with the value
+     set to the ESL Control Point Timeout period (30 seconds). If the timer
      expires, then the ECP procedure shall be considered to have failed. */
   UTIL_TIMER_Create(&a_ClientContext[index].ECP_timer_Id,
                     ECP_TIMEOUT_MS,
@@ -1836,7 +1837,7 @@ static void context_init(uint8_t index)
 }
 
 /* If the AP establish a bond with an ESL and ESL is on Configuring state,
-   the AP can configure ESL by writing some ESL Service characteristics  
+   the AP can configure ESL by writing some ESL Service characteristics
    (called on ACI_GAP_PAIRING_COMPLETE_VSEVT_CODE) */
 uint8_t GATT_CLIENT_APP_ConfigureESL(uint16_t connection_handle)
 {
@@ -1844,11 +1845,11 @@ uint8_t GATT_CLIENT_APP_ConfigureESL(uint16_t connection_handle)
   uint8_t ret;
   esl_info_t *p_esl_info = &ESL_AP_Context.conn_esl_info;
   uint16_t esl_address = p_esl_info->esl_address;
-  
+
   index = GATT_CLIENT_APP_Get_Index(connection_handle);
   if(index < 0)
     return BLE_STATUS_INVALID_PARAMS;
-  
+
   /* ESL Address characteristic */
   LOG_DEBUG_APP("Writing ESL Address (0x%04X)\n", p_esl_info->esl_address);
   ret = GATT_CLIENT_APP_WriteCharacteristic(a_ClientContext[index].connHdl,
@@ -1858,13 +1859,13 @@ uint8_t GATT_CLIENT_APP_ConfigureESL(uint16_t connection_handle)
   {
     return 1;
   }
-  
+
   if(ESL_AP_Context.provisioning)
   {
     /* keys are written only during provisioning. We let write other characteristics
        even if we are just updating ESL.  */
-  
-    //AP Sync Material characteristic
+
+    /* AP Sync Material characteristic */
     LOG_DEBUG_APP("Writing AP Sync Material\n");
     GATT_CLIENT_APP_WriteCharacteristic(a_ClientContext[index].connHdl,
                                         a_ClientContext[index].APSyncKeyMaterialValueHdl,
@@ -1873,10 +1874,10 @@ uint8_t GATT_CLIENT_APP_ConfigureESL(uint16_t connection_handle)
     {
       return 1;
     }
-    
-    //ESL Resp Key Material characteristic  
+
+    /* ESL Resp Key Material characteristic */
     ESL_AP_GenerateKeyMaterial(&p_esl_info->esl_resp_key_material);
-    
+
     LOG_DEBUG_APP("Writing Response Key Material:\n");
     LOG_DEBUG_APP("Session key: ");
     for(int i = sizeof(p_esl_info->esl_resp_key_material.session_key); i >= 0; i--)
@@ -1889,7 +1890,7 @@ uint8_t GATT_CLIENT_APP_ConfigureESL(uint16_t connection_handle)
       LOG_DEBUG_APP("%02X ", p_esl_info->esl_resp_key_material.iv[i]);
     }
     LOG_DEBUG_APP("\n");
-    
+
     procClientContext.gatt_error_code = 0;
     GATT_CLIENT_APP_WriteCharacteristic(a_ClientContext[index].connHdl,
                                         a_ClientContext[index].ESLRespKeyMaterialValueHdl,
@@ -1899,20 +1900,20 @@ uint8_t GATT_CLIENT_APP_ConfigureESL(uint16_t connection_handle)
       return 1;
     }
   }
-  
-  /* ESL Current Absolute Time characteristic */  
+
+  /* ESL Current Absolute Time characteristic */
   uint32_t absoluteTime = TIMEREF_GetCurrentAbsTime();
   LOG_DEBUG_APP("Writing Absolute time (%d)\n", absoluteTime);
   ret = GATT_CLIENT_APP_WriteCharacteristic(a_ClientContext[index].connHdl,
                                             a_ClientContext[index].ESLCurrAbsTimeValueHdl,
                                             4,
                                             (uint8_t *)&absoluteTime);
-  
+
   if (ret != BLE_STATUS_SUCCESS)
   {
     return 1;
   }
-  
+
   if(ESL_AP_Context.configuring)
   {
     ret = ESL_AP_CmdUpdateComplete();
@@ -1922,7 +1923,7 @@ uint8_t GATT_CLIENT_APP_ConfigureESL(uint16_t connection_handle)
       return 2;
     }
   }
-  
+
   ret = ESL_AP_StoreESLInfo(&ESL_AP_Context.conn_esl_info);
   if(ret == 0)
   {
@@ -1932,25 +1933,25 @@ uint8_t GATT_CLIENT_APP_ConfigureESL(uint16_t connection_handle)
   {
     LOG_ERROR_APP("Error while saving configuration\n");
     aci_gap_terminate(a_ClientContext[index].connHdl, HCI_REMOTE_USER_TERMINATED_CONNECTION_ERR_CODE);
-    
+
     return 2;
   }
-  
+
   return 0;
 }
 
-/* If bResponse is true the command wait for an ESL response, else the 
+/* If bResponse is true the command wait for an ESL response, else the
    command has no response, so the timer ECP_TIMEOUT_MS must not start */
 uint8_t GATT_CLIENT_APP_WriteECP(uint16_t connection_handle, uint8_t* cmd, uint8_t len_cmd, uint8_t bResponse)
 {
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
   int index;
-  
+
   index = GATT_CLIENT_APP_Get_Index(connection_handle);
   if(index < 0)
     return BLE_STATUS_INVALID_PARAMS;
-  
-  /* If an ECP procedure times out, then the AP shall not start a new ECP 
+
+  /* If an ECP procedure times out, then the AP shall not start a new ECP
    procedure until a new link is established with the ESL.*/
   if(!a_ClientContext[index].b_ECP_failed)
   {
@@ -1963,57 +1964,57 @@ uint8_t GATT_CLIENT_APP_WriteECP(uint16_t connection_handle, uint8_t* cmd, uint8
     {
       return ret;
     }
-   
-    /* When the AP writes to the ECP, the AP shall start a timer with the value  
+
+    /* When the AP writes to the ECP, the AP shall start a timer with the value
        set to the ESL Control Point Timeout period.*/
     if (bResponse)
       UTIL_TIMER_Start(&a_ClientContext[index].ECP_timer_Id);
-  }  
+  }
   return ret;
 }
 
 static void ECPTimeout(void *arg)
 {
   BleClientAppContext_t *clt_ctxt = arg;
-  
+
   LOG_ERROR_APP("ECP procedure failed\n");
-  /* If an ECP procedure times out, then the AP shall not start a new ECP 
+  /* If an ECP procedure times out, then the AP shall not start a new ECP
      procedure until a new link is established with the ESL.*/
   clt_ctxt->b_ECP_failed = true;
 }
 
 static void print_Info_Char(void)
-{  
-  for (int i = 0; i < procClientContext.read_char_len; i++) 
+{
+  for (int i = 0; i < procClientContext.read_char_len; i++)
   {
     LOG_INFO_APP("%02X", procClientContext.read_char[i]);
-    if (i < procClientContext.read_char_len-1) 
+    if (i < procClientContext.read_char_len-1)
       LOG_INFO_APP(":");
-  }    
+  }
   LOG_INFO_APP("\n");
 }
 
 uint8_t GATT_CLIENT_APP_ReadAllInfo(uint16_t connection_handle)
 {
   tBleStatus ret = 0;
-  
+
   LOG_INFO_APP("Read Display Information\n");
-  GATT_CLIENT_APP_ReadDisplayInfo(connection_handle); 
-  
+  GATT_CLIENT_APP_ReadDisplayInfo(connection_handle);
+
   LOG_INFO_APP("Read Image Information\n");
   GATT_CLIENT_APP_ReadImageInfo(connection_handle);
-  
+
   LOG_INFO_APP("Read Sensor Information\n");
   GATT_CLIENT_APP_ReadSensorInfo(connection_handle);
-  
+
   LOG_INFO_APP("Read LED Information\n");
   GATT_CLIENT_APP_ReadLedInfo(connection_handle);
-  
+
   LOG_INFO_APP("Read PnP ID\n");
   GATT_CLIENT_APP_ReadPnPID(connection_handle);
-  
+
   return ret;
-}  
+}
 
 uint8_t GATT_CLIENT_APP_ReadDisplayInfo(uint16_t connection_handle)
 {
@@ -2021,20 +2022,20 @@ uint8_t GATT_CLIENT_APP_ReadDisplayInfo(uint16_t connection_handle)
   int index;
   uint8_t *data_p;
   uint16_t data_length;
-  
+
   index = GATT_CLIENT_APP_Get_Index(connection_handle);
   if(index < 0)
     return BLE_STATUS_INVALID_PARAMS;
-  
+
   if(a_ClientContext[index].ESLDisplayInfoValueHdl == 0)
     return BLE_STATUS_ERROR;
-  
+
   ret = GATT_CLIENT_APP_ReadCharacteristic(connection_handle, a_ClientContext[index].ESLDisplayInfoValueHdl, &data_length, &data_p, true);
   if(ret != BLE_STATUS_SUCCESS)
     return ret;
-  
+
   print_Info_Char();
-  
+
   return ret;
 }
 
@@ -2044,20 +2045,20 @@ uint8_t GATT_CLIENT_APP_ReadImageInfo(uint16_t connection_handle)
   int index;
   uint8_t *data_p;
   uint16_t data_length;
-  
+
   index = GATT_CLIENT_APP_Get_Index(connection_handle);
   if(index < 0)
     return BLE_STATUS_INVALID_PARAMS;
-  
+
   if(a_ClientContext[index].ESLImageInfoValueHdl == 0)
     return BLE_STATUS_ERROR;
-  
+
   ret = GATT_CLIENT_APP_ReadCharacteristic(connection_handle, a_ClientContext[index].ESLImageInfoValueHdl, &data_length, &data_p, true);
   if(ret != BLE_STATUS_SUCCESS)
     return ret;
-  
+
   print_Info_Char();
-  
+
   return ret;
 }
 
@@ -2067,20 +2068,20 @@ uint8_t GATT_CLIENT_APP_ReadSensorInfo(uint16_t connection_handle)
   int index;
   uint8_t *data_p;
   uint16_t data_length;
-  
+
   index = GATT_CLIENT_APP_Get_Index(connection_handle);
   if(index < 0)
     return BLE_STATUS_INVALID_PARAMS;
-  
+
   if(a_ClientContext[index].ESLSensorInfoValueHdl == 0)
     return BLE_STATUS_ERROR;
-  
+
   ret = GATT_CLIENT_APP_ReadCharacteristic(connection_handle, a_ClientContext[index].ESLSensorInfoValueHdl, &data_length, &data_p, true);
   if(ret != BLE_STATUS_SUCCESS)
     return ret;
-  
+
   print_Info_Char();
-  
+
   return ret;
 }
 
@@ -2090,20 +2091,20 @@ uint8_t GATT_CLIENT_APP_ReadLedInfo(uint16_t connection_handle)
   int index;
   uint8_t *data_p;
   uint16_t data_length;
-  
+
   index = GATT_CLIENT_APP_Get_Index(connection_handle);
   if(index < 0)
     return BLE_STATUS_INVALID_PARAMS;
-  
+
   if(a_ClientContext[index].ESLLedInfoValueHdl == 0)
     return BLE_STATUS_ERROR;
-  
+
   ret = GATT_CLIENT_APP_ReadCharacteristic(connection_handle, a_ClientContext[index].ESLLedInfoValueHdl, &data_length, &data_p, true);
   if(ret != BLE_STATUS_SUCCESS)
     return ret;
-  
+
   print_Info_Char();
-  
+
   return ret;
 }
 
@@ -2113,20 +2114,20 @@ uint8_t GATT_CLIENT_APP_ReadPnPID(uint16_t connection_handle)
   int index;
   uint8_t *data_p;
   uint16_t data_length;
-  
+
   index = GATT_CLIENT_APP_Get_Index(connection_handle);
   if(index < 0)
     return BLE_STATUS_INVALID_PARAMS;
-  
+
   if(a_ClientContext[index].DISPNPIdValueHdl == 0)
     return BLE_STATUS_ERROR;
-  
+
   ret = GATT_CLIENT_APP_ReadCharacteristic(connection_handle, a_ClientContext[index].DISPNPIdValueHdl, &data_length, &data_p, true);
   if(ret != BLE_STATUS_SUCCESS)
     return ret;
-  
+
   print_Info_Char();
-  
+
   return ret;
 }
 

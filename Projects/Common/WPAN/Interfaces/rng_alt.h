@@ -25,16 +25,15 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include <stddef.h>
-#include "mbedtls/entropy.h"
-
+  
 /* Exported functions ------------------------------------------------------- */
+//void HW_RNG_EnableClock(uint8_t user_mask);
+//void HW_RNG_DisableClock(uint8_t user_mask);
+//void HW_RNG_SetPoolThreshold(uint8_t threshold);
 
-void HW_RNG_EnableClock(uint8_t user_mask);
-void HW_RNG_DisableClock(uint8_t user_mask);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* ENTROPY_HARDWARE_ALT_H */
+#endif /* RNG_ALT_H */

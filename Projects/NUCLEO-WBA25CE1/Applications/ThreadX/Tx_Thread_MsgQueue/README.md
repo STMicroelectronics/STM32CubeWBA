@@ -85,6 +85,13 @@ RTOS, ThreadX, Threading, Message Queue, Event chaining
   - This application runs on STM32WBA25xx devices
   - This application has been tested with STMicroelectronics NUCLEO-WBA25CE1 revision boards MB2293-WBA2-B01
     and can be easily tailored to any other supported device and development board.
+  - A virtual COM port appears in the HyperTerminal:
+    - Hyperterminal configuration:
+      + Data Length = 8 Bits
+      + One Stop Bit
+      + No parity
+      + BaudRate = 115200 Baud
+      + Flow control: None
 
 ###  <b>How to use it ?</b>
 

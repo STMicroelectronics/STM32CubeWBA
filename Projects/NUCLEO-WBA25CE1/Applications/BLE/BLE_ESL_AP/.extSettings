@@ -1,5 +1,5 @@
 [ProjectFiles]
-HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo;../STM32_WPAN/App/NVMDB/Inc;
+HeaderPath=../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../STM32_WPAN/App/NVMDB/Inc;
 
 [Groups]
 Doc=../README.md;

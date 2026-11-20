@@ -35,6 +35,31 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for p2pR */
+#define P2PR_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for p2pR (service declaration not counted in attributes)
+  *                + 2 for WriteFwd
+  *                + 2 for NotifFwd
+  *                + 2 for DevInfo
+  *                + 1 for NotifFwd CCCD
+  *                + 1 for DevInfo CCCD
+  *                = 8
+**/
+#define P2PR_NUM_GATT_ATTRIBUTES (8)
+
+/**
+  * Size_Attributes = 0 for p2pR (service declaration not counted in attributes)
+  *                 + 19 for WriteFwd declaration + 2 for WriteFwd size
+  *                 + 19 for NotifFwd declaration + 2 for NotifFwd size
+  *                 + 19 for DevInfo declaration + 32 for DevInfo size
+  *                 + 2 for NotifFwd CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for DevInfo CCCD * CFG_BLE_NUM_LINK
+  *                 = 93 + 4 * CFG_BLE_NUM_LINK
+**/
+#define P2PR_ATT_VALUE_ARRAY_SIZE  (93 + 4 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

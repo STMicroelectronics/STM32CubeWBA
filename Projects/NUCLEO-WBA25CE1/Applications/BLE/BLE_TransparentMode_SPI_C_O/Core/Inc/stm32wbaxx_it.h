@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -71,6 +71,7 @@ void EXTI1_IRQHandler(void);
 void EXTI2_IRQHandler(void);
 void EXTI13_IRQHandler(void);
 void EXTI5_IRQHandler(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

@@ -46,7 +46,7 @@ In order to make the program work:
     - __Select Disconnect__: Disconnect the connected devices.
 
 - __Audio Config__
-  - Once "Audio Config" in HAP Peripheral is executed, use the Joystck Up/Down direction to select one of the Hearing Aid Audio device configuration:
+  - Once "Audio Config" in HAP Peripheral is executed, use the Joystick Up/Down direction to select one of the Hearing Aid Audio device configuration:
     - __Banded Hearing Aid__
     - __Right Binaural Hearing Aid__
     - __Left Binaural Hearing Aid__

@@ -42,8 +42,6 @@
 #include "app_thread.h"
 #include "app_sys.h"
 #include "otp.h"
-#include "scm.h"
-#include "pka_ctrl.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
@@ -55,12 +53,18 @@
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
+#include "psa_plat_crypto.h"
+#include "mbedtls_threading_alt.h"
+#include "psa/crypto.h"
+#include "entropy_hardware_alt.h"
+#include "storage_interface.h"
 #include "assert.h"
 #include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+#include "app_tests_commands.h"
 
 /* USER CODE END Includes */
 
@@ -132,9 +136,6 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
-static uint8_t PkaMut = 0u;
-static uint8_t EndOfProcSem = 0u;
-
 static uint8_t FlashMut = 0u;
 
 /* USER CODE BEGIN PV */
@@ -151,6 +152,8 @@ static void System_Init( void );
 static void SystemPower_Config( void );
 static void Config_HSE(void);
 static void APPE_RNG_Init( void );
+static void APPE_PSA_CRYPTO_Init(void);
+void PKA_NOTIF_Trigger(void);
 
 static void APPE_AMM_Init(void);
 static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
@@ -160,12 +163,6 @@ static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 static void APPE_FLASH_MANAGER_Init( void );
 FM_Cmd_Status_t FM_MutexTake(void);
 FM_Cmd_Status_t FM_MutexRelease(void);
-
-static void APPE_PKACTRL_Init( void );
-int PKACTRL_MutexTake(void);
-int PKACTRL_MutexRelease(void);
-int PKACTRL_TakeSemEndOfOperation(void);
-int PKACTRL_ReleaseSemEndOfOperation(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -217,15 +214,12 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_FLASH_MANAGER_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
-  APP_BSP_Init();
 #if defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP)
   AppTestCommand_Init();
-#endif // defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP)
+#endif /* defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP) */
+  APP_BSP_Init();
 
   /* USER CODE END APPE_Init_1 */
-
-  /* Initialize the Public Key Accelerator module */
-  APPE_PKACTRL_Init();
 
   /* Initialize the Simple Non Volatile Memory Arbiter */
   if( SNVMA_Init((uint32_t *)(FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))) != SNVMA_ERROR_OK )
@@ -233,13 +227,16 @@ uint32_t MX_APPE_Init(void *p_param)
     Error_Handler();
   }
 
-  APP_BLE_Init();
+  /* Initialize PSA crypto subsystem */
+  APPE_PSA_CRYPTO_Init();
 
-  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
+  APP_BLE_Init();
 
   /* Thread Initialisation */
   APP_THREAD_Init();
+
+  MBEDTLS_THREADING_ALT_EarlyDeInit();
+  MBEDTLS_THREADING_ALT_Init();
 
   /* USER CODE BEGIN APPE_Init_2 */
 
@@ -303,7 +300,9 @@ static void System_Init( void )
   UTIL_TIMER_Init();
 
   /* USER CODE BEGIN System_Init_1 */
-
+#if ((CFG_RT_DEBUG_DTB == 1) && (CFG_BUTTON_SUPPORTED == 1))
+#warning "DTB signal tx_on may be overwritten by buttons IOs configuration on PA1 pin"
+#endif
   /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -356,15 +355,10 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
-  /* Initialize System Clock Manager */
-  scm_init();
-#else
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
     Error_Handler();
   }
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
@@ -417,10 +411,17 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
-
   /* Linker script is configured to use only SRAM1, so we can disable SRAM2 retention */
-  LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
-
+#if (CFG_LPM_LEVEL != 0)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+    LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
+    LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
+#endif
+#if (CFG_LPM_STOP1_SUPPORTED == 1)
+  LL_PWR_SetSRAM1StopRetention(LL_PWR_SRAM1_STOP_FULL_RETENTION);
+  LL_PWR_SetSRAM2StopRetention(LL_PWR_SRAM2_STOP_NO_RETENTION);
+#endif /* CFG_LPM_STOP */
+#endif /* (CFG_LPM_LEVEL != 0)  */
   /* USER CODE END SystemPower_Config */
 }
 
@@ -430,7 +431,8 @@ static void SystemPower_Config(void)
 static void APPE_RNG_Init(void)
 {
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Start();
+  /* Fill RNG pool */
+  HW_RNG_Process();
   /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
@@ -456,15 +458,6 @@ static void APPE_FLASH_MANAGER_Init(void)
   return;
 }
 
-/**
- * @brief Initialize Public Key Accelerator module
- */
-static void APPE_PKACTRL_Init(void)
-{
-  /* Register Public Key Accelerator task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_PKACTRL, UTIL_SEQ_RFU, PKACTRL_BG_Process);
-}
-
 static void APPE_AMM_Init(void)
 {
   /* Initialize the Advance Memory Manager */
@@ -475,6 +468,24 @@ static void APPE_AMM_Init(void)
 
   /* Register Advance Memory Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_AMM, UTIL_SEQ_RFU, AMM_BackgroundProcess);
+}
+
+static void APPE_PSA_CRYPTO_Init(void)
+{
+  /* USER CODE BEGIN PsaCryptoInit */
+
+  /* USER CODE END PsaCryptoInit */
+
+  MBEDTLS_THREADING_ALT_EarlyInit();
+
+  storage_init();
+
+  UTIL_SEQ_RegTask(1U << CFG_TASK_PKA_NOTIF, UTIL_SEQ_RFU, PSA_PLAT_CRYPTO_PkaNotifier);
+
+  if (psa_crypto_init() != PSA_SUCCESS)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -498,11 +509,6 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_StopStabilizationTimer();
-  /* SCM HSE END */
-#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -530,21 +536,6 @@ void UTIL_SEQ_PreIdle( void )
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
-
-#if defined(STM32WBAXX_SI_CUT1_0)
-  /* Wait until HSE is ready */
-#if (CFG_SCM_SUPPORTED == 1)
-  /* SCM HSE BEGIN */
-  SCM_HSE_WaitUntilReady();
-  /* SCM HSE END */
-#else
-  while (LL_RCC_HSE_IsReady() == 0);
-#endif /* CFG_SCM_SUPPORTED */
-
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
-  scm_hserdy_isr();
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* STM32WBAXX_SI_CUT1_0 */
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
 
@@ -568,9 +559,9 @@ void UTIL_SEQ_PostIdle( void )
   return;
 }
 
-void PKACTRL_CB_Process( void )
+void PKA_NOTIF_Trigger(void)
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_PKACTRL, CFG_SEQ_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_PKA_NOTIF, CFG_SEQ_PRIO_0);
 }
 
 /**
@@ -629,19 +620,6 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
-#if (CFG_SCM_SUPPORTED == 1)
-/* SCM module turn off HSI clock when traces are not used and low power used */
-void SCM_HSI_CLK_OFF(void)
-{
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
-
-  /* USER CODE END SCM_HSI_CLK_OFF_1 */
-  LL_RCC_HSI_Disable();
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
-
-  /* USER CODE END SCM_HSI_CLK_OFF_2 */
-}
-#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -677,18 +655,12 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
-
-#if defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP)
   /* Threat USART Command to simulate button press for instance. */
   if ( APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize ) == false )
   {
-      /* Threat USART CLI Tests Command. */
+    /* Threat USART CLI Tests Command. */
     (void)AppTestCommand_Dispatch( pRxBuffer, iRxBufferSize );
   }
-#else /* defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP) */
-  /* Threat USART Command to simulate button press for instance. */
-  (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
-#endif /* defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP) */
 
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
 }
@@ -702,86 +674,6 @@ __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int i
 {
   Error_Handler();
   __builtin_unreachable();
-}
-
-int PKACTRL_MutexTake(void)
-{
-  int error = 0;
-
-  /* Check if mutex is available */
-  if (0u != PkaMut)
-  {
-    /* Clear flag */
-    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
-
-    /* Wait for flag to be raised */
-    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
-  }
-
-  /* Increment mutex */
-  PkaMut++;
-
-  return error;
-}
-
-int PKACTRL_MutexRelease(void)
-{
-  int error = 0;
-
-  if (0u != PkaMut)
-  {
-    PkaMut = 0u;
-
-    /* Set the flag up */
-    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
-  }
-
-  return error;
-}
-
-int PKACTRL_TakeSemEndOfOperation(void)
-{
-  int error = 0;
-
-  /* Check if semaphore is available */
-  if (0u != EndOfProcSem)
-  {
-#if (CFG_LPM_LEVEL != 0)
-  /* Avoid going in low power during computation */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-
-    /* Clear flag */
-    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
-
-    /* Wait for flag to be raised */
-    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
-  }
-
-  /* Increment semaphore */
-  EndOfProcSem++;
-
-  return error;
-}
-
-int PKACTRL_ReleaseSemEndOfOperation(void)
-{
-  int error = 0;
-
-  if (0u != EndOfProcSem)
-  {
-    EndOfProcSem = 0u;
-
-    /* Set the flag up */
-    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
-
-#if (CFG_LPM_LEVEL != 0)
-  /* Restore low power */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-  }
-
-  return error;
 }
 
 FM_Cmd_Status_t FM_MutexTake(void)

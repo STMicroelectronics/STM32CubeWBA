@@ -57,7 +57,7 @@ extern "C" {
 #define WPAN_FW_BUILD              (0)
 #define WPAN_FW_BRANCH             (0)
 #define WPAN_FW_SUBVERSION         (0)
-#define WPAN_FW_MINOR_VERSION      (10)
+#define WPAN_FW_MINOR_VERSION      (11)
 #define WPAN_FW_MAJOR_VERSION      (1)
 
 /* USER CODE END EC */
@@ -78,7 +78,9 @@ uint32_t MX_APPE_Init(void *p_param);
 void MX_APPE_Process(void);
 
 /* USER CODE BEGIN EFP */
-
+#if (CFG_LSI2_CALIB_SUPPORTED == 1)
+void LSI2_TIM16_CaptureCallback(void);
+#endif /* CFG_LSI2_CALIB_SUPPORTED */
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

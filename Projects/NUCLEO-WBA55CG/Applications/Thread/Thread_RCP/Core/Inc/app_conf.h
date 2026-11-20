@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -79,9 +79,7 @@ typedef enum
   CFG_LPM_LL_DEEPSLEEP,
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
-  CFG_LPM_PKA,
   CFG_LPM_THREAD_RX_ACK,
-  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -170,11 +168,11 @@ typedef enum
   CFG_TASK_OT_TASKLETS,
   CFG_TASK_OT_RCP_SPINEL_RX,
   CFG_TASK_SET_THREAD_MODE,
-  CFG_TASK_PKA,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BSP_BUTTON_B1,		        /* Task linked to push-button. */
+  CFG_TASK_BSP_BUTTON_B1,
   CFG_TASK_BSP_BUTTON_B2,
   CFG_TASK_BSP_BUTTON_B3,
+
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -204,10 +202,10 @@ typedef enum
 #define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
 /* USER CODE BEGIN TASK_ID_Define */
+
 #define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BUTTON_B1 )
 #define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BUTTON_B2 )
 #define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BUTTON_B3 )
-
 /* USER CODE END TASK_ID_Define */
 
 /**
@@ -216,11 +214,7 @@ typedef enum
  */
 typedef enum
 {
-  CFG_EVENT_PKA_COMPLETED,
-  CFG_PKA_MUTEX,
-  CFG_PKA_END_OF_PROCESS,
   /* USER CODE BEGIN CFG_Event_Id_t */
-
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -247,19 +241,6 @@ typedef enum
 
 #define CFG_RT_DEBUG_GPIO_MODULE            (0)
 #define CFG_RT_DEBUG_DTB                    (0)
-
-/******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -301,6 +282,7 @@ typedef enum
 /* USER CODE END HW_RNG_Configuration */
 
 /* USER CODE BEGIN Defines */
+
 #define CFG_BSP_ON_SEQUENCER                    (1)
 #define CFG_BSP_ON_NUCLEO                       (1)
 
@@ -320,16 +302,6 @@ typedef enum
 //  #undef  CFG_LED_SUPPORTED
 //  #define CFG_LED_SUPPORTED         (0)
 #endif /* CFG_FULL_LOW_POWER */
-
-#if ( CFG_LED_SUPPORTED == 1 )
-#define APP_LED_ON( LED )           BSP_LED_On( LED )
-#define APP_LED_OFF( LED )          BSP_LED_Off( LED )
-#define APP_LED_TOGGLE( LED )       BSP_LED_Toggle( LED )
-#else /* ( CFG_LED_SUPPORTED == 1 ) */
-#define APP_LED_ON( LED )
-#define APP_LED_OFF( LED )
-#define APP_LED_TOGGLE( LED )
-#endif  /* ( CFG_LED_SUPPORTED == 1 ) */
 
 /* USER CODE END Defines */
 

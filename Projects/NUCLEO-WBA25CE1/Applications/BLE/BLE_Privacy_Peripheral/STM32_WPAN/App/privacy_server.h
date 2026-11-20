@@ -35,6 +35,25 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for Privacy_Server */
+#define PRIVACY_SERVER_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for Privacy_Server (service declaration not counted in attributes)
+  *                + 2 for Privacy_char
+  *                + 1 for Privacy_char CCCD
+  *                = 3
+**/
+#define PRIVACY_SERVER_NUM_GATT_ATTRIBUTES (3)
+
+/**
+  * Size_Attributes = 0 for Privacy_Server (service declaration not counted in attributes)
+  *                 + 19 for Privacy_char declaration + 1 for Privacy_char size
+  *                 + 2 for Privacy_char CCCD * CFG_BLE_NUM_LINK
+  *                 = 20 + 2 * CFG_BLE_NUM_LINK
+**/
+#define PRIVACY_SERVER_ATT_VALUE_ARRAY_SIZE  (20 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

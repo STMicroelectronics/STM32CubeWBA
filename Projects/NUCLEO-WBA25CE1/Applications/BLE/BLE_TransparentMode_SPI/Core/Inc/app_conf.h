@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -70,46 +70,33 @@
                                      BLE_OPTIONS_GATT_CACHING | \
                                      0 | \
                                      0 | \
-                                     BLE_OPTIONS_ENHANCED_ATT)
+                                     BLE_OPTIONS_ENHANCED_ATT | \
+                                     0 | \
+                                     0 | \
+                                     BLE_OPTIONS_PAWR | \
+                                     0)
 
 /**
- * Maximum number of simultaneous connections and advertising that the device will support.
+ * Maximum number of simultaneous connections that the device will support.
  * This setting should not exceed the number of BLE connection supported by BLE host stack.
  */
 #define CFG_BLE_NUM_LINK            (8)
 
 /**
- * Maximum number of Services that can be stored in the GATT database.
- * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
+ * Maximum number of simultaneous state machine supported by the LinkLayer, requirements are:
+ * - one per Extended Advertising Set
+ * - one for Periodic Advertising Sync
+ * - one per ACL connection
+ * - one per Broadcast Isochronous Group
+ * - one per Connected Isochronous Stream
  */
-#define CFG_BLE_NUM_GATT_SERVICES   (8)
-
-/**
- * Maximum number of Attributes
- * (i.e. the number of characteristic + the number of characteristic values + the number of descriptors, excluding the services)
- * that can be stored in the GATT database.
- * Note that certain characteristics and relative descriptors are added automatically during device initialization
- * so this parameters should be 9 plus the number of user Attributes
- */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES (68)
+#define CFG_BLE_NUM_STATE_MACHINES  (8)
 
 /**
  * Maximum supported ATT_MTU size
  * This setting should be aligned with ATT_MTU value configured in the ble host
  */
 #define CFG_BLE_ATT_MTU_MAX         (251)
-
-/**
- * Size of the storage area for Attribute values
- *  This value depends on the number of attributes used by application. In particular the sum of the following quantities (in octets) should be made for each attribute:
- *  - attribute value length
- *  - 5, if UUID is 16 bit; 19, if UUID is 128 bit
- *  - 2, if server configuration descriptor is used
- *  - 2*DTM_NUM_LINK, if client configuration descriptor is used
- *  - 2, if extended properties is used
- *  The total amount of memory needed is the sum of the above quantities for each attribute.
- */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (1344)
 
 /**
  * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
@@ -129,7 +116,8 @@
  * Number of allocated memory blocks used to transmit and receive data packets
  */
 #define CFG_BLE_MBLOCK_COUNT          (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                       CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
+                                       MAX(MAX(CFG_BLE_ATT_MTU_MAX, CFG_BLE_COC_MPS_MAX), SM_MTU),\
+                                       CFG_BLE_NUM_LINK) \
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
@@ -203,9 +191,10 @@ typedef enum
   CFG_LPM_LOG,
   CFG_LPM_LL_DEEPSLEEP,
   CFG_LPM_LL_HW_RCO_CLBR,
+  CFG_LPM_APP_BLE,
   CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
-  CFG_LPM_APP_BLE,
+
   /* USER CODE END CFG_LPM_Id_t */
 } CFG_LPM_Id_t;
 
@@ -295,9 +284,10 @@ typedef enum
   CFG_TASK_BLE_TIMER_BCKGND,
   CFG_TASK_FLASH_MANAGER,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  TASK_BUTTON_1,
-  TASK_BUTTON_2,
-  TASK_BUTTON_3,
+  CFG_TASK_BSP_BUTTON_B1,
+  CFG_TASK_BSP_BUTTON_B2,
+  CFG_TASK_BSP_BUTTON_B3,
+
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -333,7 +323,6 @@ typedef enum
   CFG_PKA_END_OF_PROCESS,
   CFG_FLASH_MUTEX,
   /* USER CODE BEGIN CFG_Event_Id_t */
-
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -346,7 +335,6 @@ typedef enum
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
-
 /* NVM area is placed at the end of the flash memory */
 #define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED)
 
@@ -373,19 +361,6 @@ typedef enum
 #define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
-
-/******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
 /* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
@@ -403,7 +378,7 @@ typedef enum
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
  *   1 -> RF TX output level from -20 dBm to +2.6 dBm. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
- *   3 -> RF TX output level from -20 dBm to +1.4 dBm, optimised with VOS_1_5. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
+ *   3 -> RF TX output level from -20 dBm to +1.4 dBm, optimized with VOS_1_5. VDDRFPA at VDD11 level like on ST MB2293 board.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
@@ -455,8 +430,9 @@ typedef enum
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
-#define CFG_LED_SUPPORTED                       (0)
-#define CFG_BUTTON_SUPPORTED                    (0)
+
+#define CFG_LED_SUPPORTED                       (1)
+#define CFG_BUTTON_SUPPORTED                    (1)
 
 /**
  * Overwrite some configuration imposed by Low Power level selected.

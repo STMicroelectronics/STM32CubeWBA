@@ -39,7 +39,6 @@ typedef struct {
   param_t args[10];    // argument list (max is 10)
 } cliCmd_t;
 
-
 /* Exported defines ----------------------------------------------------------*/
 #define LQI_DEFAULT_VALUE       0x00
 #define RSSI_DEFAULT_VALUE      -127
@@ -56,7 +55,7 @@ typedef struct {
   /*! RSSI of last frame received */
   int8_t rssi;
    /*! LQI of last frame received */
-  uint8_t lqi; 
+  uint8_t lqi;
 } app_cli_single_RX_t;
 
 /** @brief Defines the structure for returning the result of a global RX request
@@ -85,25 +84,40 @@ typedef struct {
   uint16_t ack_seen;
 } app_cli_TX_result_t;
 
-
 /* Exported constants --------------------------------------------------------*/
 #define CLI_PROMPT              "802.15.4 valid cli >"
 #define CLI_NAME                "(STM32WBAxx) PHY CLI\r\n"
 
 #if (FULL_CERTIFICATION_CAPABLE == 1)
-#define CLI_APP_VERSION         "v1.6.0 " __DATE__
+#define CLI_APP_VERSION         "v1.11.0 " __DATE__
 #else
-#define CLI_APP_VERSION         "v1.6.0"
+#define CLI_APP_VERSION         "v1.11.0"
 #endif
 
-#if defined(STM32WBA52xx)
-#define CLI_FW_TARGET           "WBA52"
-#elif defined(STM32WBA55xx)
-#define CLI_FW_TARGET           "WBA55"
-#elif defined(STM32WBA65xx)
-#define CLI_FW_TARGET           "WBA65"
+#if defined(STM32WBA20xx)
+#define CLI_FW_TARGET           "WBA20"
+#elif defined(STM32WBA23xx)
+#define CLI_FW_TARGET           "WBA23"
 #elif defined(STM32WBA25xx)
 #define CLI_FW_TARGET           "WBA25"
+#elif defined(STM32WBA50xx)
+#define CLI_FW_TARGET           "WBA50"
+#elif defined(STM32WBA52xx)
+#define CLI_FW_TARGET           "WBA52"
+#elif defined(STM32WBA54xx)
+#define CLI_FW_TARGET           "WBA54"
+#elif defined(STM32WBA5Mxx)
+#define CLI_FW_TARGET           "WBA5M"
+#elif defined(STM32WBA55xx)
+#define CLI_FW_TARGET           "WBA55"
+#elif defined(STM32WBA62xx)
+#define CLI_FW_TARGET           "WBA62"
+#elif defined(STM32WBA63xx)
+#define CLI_FW_TARGET           "WBA63"
+#elif defined(STM32WBA64xx)
+#define CLI_FW_TARGET           "WBA64"
+#elif defined(STM32WBA65xx)
+#define CLI_FW_TARGET           "WBA65"
 #else
 #error "unknown target"
 #endif
@@ -121,7 +135,7 @@ void app_cli_print_tx_results(const uint32_t frm_success, const uint32_t frm_fai
 void app_cli_print_rx_results(const uint16_t packets_received, const uint16_t packets_rejected,
                               const app_cli_single_RX_t *p_last_received_frame);
 void app_cli_print_ed_cb(const uint8_t ed);
-                              
+
 /* Extended functions */
 void app_cli_ex_init(void);
 uint8_t app_cli_ex_get_version(void);

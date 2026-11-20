@@ -44,5 +44,5 @@ When connected to a client, right side of the joystick sends the slave pairing r
 - You can either bond from the smartphone by clicking on Bond button in the ST BLE Toolbox application interface.
 - This example supports switch to 2Mbits PHY, pressing left side of the joystick while connected allows to switch between 1Mbits PHY and 2Mbits PHY.
 - After 60s of initial advertising, the application switches from fast advertising to low power advertising, pressing left side of the joystick while advertising allows to restart fast advertising.
-- Pressing uppder side of the joystick while connected allows to update the connection interval.
+- Pressing upper side of the joystick while connected allows to update the connection interval.
 

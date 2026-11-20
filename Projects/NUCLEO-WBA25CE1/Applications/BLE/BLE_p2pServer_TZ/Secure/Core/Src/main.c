@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_ll_pwr.h"
 #include "partition_stm32wbaxx.h"  /* Trustzone-M core secure attributes */
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,6 +66,7 @@ static void MX_RTC_Init(void);
 static void MX_FLASH_Init(void);
 /* USER CODE BEGIN PFP */
 void PeriphCommonClock_Config(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -131,10 +133,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -427,6 +431,7 @@ static void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -443,12 +448,13 @@ static void MX_GPIO_Init(void)
   /* Button 1,2,3 NSEC configuration */
   HAL_GPIO_ConfigPinAttributes(GPIOA, GPIO_PIN_1 | GPIO_PIN_2, GPIO_PIN_NSEC);
   HAL_GPIO_ConfigPinAttributes(GPIOC, GPIO_PIN_13, GPIO_PIN_NSEC);
-    
+
   GPIO_InitStruct.Pin = GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -474,30 +480,17 @@ void RestoreFromStandby(void)
     NonSecure_Init();
   }
 }
+
 /* USER CODE END 4 */
 
  /* MPU Configuration */
 
 void MPU_Config(void)
 {
-  MPU_Region_InitTypeDef MPU_InitStruct = {0};
   MPU_Attributes_InitTypeDef MPU_AttributesInit = {0};
 
   /* Disables the MPU */
   HAL_MPU_Disable();
-
-  /** Initializes and configures the Region 0 and the memory to be protected
-  */
-  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0x0C000000;
-  MPU_InitStruct.LimitAddress = 0x0C0FFFFF;
-  MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RO;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
   /** Initializes and configures the Attribute 0 and the memory to be protected
   */

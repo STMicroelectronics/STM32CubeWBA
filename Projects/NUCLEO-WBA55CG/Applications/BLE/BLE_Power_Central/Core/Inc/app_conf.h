@@ -110,6 +110,28 @@
 
 /* USER CODE BEGIN Generic_Parameters */
 
+/* Set the peripheral BD address */
+#define CFG_PERIPH_BD_ADDRESS           0x0080e12c455c
+
+/* Set the data sending interval in milliseconds */
+#define WRITE_TX_INT_MS                 (1000)
+
+/* Enter the number of bytes to send every WRITE_TX_INT_MS (Min value == 1, Max == 244) */
+#define USER_PAYLOAD_LENGTH             (244)
+
+/* Configure 2 connection interval values, CONN_INTERVAL will be used by default.
+   Press Button3 to toggle. */
+#define CONN_INTERVAL                   (50)
+#define CONN_INTERVAL_LP                (200)
+
+/* Timer before all GPIOs are disabled and clocks off */
+#define Setup_Time                      10000
+
+#define SENDING_DATA_OFF                0
+#define SENDING_DATA_ON                 1
+
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE 244
+#define NOT_PDU_BYTES                     (17)
 /* USER CODE END Generic_Parameters */
 
 /**< specific parameters */
@@ -133,46 +155,33 @@
                                      0 | \
                                      0 | \
                                      0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
                                      0)
 
 /**
- * Maximum number of simultaneous connections and advertising that the device will support.
+ * Maximum number of simultaneous connections that the device will support.
  * This setting should not exceed the number of BLE connection supported by BLE host stack.
  */
-#define CFG_BLE_NUM_LINK            (8)
+#define CFG_BLE_NUM_LINK            (2)
 
 /**
- * Maximum number of Services that can be stored in the GATT database.
- * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
+ * Maximum number of simultaneous state machine supported by the LinkLayer, requirements are:
+ * - one per Extended Advertising Set
+ * - one for Periodic Advertising Sync
+ * - one per ACL connection
+ * - one per Broadcast Isochronous Group
+ * - one per Connected Isochronous Stream
  */
-#define CFG_BLE_NUM_GATT_SERVICES   (8)
-
-/**
- * Maximum number of Attributes
- * (i.e. the number of characteristic + the number of characteristic values + the number of descriptors, excluding the services)
- * that can be stored in the GATT database.
- * Note that certain characteristics and relative descriptors are added automatically during device initialization
- * so this parameters should be 9 plus the number of user Attributes
- */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES (68)
+#define CFG_BLE_NUM_STATE_MACHINES  (4)
 
 /**
  * Maximum supported ATT_MTU size
  * This setting should be aligned with ATT_MTU value configured in the ble host
  */
 #define CFG_BLE_ATT_MTU_MAX         (251)
-
-/**
- * Size of the storage area for Attribute values
- *  This value depends on the number of attributes used by application. In particular the sum of the following quantities (in octets) should be made for each attribute:
- *  - attribute value length
- *  - 5, if UUID is 16 bit; 19, if UUID is 128 bit
- *  - 2, if server configuration descriptor is used
- *  - 2*DTM_NUM_LINK, if client configuration descriptor is used
- *  - 2, if extended properties is used
- *  The total amount of memory needed is the sum of the above quantities for each attribute.
- */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (1344)
 
 /**
  * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
@@ -192,7 +201,8 @@
  * Number of allocated memory blocks used to transmit and receive data packets
  */
 #define CFG_BLE_MBLOCK_COUNT          (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                       CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
+                                       MAX(MAX(CFG_BLE_ATT_MTU_MAX, CFG_BLE_COC_MPS_MAX), SM_MTU),\
+                                       CFG_BLE_NUM_LINK) \
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
@@ -219,7 +229,7 @@
  * Connection Oriented Channel parameters
  */
 #define CFG_BLE_COC_NBR_MAX           (64)
-#define CFG_BLE_COC_MPS_MAX           (248)
+#define CFG_BLE_COC_MPS_MAX           (23)
 #define CFG_BLE_COC_INITIATOR_NBR_MAX (32)
 
 /**
@@ -414,7 +424,6 @@ typedef enum
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
-
 /* NVM area is placed at the end of the flash memory */
 #define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED)
 
@@ -439,19 +448,6 @@ typedef enum
 
 #define CFG_RT_DEBUG_GPIO_MODULE            (0)
 #define CFG_RT_DEBUG_DTB                    (0)
-
-/******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -517,30 +513,6 @@ typedef enum
 /* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
-/* Set the peripheral BD address */
-#define CFG_PERIPH_BD_ADDRESS           0x0080e12a7959
-
-/* Set the data sending interval in milliseconds */
-#define WRITE_TX_INT_MS                 (1000)
-
-/* Enter the number of bytes to send every WRITE_TX_INT_MS (Min value == 1, Max == 244) */
-#define USER_PAYLOAD_LENGTH       (244)
-
-/* Configure 2 connection interval values, CONN_INTERVAL will be used by default.
-   Press Button3 to toggle. */
-#define CONN_INTERVAL                   (50)
-#define CONN_INTERVAL_LP                (200)
-
-/* Timer before all GPIOs are disabled and clocks off */
-#define Setup_Time                       10000
-
-#define SENDING_DATA_OFF        0
-#define SENDING_DATA_ON         1
-
-#define DATA_NOTIFICATION_MAX_PACKET_SIZE     244
-#define NOT_PDU_BYTES           (17)
-
-/*User Low power configuration*/
 
 /* USER CODE END Defines */
 

@@ -35,6 +35,27 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for SerialPort_server */
+#define SERIALPORT_SERVER_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for SerialPort_server (service declaration not counted in attributes)
+  *                + 2 for TX
+  *                + 2 for RX
+  *                + 1 for TX CCCD
+  *                = 5
+**/
+#define SERIALPORT_SERVER_NUM_GATT_ATTRIBUTES (5)
+
+/**
+  * Size_Attributes = 0 for SerialPort_server (service declaration not counted in attributes)
+  *                 + 19 for TX declaration + 20 for TX size
+  *                 + 19 for RX declaration + 20 for RX size
+  *                 + 2 for TX CCCD * CFG_BLE_NUM_LINK
+  *                 = 78 + 2 * CFG_BLE_NUM_LINK
+**/
+#define SERIALPORT_SERVER_ATT_VALUE_ARRAY_SIZE  (78 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 
 /* USER CODE END ED */

@@ -53,10 +53,14 @@ typedef struct ZigbeeAppInfoT
   bool                  bHasInit;
   bool                  bInitAfterJoin;
   bool                  bPersistNotification;
-  bool                  bNwkStartup;
+  bool                  bNwkStartupDone;
+  bool                  bWaitUserActionToJoin;
+
   struct ZigBeeT        * pstZigbee;
   enum ZbStartType      eStartupControl;
   enum ZbStatusCodeT    eJoinStatus;
+
+  uint8_t               cDeviceType;
   uint32_t              lPersistNumWrites;
   uint32_t              lJoinDelay;
   uint64_t              dlExtendedAddress;
@@ -97,6 +101,8 @@ extern void       APP_ZIGBEE_Task                         ( void );
 extern void       APP_ZIGBEE_StackLayersInit              ( void );
 extern void       APP_ZIGBEE_NwkFormOrJoinTaskInit        ( void );
 extern void       APP_ZIGBEE_NwkFormOrJoin                ( void );
+extern void       APP_ZIGBEE_NwkPersistenceRejoin         ( void );
+extern void       APP_ZIGBEE_JoinDoneOk                   ( void );
 
 extern void       APP_ZIGBEE_PermitJoin                   ( uint8_t cPermitJoinDelay );
 extern bool       APP_ZIGBEE_IsAppliJoinNetwork           ( void );

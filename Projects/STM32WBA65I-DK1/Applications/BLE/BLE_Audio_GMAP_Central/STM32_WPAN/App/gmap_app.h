@@ -53,7 +53,8 @@ extern "C" {
 #define LC3_48_5                14
 #define LC3_48_6                15
 
-#define NUM_LC3_QoSConf         32
+#define NUM_LC3_BRD_QOSCONF     32
+#define NUM_LC3_UNICAST_QOSCONF 38
 #define LC3_QOS_8_1_1           0
 #define LC3_QOS_8_2_1           1
 #define LC3_QOS_16_1_1          2
@@ -86,22 +87,28 @@ extern "C" {
 #define LC3_QOS_48_4_2          29
 #define LC3_QOS_48_5_2          30
 #define LC3_QOS_48_6_2          31
+#define LC3_QOS_16_1_3          32
+#define LC3_QOS_16_2_3          33
+#define LC3_QOS_24_1_3          34
+#define LC3_QOS_24_2_3          35
+#define LC3_QOS_32_1_3          36
+#define LC3_QOS_32_2_3          37
 
-#define NUM_GMAP_LC3_QoSConf    12
-#define LC3_QOS_16_1_gs         32
-#define LC3_QOS_16_2_gs         33
-#define LC3_QOS_32_1_gs         34
-#define LC3_QOS_32_2_gs         35
-#define LC3_QOS_48_1_gs         36
-#define LC3_QOS_48_2_gs         37
-#define LC3_QOS_32_1_gr         38
-#define LC3_QOS_32_2_gr         39
-#define LC3_QOS_48_1_gr         40
-#define LC3_QOS_48_2_gr         41
-#define LC3_QOS_48_3_gr         42
-#define LC3_QOS_48_4_gr         43
+#define NUM_LC3_GMAP_UNICAST_QOSCONF 12
+#define LC3_QOS_16_1_gs         38
+#define LC3_QOS_16_2_gs         39
+#define LC3_QOS_32_1_gs         40
+#define LC3_QOS_32_2_gs         41
+#define LC3_QOS_48_1_gs         42
+#define LC3_QOS_48_2_gs         43
+#define LC3_QOS_32_1_gr         44
+#define LC3_QOS_32_2_gr         45
+#define LC3_QOS_48_1_gr         46
+#define LC3_QOS_48_2_gr         47
+#define LC3_QOS_48_3_gr         48
+#define LC3_QOS_48_4_gr         49
 
-#define NUM_GMAP_Brd_LC3_QoSConf 4
+#define NUM_LC3_GMAP_BRD_QOSCONF 4
 #define LC3_QOS_48_1_g          32
 #define LC3_QOS_48_2_g          33
 #define LC3_QOS_48_3_g          34
@@ -366,6 +373,22 @@ typedef struct
 
 typedef struct
 {
+  uint8_t               NumRecords;
+  uint8_t               SpecificCapLength;                              /* Length, in octets, of the codec specific capability */
+  uint8_t               MetadataLength;                                 /* Length, in octets, of the metadata */
+  uint8_t               aData[APP_MAX_SUPPORTED_PAC_RECORD_LEN];        /* Buffer containing PAC Record Data */
+  uint16_t              DataLength;                                     /* Length of the stored data */
+  uint8_t               State;                                          /* State of the parsing :
+                                                                         *      0x00 : Codec ID
+                                                                         *      0x01 : Codec Specific Capabilitie Length
+                                                                         *      0x02 : Codec Specific Capabilities
+                                                                         *      0x03 : Metadata Length
+                                                                         *      0x04 : Metadata
+                                                                         */
+}APP_RX_PAC_Record;
+
+typedef struct
+{
   BAP_Role_t                    bap_role;
 
   APP_ACL_Conn_t                ACL_Conn[CFG_BLE_NUM_LINK];
@@ -418,6 +441,10 @@ typedef struct
 
   uint8_t                       SinkDecimation;
   uint8_t                       SourceDecimation;
+
+  /*Parsing PAC Characteristic information*/
+  APP_RX_PAC_Record             RxPACRecord;
+
 } GMAPAPP_Context_t;
 
 typedef struct

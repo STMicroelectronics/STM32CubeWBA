@@ -68,6 +68,7 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void MX_LPDMA1_Init(void);
 void MX_ADC4_Init(void);
 void MX_CRC_Init(void);
 void MX_ICACHE_Init(void);

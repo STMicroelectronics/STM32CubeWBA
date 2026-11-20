@@ -89,7 +89,9 @@ extern void       APP_ZIGBEE_ConfigEndpoints              ( void );
 extern bool       APP_ZIGBEE_ConfigGroupAddr              ( void );
 
 extern void       APP_ZIGBEE_GetStartupConfig             ( struct ZbStartupT * pstConfig );
-extern void       APP_ZIGBEE_SetNewDevice                 ( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability );
+extern void       APP_ZIGBEE_SetNewDevice                 ( uint16_t iShortAddress, uint64_t dlExtendedAddress );
+extern void       APP_ZIGBEE_SetRejoinDevice              ( uint16_t iShortAddress, uint64_t dlExtendedAddress );
+extern void       APP_ZIGBEE_SetLeaveDevice               ( uint16_t iShortAddress, uint64_t dlExtendedAddress );
 
 /* USER CODE BEGIN EFP */
 

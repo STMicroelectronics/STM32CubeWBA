@@ -35,6 +35,25 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for ETS */
+#define ETS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for ETS (service declaration not counted in attributes)
+  *                + 2 for CET
+  *                + 1 for CET CCCD
+  *                = 3
+**/
+#define ETS_NUM_GATT_ATTRIBUTES (3)
+
+/**
+  * Size_Attributes = 0 for ETS (service declaration not counted in attributes)
+  *                 + 5 for CET declaration + 11 for CET size
+  *                 + 2 for CET CCCD * CFG_BLE_NUM_LINK
+  *                 = 16 + 2 * CFG_BLE_NUM_LINK
+**/
+#define ETS_ATT_VALUE_ARRAY_SIZE  (16 + 2 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 #define ETS_ATT_ERROR_CODE_TIME_SOURCE_QUALITY_TOO_LOW                    (0x80)
 #define ETS_ATT_ERROR_CODE_INCORRECT_TIME_FORMAT                          (0x81)

@@ -46,13 +46,13 @@
 /* Private typedef -----------------------------------------------------------*/
 /* For some commands, we have to keep a context. We define here the complete context
  * of the app.
- */ 
+ */
 typedef struct {
   uint8_t   channel;           /* Default channel to use for Tx/Rx */
   int8_t    tx_power;          /* Default power use for Tx */
   int8_t    cca_threshold;
   int8_t    last_rssi;
-  int8_t    lqi_valid;         /* 0: lqi non-valid, valid otherwise */ 
+  int8_t    lqi_valid;         /* 0: lqi non-valid, valid otherwise */
   uint8_t   last_lqi;
   uint8_t   rx_frame_printing; /* If 0: do nothing; Print RX frame upon receiving otherwise */
 } cli_fullContext_t;
@@ -218,7 +218,7 @@ static void app_cli_ex_get_rx_results(void)
   app_cli_print_rx_results(cli_rx_result.packets_received, cli_rx_result.packets_rejected,
                            lst_frame);
   frame_to_print_nb = 0;
-  
+
   memset(&cli_rx_result, 0, sizeof(app_cli_RX_result_t));
 }
 
@@ -266,7 +266,7 @@ void app_cli_ex_init(void)
   st_mac_cbks.p_Notif = &app_cli_ex_Notif_callback;
   st_mac_cbks.p_RX_Done = &app_cli_ex_single_RX_callback;
   st_mac_cbks.p_TX_Done = &app_cli_ex_single_TX_callback;
-  
+
   /* Radio & MAC Layer init */
   MAC_Status_t mac_result = ST_MAC_raw_init(&st_mac_cbks, ST_RAW_CONFIG);
 
@@ -277,8 +277,8 @@ void app_cli_ex_init(void)
   /* Retrieve radio capabilities */
   mac_result = ST_MAC_raw_get_caps(NULL, &st_mac_caps);
   LL_UNUSED(mac_result);
-  
-  /* Default config */ 
+
+  /* Default config */
   memset(&cli_tx_result, 0, sizeof(app_cli_TX_result_t));
   memset(&cli_rx_result, 0, sizeof(app_cli_RX_result_t));
 
@@ -290,7 +290,7 @@ void app_cli_ex_init(void)
 
   /* Dynamic frame printing */
   cli_full_ctx.rx_frame_printing = 0;
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_PHY_CLI_RX_PRINT, UTIL_SEQ_RFU, app_cli_ex_print_frame);  
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_PHY_CLI_RX_PRINT, UTIL_SEQ_RFU, app_cli_ex_print_frame);
 
   /* TX power ranges */
   app_cli_ex_set_smps(1);
@@ -427,12 +427,12 @@ uint8_t app_cli_ex_start_tx(uint8_t* packet, uint8_t length,uint32_t packetNb,
 
   uint8_t i = 0U;
   token = strtok((char*) packet, ",");
-  while ( (token != NULL) && (i<(length-2)) ) { 
+  while ( (token != NULL) && (i<(length-2)) ) {
     pkt_to_send = (uint8_t)strtoul(token+2, NULL, 16);
     RawTXReq.payload[i++] = pkt_to_send;
     token = strtok(NULL, ",");
   }
-  
+
   status = ST_MAC_raw_start_TX(NULL, &RawTXReq);
 
   return (uint8_t)status;
@@ -449,7 +449,7 @@ uint8_t app_cli_ex_start_rx(const uint8_t rx_frame_printing, const uint16_t time
   MAC_Status_t status;
 
   cli_full_ctx.rx_frame_printing = rx_frame_printing;
-  
+
   /* Start RX request */
   ST_MAC_raw_RX_start_t RawRxReq = { 0 };
   RawRxReq.channel_number = cli_full_ctx.channel;
@@ -533,7 +533,7 @@ uint8_t app_cli_ex_get_rssi(int8_t* rssi)
     cli_full_ctx.last_rssi = RSSI_DEFAULT_VALUE;
     result = 0;
   }
-  return result; 
+  return result;
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

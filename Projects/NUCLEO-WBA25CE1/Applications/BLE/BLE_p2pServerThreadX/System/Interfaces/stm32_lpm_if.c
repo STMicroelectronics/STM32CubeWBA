@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -24,6 +24,7 @@
 #endif /*(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
 #include "main.h"
 #include "scm.h"
+
 #include "app_sys.h"
 #include "stm32_lpm_if.h"
 #include "stm32_lpm.h"
@@ -38,13 +39,19 @@
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
 #include "assert.h"
-
+#include "tx_initialize.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
 #define LL_DEEPSLEEP_EXIT_TIME_US     180     /* Time in us needed for Link Layer deepsleep exit */
 #define DEVICE_WAKEUP_STANDBY_TIME_US 60      /* Time in us needed by the device to exit from standby */
@@ -52,16 +59,17 @@
 #define LSI2_FREQ_WORST_VALUE         24000   /* Worst value of LSI2 frequency */
 #endif /* RCC_LSI2_SUPPORT */
 #define RTOS_EXTRA_WAKEUP_TIME_US     150     /* Additional time in us to wakeup in context of an RTOS */
-
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
-/* USER CODE BEGIN PTD */
 
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
+
+/* Private constants ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PC */
+
+/* USER CODE END PC */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
@@ -136,22 +144,6 @@ static uint32_t boot_after_standby;
 /* USER CODE END EV */
 
 /* Private variables ---------------------------------------------------------*/
-#if (CFG_SCM_SUPPORTED == 0)
-/* If SCM is not supported, SRAM handles for waitsate configurations are defined here */
-static RAMCFG_HandleTypeDef sram1_ns =
-{
-  RAMCFG_SRAM1,           /* Instance */
-  HAL_RAMCFG_STATE_READY, /* RAMCFG State */
-  0U,                     /* RAMCFG Error Code */
-};
-
-static RAMCFG_HandleTypeDef sram2_ns =
-{
-  RAMCFG_SRAM2,           /* Instance */
-  HAL_RAMCFG_STATE_READY, /* RAMCFG State */
-  0U,                     /* RAMCFG Error Code */
-};
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
 #if (CFG_LPM_STANDBY_SUPPORTED == 1)
@@ -309,42 +301,8 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 
-#if (CFG_SCM_SUPPORTED != 1) && ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
-OPTIMIZED static void Clock_Switching(void)
-{
-  /* Activate HSE clock */
-  LL_RCC_HSE_Enable();
-  while(LL_RCC_HSE_IsReady() == 0);
-  /* Apply PWR VOS1_5 power level */
-  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1_5);
-  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1_5); /* Double write for flag readiness to cope with hw latency */
-  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
 
-  /* Switch HSE frequency from HSE16 to HSE32 */
-  LL_RCC_HSE_DisablePrescaler();
-
-  /* Switch CPU system clock to HSE */
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
-  while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE);
-
-  /* Apply HSE32 compatible waitstates */
-  __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_0);
-  while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_0);
-  HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_0);
-  HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_0);
-
-  /* Set HDIV 5 */
-  LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1); /* divided by 1 */
-
-  /* Switched to HSE, so disable HSI */
-  LL_RCC_HSI_Disable();
-
-  /* Ensure time base clock coherency */
-  SystemCoreClockUpdate();
-}
-#endif /* (CFG_SCM_SUPPORTED != 1) && ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
-
-#if (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)
 OPTIMIZED static void Enter_Stop_Standby_Mode(void)
 {
   /* Disabling ICACHE */
@@ -357,15 +315,7 @@ OPTIMIZED static void Enter_Stop_Standby_Mode(void)
   while(LL_ICACHE_IsActiveFlag_BSYEND() == 0U);
 #endif /* STM32WBAXX_SI_CUT1_0 */
 
-#if (CFG_SCM_SUPPORTED == 1)
   scm_setwaitstates(LP);
-#else
-  /* SCM module is not supported, apply low power compatible waitstates */
-  __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_3);
-  while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_3);
-  HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_1);
-  HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_1);
-#endif /* CFG_SCM_SUPPORTED */
 
   LL_LPM_EnableDeepSleep();
 
@@ -376,7 +326,7 @@ OPTIMIZED static void Exit_Stop_Standby_Mode(void)
 {
   LL_ICACHE_Enable();
   while(LL_ICACHE_IsEnabled() == 0U);
-#if (CFG_SCM_SUPPORTED == 1)
+
   if (LL_PWR_IsActiveFlag_STOP() == 1U)
   {
     scm_setup();
@@ -385,20 +335,6 @@ OPTIMIZED static void Exit_Stop_Standby_Mode(void)
   {
     scm_setwaitstates( RUN );
   }
-#else
-  if (LL_PWR_IsActiveFlag_STOP() == 1U)
-  {
-    Clock_Switching();
-  }
-  else
-  {
-    /* Apply waitsates for HSE32 configuration */
-    __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_0);
-    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_0);
-    HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_0);
-    HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_0);
-  }
-#endif /* CFG_SCM_SUPPORTED */
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
@@ -502,6 +438,7 @@ OPTIMIZED static void PWR_ExitOffMode( void )
   if ( 1UL == boot_after_standby )
   {
     boot_after_standby = 0;
+
     HAL_NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW, 0);
     HAL_NVIC_EnableIRQ(RADIO_INTR_NUM);
     HAL_NVIC_SetPriority(RADIO_SW_LOW_INTR_NUM, RADIO_SW_LOW_INTR_PRIO, 0);
@@ -544,11 +481,7 @@ OPTIMIZED static void PWR_ExitOffMode( void )
     MX_StandbyExit_PeripheralInit();
 
     /* Restore system clock configuration */
-#if (CFG_SCM_SUPPORTED == 1)
     scm_standbyexit();
-#else
-    Clock_Switching();
-#endif /* CFG_SCM_SUPPORTED */
 
     /* Enable RTC peripheral clock */
     LL_PWR_EnableBkUpAccess();
@@ -641,6 +574,8 @@ OPTIMIZED static void PWR_ExitOffMode( void )
       }
     }
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+    /* Initialize ThreadX low level, sysTick configured and started */
+    _tx_initialize_low_level();
   }
   else
   {

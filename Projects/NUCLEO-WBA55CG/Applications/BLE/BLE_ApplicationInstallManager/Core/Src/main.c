@@ -202,7 +202,7 @@ void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-/* Overwrite HAL Tick functions to not use sysTick start sysTick */
+/* Overwrite HAL Tick functions to not start sysTick */
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 {
   return HAL_OK;

@@ -363,7 +363,11 @@ void OTS_APP_DeleteImages(void)
     .NbPages = num_pages,
   };
   
+  HAL_FLASH_Unlock();
+  
   HAL_FLASHEx_Erase(&EraseInit, &PageError);
+  
+  HAL_FLASH_Lock();
   
   LOG_DEBUG_APP("OTP: all images erased.\n");
 }

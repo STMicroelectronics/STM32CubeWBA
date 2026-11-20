@@ -69,6 +69,7 @@ extern void profile_reset(void);
 /* Private functions prototypes-----------------------------------------------*/
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 static void ll_sys_bg_temperature_measurement_init(void);
+static void ll_sys_bg_temperature_measurement_deinit(void);
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 static void ll_sys_sleep_clock_source_selection(void);
 static uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void);
@@ -85,6 +86,7 @@ void ll_sys_reset(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+void ll_sys_bg_process_deinit(void);
 
 /**
   * @brief  Link Layer background process initialization
@@ -95,6 +97,20 @@ void ll_sys_bg_process_init(void)
 {
   /* Register Link Layer task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER, UTIL_SEQ_RFU, ll_sys_bg_process);
+}
+
+/**
+  * @brief  Link Layer background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_process_deinit(void)
+{
+  /* no background process de-initialization required */
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  ll_sys_bg_temperature_measurement_deinit();
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 }
 
 /**
@@ -167,6 +183,16 @@ void ll_sys_bg_temperature_measurement_init(void)
 {
   /* Register Temperature Measurement task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_TEMP_MEAS, UTIL_SEQ_RFU, TEMPMEAS_RequestTemperatureMeasurement);
+}
+
+/**
+  * @brief  Link Layer temperature request background process de-initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_temperature_measurement_deinit(void)
+{
+  /* no temperature measurement background process de-initialization required */
 }
 
 /**
@@ -274,6 +300,8 @@ void ll_sys_reset(void)
   uint8_t exec_time = EXEC_TIME_DEFAULT;
 
 /* USER CODE BEGIN ll_sys_reset_0 */
+  drift_time = DRIFT_TIME_OPTIMIZED;
+  exec_time = EXEC_TIME_OPTIMIZED;
 
 /* USER CODE END ll_sys_reset_0 */
 
@@ -287,7 +315,7 @@ void ll_sys_reset(void)
   if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
   {
     /* Configure RCO calibration */
-    ll_intf_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
+    ll_intf_cmn_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
   }
 
   /* Update link layer timings depending on selected configuration */

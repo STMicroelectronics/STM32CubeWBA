@@ -52,10 +52,10 @@ Following diagram describes the Update procedure:
   |  Thread_OTA_Server                |                                | Thread_OTA_Client                   |
   |___________________________________|                                |_____________________________________|
   |                                   |                                |                                     |
-  | Before starting this example,     |                                | At startup, Application can performs|
+  | Before starting this example,     |                                | At startup, Application performs    |
   | the Thread_Coap_Generic_Ota FW    |                                | a delete of FLASH memory sectors    |
   | must be written at following      |                                | starting from @ = 0x08100000 to SFSA|
-  | @ = 0x08100000                    |                                | limit by pressing on SW3            |
+  | @ = 0x08100000                    |                                | limit                               |
   |                                   |                                |                                     |  
   |                                   |                                |                                     |  
   | Get Mesh-Local EID                |                                |                                     |
@@ -87,15 +87,15 @@ Following diagram describes the Update procedure:
   | Once confirmation received        |                                |                                     |
   |   ->Starts FUOTA data transfer    |                                |                                     |
   |                                   |                                |                                     |
-  |                                   |                                |                                     |
+  |                                   |                                |                                     |                                     
   |--> Data Transfer                  | ============> COAP =========>  |    BLUE LED TOGGLING                |
-  ||   (400 bytes Payload)            | Resource: "FUOTA_SEND"         |                                     |
+  ||   (400 bytes Payload)            | Resource: "FUOTA_SEND"         |                                     |      
   ||                                  | Mode: Unicast                  |                                     |
   ||                                  | Type: Confirmable              |   Each time data buffer is received |
   ||                                  | Code: Put                      |    writes it to FLASH memory        |
   ||                                  | Payload  : Buffer[]            |                                     |
   ||                                  |                                |                                     |
-  ||            Ack received          | <=====COAP CONFIRMATION ====== |                                     |
+  ||            Ack received          | <=====COAP CONFIRMATION ====== |                                     | 
   ||                |                 |                                |                                     |
   ||                V                 |                                |                                     |
   ||                /\                |                                |                                     |
@@ -134,7 +134,7 @@ Following diagram describes the Update procedure:
   |                                   |                                |                                     | 
   |                                   |                                |                                     | 
   |                                   |                                |                                     |  
-  --------------------------------------                               ---------------------------------------     
+  -------------------------------------                                ---------------------------------------     
   | Role : Leader                     |                                | Role : Child                        |
   |                                   |                                |                                     |
   | LED : Green                       |                                | LED : Red                           |

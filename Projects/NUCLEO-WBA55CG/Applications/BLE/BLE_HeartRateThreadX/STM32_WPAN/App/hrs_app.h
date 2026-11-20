@@ -63,6 +63,8 @@ typedef struct
 /* USER CODE BEGIN EC */
 #define HRS_APP_ADV_LP_UPDATE_TIME    (60 * TX_TIMER_TICKS_PER_SECOND)
 #define HRS_APP_MEASUREMENT_INTERVAL  (1 * TX_TIMER_TICKS_PER_SECOND)
+/* Number of RR interval, shall be lower than HRS_MAX_NBR_RR_INTERVAL_VALUES*/
+#define HRS_APP_RR_INTERVAL_NBR       (1)
 
 /* USER CODE END EC */
 

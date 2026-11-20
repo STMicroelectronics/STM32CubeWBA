@@ -27,8 +27,9 @@ vertical-align: middle;
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <div class="row">
-<section id="pwr_stop1_rtc-example-description" class="col-sm-12 col-lg-8">
-<h2><strong>PWR_STOP1_RTC Example Description</strong></h2>
+<div class="col-sm-12 col-lg-8">
+<h2 id="pwr_stop1_rtc-example-description"><b>PWR_STOP1_RTC Example
+Description</b></h2>
 <p>How to enter the STOP 1 mode and wake-up from this mode by using the
 RTC wakeup timer. It allows to measure the current consumption in STOP 1
 mode with RTC enabled.</p>
@@ -50,6 +51,30 @@ mode again.</p>
 <p>Note: This example can not be used in DEBUG mode due to the fact that
 the Cortex-M33 core is no longer clocked during low power mode so
 debugging features are disabled.</p>
+<h2 id="measured-current-consumption"><b>Measured Current
+Consumption</b></h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Current Consumption</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run</td>
+<td>7.5 mA</td>
+</tr>
+<tr>
+<td>Stop 1</td>
+<td>23.4 µA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> The measured current consumption values are
+typical values. To measure the current consumption while running in the
+selected mode, remove jumper JP2 and connect an amperemeter to measure
+IDD current.</p>
 <h3 id="notes"><strong>Notes</strong></h3>
 <ol type="1">
 <li><p>Care must be taken when HAL_RCCEx_PeriphCLKConfig() is used to
@@ -67,7 +92,7 @@ priority you have to use HAL_NVIC_SetPriority() function.</p></li>
 <li><p>The application needs to ensure that the SysTick time base is
 always set to 1 millisecond to have correct HAL operation.</p></li>
 </ol>
-<h3 id="keywords"><strong>Keywords</strong></h3>
+<h3 id="keywords"><b>Keywords</b></h3>
 <p>Power, PWR, STOP1 mode, Interrupt, EXTI, Wakeup, Low Power, RTC,
 LSI,</p>
 <h3 id="directory-contents"><strong>Directory contents</strong></h3>
@@ -103,7 +128,7 @@ revision)</li>
 <li>Rebuild all files and load your image into target memory</li>
 <li>Run the example</li>
 </ul>
-</section>
+</div>
 </div>
 </div>
 </div>

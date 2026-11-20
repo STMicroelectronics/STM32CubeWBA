@@ -142,6 +142,8 @@ __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     RCC_AUDIOSYNC_IRQHandler   ; RCC audio synchronization interrupt
                 DCD     USB_DRD_FS_IRQHandler      ; USB Dual Role Device global interrupt
                 DCD     XSPI1_IRQHandler           ; XSPI1 global interrupt
+                DCD     0                          ; Reserved
+                DCD     0                          ; Reserved
 __Vectors_End
 
 __Vectors_Size  EQU     __Vectors_End - __Vectors

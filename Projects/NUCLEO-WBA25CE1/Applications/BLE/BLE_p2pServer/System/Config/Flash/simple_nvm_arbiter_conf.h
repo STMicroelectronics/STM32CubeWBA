@@ -73,13 +73,13 @@ extern "C" {
 
 /* Compute the number of sectors required */
 #define SNVMA_NUMBER_OF_SECTOR_NEEDED \
-		((SNVMA_NVM_ID_1_BANK_COUNT * SNVMA_NVM_ID_1_BANK_SIZE))
-/* Equals to 4u */
+        ((SNVMA_NVM_ID_1_BANK_COUNT * SNVMA_NVM_ID_1_BANK_SIZE))
+        /* Equals to 4 */
 
 /* Compute the total number of banks used */
 #define SNVMA_NUMBER_OF_BANKS \
-		((SNVMA_NVM_ID_1_BANK_COUNT))
-/* Equals to 2u */
+        ((SNVMA_NVM_ID_1_BANK_COUNT))
+        /* Equals to 2 */
 
 /* Check that required number of sector does not exceed Flash capacities */
 #if SNVMA_NUMBER_OF_SECTOR_NEEDED == 0u

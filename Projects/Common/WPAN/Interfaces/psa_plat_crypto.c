@@ -22,10 +22,6 @@
 
 #include <stdlib.h>
 
-/* PSA include */
-#include "psa/crypto.h"
-#include "entropy_poll.h"
-
 /* Platform define */
 #define PSA_PLAT_CRYPTO_AES_BLOCK_LENGTH         PSA_BLOCK_CIPHER_BLOCK_LENGTH(PSA_KEY_TYPE_AES)
 #define PSA_PLAT_CRYPTO_AES_IV_SIZE              PSA_AES_BLOCK_LENGTH  /*The IV is usually one block in size */
@@ -38,14 +34,14 @@
 #define PSA_PLAT_CRYPTO_ECC_PUB_KEY_SIZE_BYTES   PSA_BITS_TO_BYTES(PSA_PLAT_CRYPTO_ECC_PUB_KEY_SIZE_BITS)
 #define PSA_PLAT_CRYPTO_ECC_DH_KEY_SIZE_BITS     256
 #define PSA_PLAT_CRYPTO_ECC_DH_KEY_SIZE_BYTES    PSA_BITS_TO_BYTES(PSA_PLAT_CRYPTO_ECC_DH_KEY_SIZE_BITS)
-    
+
 #define BIT32_SWAP( w ) \
         do{ \
         uint8_t t_; \
         t_ = (w)[0]; (w)[0] = (w)[3]; (w)[3] = t_; \
         t_ = (w)[1]; (w)[1] = (w)[2]; (w)[2] = t_; \
         } while(0)
-   
+
 #define BIT128_SWAP( w ) \
         do{ \
         uint8_t t_; \
@@ -60,70 +56,35 @@
         } while(0)
 
 /* External declarations */
-#if defined(BLE_LL)				
+#if defined(BLE_LL)
 extern void BLEPLATCB_PkaComplete(void);
-extern void PKACTRL_CB_Process (void);
-extern void PKACTRL_BG_Process(void);
-extern void BleStackCB_Process(void);				
+extern void BleStackCB_Process(void);
+extern void PKA_NOTIF_Trigger(void);
 #endif
-extern void HWCB_RNG_Process(void);
 
-/* Internal PSA crypto definition: all the input and output are conform to PSA requirement */
-static psa_status_t PSA_internal_GenerateRandom(uint8_t* p_Output, size_t Size);
+/* Internal PSA crypto definition: all the input and ouput are conform to PSA requierement */
 static psa_status_t PSA_internal_AesECBEncrypt(const uint8_t* a_Key, uint8_t* a_Input, uint8_t* a_Output);
 static psa_status_t PSA_internal_AesCmacSetKey(const uint8_t* a_Key);
 static psa_status_t PSA_internal_AesCmacCompute(const uint8_t* a_Input, uint32_t InputLen, uint8_t* a_Output);
 #if defined(BLE_LL)
 static psa_status_t PSA_internal_PkaStartP256Key(const uint8_t* a_LocalPrivateKey);
 static psa_status_t PSA_internal_StartDhKey(const uint8_t* a_LocalPrivateKey, const uint8_t* a_RemotePublicKey);
-static void ASN1ToRawECCPublicKeyConvert(uint8_t* a_LocalPublicKey);   
-#endif
-static psa_status_t PSA_internal_ReadDhKey(uint8_t* a_DhKey);              
+static void ASN1ToRawECCPublicKeyConvert(uint8_t* a_LocalPublicKey);
+static psa_status_t PSA_internal_ReadDhKey(uint8_t* a_DhKey);
 static void ASN1ToRawECCPrivateKeyConvert(uint8_t* a_PrivateKey);
-
-/* RNG pool */
-typedef struct
-{
-  uint32_t pool[CFG_HW_RNG_POOL_SIZE];
-  uint8_t  size;
-} PSA_PLAT_CryptoRNGPool_t;
+#endif
 
 /* Module private global variable */
 static psa_key_id_t AesCmacKeyId = 0UL;
 #if defined(BLE_LL)
 static uint8_t LocalPublicKey[PSA_PLAT_CRYPTO_ECC_PUB_KEY_SIZE_BYTES] = {0};
-#endif
 static uint8_t DhSharedSecret[PSA_PLAT_CRYPTO_ECC_DH_KEY_SIZE_BYTES] = {0};
-static PSA_PLAT_CryptoRNGPool_t RngPool;
-
-int HW_RNG_Process(void)
-{
-  PSA_PLAT_CryptoRNGPool_t *local_rng_pool = &RngPool;
-  psa_status_t status;
-  int ret = 0;
-  
-  if (local_rng_pool->size < CFG_HW_RNG_POOL_SIZE)
-  {
-    UTILS_ENTER_CRITICAL_SECTION( );
-    /* we fill the missing bytes in the pool */
-    status = PSA_internal_GenerateRandom((uint8_t*)&local_rng_pool->pool[local_rng_pool->size], 
-                                         (CFG_HW_RNG_POOL_SIZE - local_rng_pool->size) * sizeof(uint32_t));
-
-    if(status != PSA_SUCCESS)
-    {
-      assert_param(1);
-    }
-    
-    local_rng_pool->size += CFG_HW_RNG_POOL_SIZE-local_rng_pool->size;
-    UTILS_EXIT_CRITICAL_SECTION( );
-  }
-  
-  return ret;
-}
+static psa_status_t DhKeyStatus = PSA_SUCCESS;
+#endif
 
 #if defined(BLE_LL)
-/* All the operation have been done, it only need to inform the stack in BG context of the completion */
-void PKACTRL_BG_Process(void)
+/* Notification task for BLE */
+void PSA_PLAT_CRYPTO_PkaNotifier(void)
 {
   BLEPLATCB_PkaComplete( );
 
@@ -131,51 +92,25 @@ void PKACTRL_BG_Process(void)
 }
 #endif
 
-void PSA_PLAT_CRYPTO_RngGet(uint8_t n, uint32_t* a_Val)
-{
-  PSA_PLAT_CryptoRNGPool_t *local_rng_pool = &RngPool;
-  uint32_t pool_value;
-
-  while(n--)
-  {
-    UTILS_ENTER_CRITICAL_SECTION();
-
-    if(local_rng_pool->size == 0)
-    {
-      pool_value = ~local_rng_pool->pool[n & (CFG_HW_RNG_POOL_SIZE - 1)];
-    }
-    else
-    {
-      pool_value = local_rng_pool->pool[--local_rng_pool->size];
-    }
-
-    UTILS_EXIT_CRITICAL_SECTION( );
-    *a_Val++ = pool_value;
-  }
-
-  /* Pool has been reduced, need to fill it in BG */
-  HWCB_RNG_Process( );
-}
-
 void PSA_PLAT_CRYPTO_AesEcbEncryt(const uint8_t* a_Key, const uint8_t* a_Input, uint8_t* a_Output)
 {
   psa_status_t ret;
   uint8_t tmp_key[PSA_PLAT_CRYPTO_AES_KEY_SIZE_BYTES];
   /* input aligned with key size */
   uint8_t tmp_input[PSA_PLAT_CRYPTO_AES_KEY_SIZE_BYTES];
-  
+
   memcpy(tmp_key, a_Key, PSA_PLAT_CRYPTO_AES_KEY_SIZE_BYTES);
   memcpy(tmp_input, a_Input, PSA_PLAT_CRYPTO_AES_KEY_SIZE_BYTES);
-  
+
   /* Convert input to be compliant with the PSA format */
   BIT128_SWAP(tmp_input);
   BIT128_SWAP(tmp_key);
-  
+
   ret = PSA_internal_AesECBEncrypt(tmp_key, tmp_input, a_Output);
   if(ret != PSA_SUCCESS){
     assert_param(1);
   }
-  
+
   /* Convert output to be compliant with the PSA format */
   BIT128_SWAP(a_Output);
 }
@@ -184,7 +119,7 @@ void PSA_PLAT_CRYPTO_AesCmacSetKey(const uint8_t* a_Key)
 {
   psa_status_t ret;
   ret = PSA_internal_AesCmacSetKey(a_Key);
-  
+
   if(ret != PSA_SUCCESS)
   {
     assert_param(1);
@@ -195,7 +130,7 @@ void PSA_PLAT_CRYPTO_AesCmacCompute(const uint8_t* a_Input, uint32_t InputLenght
 {
   psa_status_t ret;
   ret = PSA_internal_AesCmacCompute(a_Input, InputLenght, a_OutputTag);
-  
+
   if(ret != PSA_SUCCESS){
     assert_param(1);
   }
@@ -316,18 +251,18 @@ int PSA_PLAT_CRYPTO_PkaStartP256Key(const uint32_t* a_LocalPrivateKey)
 {
   psa_status_t ret;
   uint8_t tmp_local_private_key[PSA_PLAT_CRYPTO_ECC_PRIV_KEY_SIZE_BYTES];
-  
+
   memcpy(tmp_local_private_key, a_LocalPrivateKey, sizeof(tmp_local_private_key));
-  
+
   ASN1ToRawECCPrivateKeyConvert(tmp_local_private_key);
-  
+
   ret = PSA_internal_PkaStartP256Key(tmp_local_private_key);
-  
-  if(ret != PSA_SUCCESS){
-    assert_param(1);
+
+  if (ret == PSA_SUCCESS)
+  {
+    PKA_NOTIF_Trigger();
   }
-  
-  PKACTRL_CB_Process();
+
   return ret;
 }
 
@@ -344,47 +279,47 @@ int PSA_PLAT_CRYPTO_PkaStartDhKey(const uint32_t* a_LocalPrivateKey, const uint3
   int ret;
   uint8_t psa_remote_public_key[PSA_PLAT_CRYPTO_ECC_PUB_KEY_SIZE_BYTES];
   uint8_t tmp_local_private_key[PSA_PLAT_CRYPTO_ECC_PRIV_KEY_SIZE_BYTES];
-  
+
   /* ASN.1 formatting for PSA */
   psa_remote_public_key[0] = 0x04;
   memcpy(&psa_remote_public_key[1], a_RemotePublicKey, PSA_PLAT_CRYPTO_ECC_PUB_KEY_SIZE_BYTES-1);
   ASN1ToRawECCPublicKeyConvert(&psa_remote_public_key[1]);
-  
+
   /* Key conversion */
   memcpy(tmp_local_private_key, a_LocalPrivateKey, PSA_PLAT_CRYPTO_ECC_PRIV_KEY_SIZE_BYTES);
   ASN1ToRawECCPrivateKeyConvert(tmp_local_private_key);
-  
+
+  DhKeyStatus = PSA_SUCCESS;
   ret = PSA_internal_StartDhKey(tmp_local_private_key, psa_remote_public_key);
-  if(ret != PSA_SUCCESS){
-    assert_param(1);
+  if (ret == PSA_ERROR_INVALID_ARGUMENT)
+  {
+    DhKeyStatus = ret;
+    PKA_NOTIF_Trigger();
+    return PSA_SUCCESS;
   }
-  
-  PKACTRL_CB_Process();
+  else if (ret == PSA_SUCCESS)
+  {
+    PKA_NOTIF_Trigger();
+  }
+
   return ret;
 }
-#endif
 
 int PSA_PLAT_CRYPTO_PkaReadDhKey(uint32_t* a_DhKey)
 {
   int ret;
-  
+
   ret = PSA_internal_ReadDhKey((uint8_t*)a_DhKey);
-  if(ret != PSA_SUCCESS){
-    assert_param(1);
+  if (ret == PSA_SUCCESS)
+  {
+    /* Full revert of the key */
+    ASN1ToRawECCPrivateKeyConvert((uint8_t*)a_DhKey);
   }
-  
-  /* Full revert of the key */
-  ASN1ToRawECCPrivateKeyConvert((uint8_t*)a_DhKey);
+
   return ret;
 }
 
-static psa_status_t PSA_internal_GenerateRandom(uint8_t* a_Output, size_t Size)
-{
-  psa_status_t status;
-  
-  status = psa_generate_random(a_Output, Size);
-  return status;
-}
+#endif /* BLE_LL */
 
 static psa_status_t PSA_internal_AesECBEncrypt(const uint8_t* a_Key, uint8_t* a_Input, uint8_t* a_Output)
 {
@@ -440,9 +375,19 @@ static psa_status_t PSA_internal_AesCmacSetKey(const uint8_t* a_Key)
   psa_status_t status;
   psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
 
+  if (AesCmacKeyId != 0UL)
+  {
+    status = psa_destroy_key(AesCmacKeyId);
+    AesCmacKeyId = 0UL;
+    if (status != PSA_SUCCESS)
+    {
+      return status;
+    }
+  }
+
   /* Setup the key policy */
   psa_set_key_type(&attributes, PSA_KEY_TYPE_AES);
-  psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
+  psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_MESSAGE);
   psa_set_key_algorithm(&attributes, PSA_ALG_CMAC);
   psa_set_key_bits(&attributes, PSA_PLAT_CRYPTO_AES_KEY_SIZE_BITS);
 
@@ -450,7 +395,7 @@ static psa_status_t PSA_internal_AesCmacSetKey(const uint8_t* a_Key)
   status = psa_import_key(&attributes, a_Key, PSA_PLAT_CRYPTO_AES_KEY_SIZE_BYTES, &AesCmacKeyId);
   if (status != PSA_SUCCESS)
   {
-    psa_destroy_key(AesCmacKeyId);
+    AesCmacKeyId = 0UL;
     return status;
   }
 
@@ -470,6 +415,7 @@ static psa_status_t PSA_internal_AesCmacCompute(const uint8_t* a_Input, uint32_t
   {
     psa_mac_abort(&operation);
     psa_destroy_key(AesCmacKeyId);
+    AesCmacKeyId = 0UL;
     return status;
   }
 
@@ -478,6 +424,7 @@ static psa_status_t PSA_internal_AesCmacCompute(const uint8_t* a_Input, uint32_t
   {
     psa_mac_abort(&operation);
     psa_destroy_key(AesCmacKeyId);
+    AesCmacKeyId = 0UL;
     return status;
   }
 
@@ -487,10 +434,14 @@ static psa_status_t PSA_internal_AesCmacCompute(const uint8_t* a_Input, uint32_t
   {
     psa_mac_abort(&operation);
     psa_destroy_key(AesCmacKeyId);
+    AesCmacKeyId = 0UL;
     return status;
   }
 
-  return PSA_SUCCESS;
+  status = psa_destroy_key(AesCmacKeyId);
+  AesCmacKeyId = 0UL;
+
+  return status;
 }
 
 #if defined(BLE_LL)
@@ -498,9 +449,9 @@ static psa_status_t PSA_internal_PkaStartP256Key(const uint8_t* a_LocalPrivateKe
 {
   psa_status_t status;
   psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-  psa_key_id_t keyId;
+  psa_key_id_t keyId = 0U;
   size_t publicKeyLength = 0;
-  
+
   /* Setup the key policy */
   psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
   psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_DERIVE);
@@ -517,20 +468,28 @@ static psa_status_t PSA_internal_PkaStartP256Key(const uint8_t* a_LocalPrivateKe
   status = psa_export_public_key(keyId, LocalPublicKey, PSA_PLAT_CRYPTO_ECC_PUB_KEY_SIZE_BYTES, &publicKeyLength);
   if (status != PSA_SUCCESS)
   {
-    psa_destroy_key(keyId);
+    (void)psa_destroy_key(keyId);
     return status;
   }
 
-  return PSA_SUCCESS;
+  if (publicKeyLength != PSA_PLAT_CRYPTO_ECC_PUB_KEY_SIZE_BYTES)
+  {
+    (void)psa_destroy_key(keyId);
+    return PSA_ERROR_INVALID_ARGUMENT;
+  }
+
+  status = psa_destroy_key(keyId);
+
+  return status;
 }
 
 static psa_status_t PSA_internal_StartDhKey(const uint8_t* a_LocalPrivateKey, const uint8_t* a_RemotePublicKey)
 {
   psa_status_t status;
   psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-  psa_key_id_t local_priv_key_id;
+  psa_key_id_t local_priv_key_id = 0U;
   size_t output_len = 0;
-  
+
   /* Setup the key policy */
   psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
   psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_DERIVE);
@@ -542,24 +501,41 @@ static psa_status_t PSA_internal_StartDhKey(const uint8_t* a_LocalPrivateKey, co
   {
     return status;
   }
-  
+
   /* Perform a key agreement and return the raw shared secret */
   status = psa_raw_key_agreement(PSA_ALG_ECDH, local_priv_key_id, a_RemotePublicKey, PSA_PLAT_CRYPTO_ECC_PUB_KEY_SIZE_BYTES, DhSharedSecret, PSA_PLAT_CRYPTO_ECC_DH_KEY_SIZE_BYTES, &output_len);
   if (status != PSA_SUCCESS)
   {
-    psa_destroy_key(local_priv_key_id);
+    (void)psa_destroy_key(local_priv_key_id);
     return status;
   }
-  
-  return PSA_SUCCESS;
+
+  if (output_len != PSA_PLAT_CRYPTO_ECC_DH_KEY_SIZE_BYTES)
+  {
+    (void)psa_destroy_key(local_priv_key_id);
+    return PSA_ERROR_INVALID_ARGUMENT;
+  }
+
+  status = psa_destroy_key(local_priv_key_id);
+
+  return status;
 }
-#endif
 
 static psa_status_t PSA_internal_ReadDhKey(uint8_t* a_DhKey)
 {
+  psa_status_t status;
+
   if (a_DhKey == NULL)
   {
     return PSA_ERROR_INVALID_ARGUMENT;
+  }
+
+  status = DhKeyStatus;
+  DhKeyStatus = PSA_SUCCESS;
+
+  if (status != PSA_SUCCESS)
+  {
+    return status;
   }
 
   /* Copy from local buffer to output */
@@ -568,23 +544,22 @@ static psa_status_t PSA_internal_ReadDhKey(uint8_t* a_DhKey)
   return PSA_SUCCESS;
 }
 
-#if defined(BLE_LL)
 static void ASN1ToRawECCPublicKeyConvert(uint8_t* a_LocalPublicKey)
 {
   uint32_t* local_pubic_key_32 = (uint32_t*)a_LocalPublicKey;
   uint32_t tmp;
-  
+
   /* Invert 16 words array by 8 word packet */
   for(int i=0; i<4; i++)
   {
     tmp = local_pubic_key_32[i];
     local_pubic_key_32[i] = local_pubic_key_32[7-i];
     local_pubic_key_32[7-i] = tmp;
-    
+
     tmp = local_pubic_key_32[(i+8)];
     local_pubic_key_32[(i+8)] = local_pubic_key_32[15-i];
     local_pubic_key_32[15-i] = tmp;
-    
+
     /* we swap all the byte of the words */
     BIT32_SWAP((uint8_t*)&local_pubic_key_32[i]);
     BIT32_SWAP((uint8_t*)&local_pubic_key_32[i+8]);
@@ -592,12 +567,11 @@ static void ASN1ToRawECCPublicKeyConvert(uint8_t* a_LocalPublicKey)
     BIT32_SWAP((uint8_t*)&local_pubic_key_32[15-i]);
   }
 }
-#endif
 
 static void ASN1ToRawECCPrivateKeyConvert(uint8_t* a_PrivateKey)
 {
   uint8_t tmp;
-  
+
   /* Full revert of 32bytes array */
   for(int i=0; i<16; i++)
   {
@@ -606,3 +580,4 @@ static void ASN1ToRawECCPrivateKeyConvert(uint8_t* a_PrivateKey)
     a_PrivateKey[31-i] = tmp;
   }
 }
+#endif

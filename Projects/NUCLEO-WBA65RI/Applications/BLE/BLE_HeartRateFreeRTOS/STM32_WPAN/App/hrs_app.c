@@ -33,6 +33,7 @@
 /* USER CODE BEGIN Includes */
 #include "host_stack_if.h"
 #include "app_freertos.h"
+#include "RTDebug.h"
 
 /* USER CODE END Includes */
 
@@ -234,6 +235,8 @@ void HRS_APP_Measurements(void)
   HRS_Data_t msg_conf;
   uint8_t hrm_char_length;
 
+  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_MEAS);
+
   HW_RNG_Get(1, &measurement);
   measurement = (measurement % 15) + 60;
 
@@ -372,6 +375,8 @@ void HRS_APP_Measurements(void)
     LOG_INFO_APP("HRS_UpdateValue fails\n");
   }
 
+  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_MEAS);
+
   return;
 }
 
@@ -407,4 +412,5 @@ __USED void HRS_Hrme_SendNotification(void) /* Property Notification */
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
+
 /* USER CODE END FD_LOCAL_FUNCTIONS */

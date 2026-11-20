@@ -135,46 +135,33 @@
                                      0 | \
                                      0 | \
                                      0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
                                      0)
 
 /**
- * Maximum number of simultaneous connections and advertising that the device will support.
+ * Maximum number of simultaneous connections that the device will support.
  * This setting should not exceed the number of BLE connection supported by BLE host stack.
  */
 #define CFG_BLE_NUM_LINK            (2)
 
 /**
- * Maximum number of Services that can be stored in the GATT database.
- * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
+ * Maximum number of simultaneous state machine supported by the LinkLayer, requirements are:
+ * - one per Extended Advertising Set
+ * - one for Periodic Advertising Sync
+ * - one per ACL connection
+ * - one per Broadcast Isochronous Group
+ * - one per Connected Isochronous Stream
  */
-#define CFG_BLE_NUM_GATT_SERVICES   (8)
-
-/**
- * Maximum number of Attributes
- * (i.e. the number of characteristic + the number of characteristic values + the number of descriptors, excluding the services)
- * that can be stored in the GATT database.
- * Note that certain characteristics and relative descriptors are added automatically during device initialization
- * so this parameters should be 9 plus the number of user Attributes
- */
-#define CFG_BLE_NUM_GATT_ATTRIBUTES (68)
+#define CFG_BLE_NUM_STATE_MACHINES  (4)
 
 /**
  * Maximum supported ATT_MTU size
  * This setting should be aligned with ATT_MTU value configured in the ble host
  */
 #define CFG_BLE_ATT_MTU_MAX         (251)
-
-/**
- * Size of the storage area for Attribute values
- *  This value depends on the number of attributes used by application. In particular the sum of the following quantities (in octets) should be made for each attribute:
- *  - attribute value length
- *  - 5, if UUID is 16 bit; 19, if UUID is 128 bit
- *  - 2, if server configuration descriptor is used
- *  - 2*DTM_NUM_LINK, if client configuration descriptor is used
- *  - 2, if extended properties is used
- *  The total amount of memory needed is the sum of the above quantities for each attribute.
- */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (1344)
 
 /**
  * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
@@ -194,7 +181,8 @@
  * Number of allocated memory blocks used to transmit and receive data packets
  */
 #define CFG_BLE_MBLOCK_COUNT          (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                       CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
+                                       MAX(MAX(CFG_BLE_ATT_MTU_MAX, CFG_BLE_COC_MPS_MAX), SM_MTU),\
+                                       CFG_BLE_NUM_LINK) \
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
@@ -221,7 +209,7 @@
  * Connection Oriented Channel parameters
  */
 #define CFG_BLE_COC_NBR_MAX           (64)
-#define CFG_BLE_COC_MPS_MAX           (248)
+#define CFG_BLE_COC_MPS_MAX           (23)
 #define CFG_BLE_COC_INITIATOR_NBR_MAX (32)
 
 /**
@@ -270,9 +258,7 @@ typedef enum
   CFG_LPM_LL_DEEPSLEEP,
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
-  CFG_LPM_PKA,
   CFG_LPM_THREAD_RX_ACK,
-  CFG_LPM_PKA_OVR_IT,
    CFG_LPM_RTOS,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
@@ -381,10 +367,9 @@ typedef enum
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
-
-/* NVM area is placed at the end of the flash memory */
-#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED)
-
+/* NVM area is placed at the end of the flash memory, after PSA storage */
+#define PSA_STORAGE_SECTOR_NEEDED     2
+#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED - PSA_STORAGE_SECTOR_NEEDED)
   /**
    * This is the max size of data the THREAD Stack needs to write in NVM
    * This is different to the size allocated in the EEPROM emulator
@@ -414,19 +399,6 @@ typedef enum
 
 #define CFG_RT_DEBUG_GPIO_MODULE            (0)
 #define CFG_RT_DEBUG_DTB                    (0)
-
-/******************************************************************************
- * System Clock Manager module configuration
- *
- *  When CFG_SCM_SUPPORTED is set to:
- *   - 0 : System Clock Manager is disabled and user must handle himself
- *         all clock management, taking care of radio requirements.
- *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
- *   - 1 : System Clock Manager ensures proper clock settings and switchings
- *         according to radio requirements and user preferences
- *
- ******************************************************************************/
-#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -461,10 +433,10 @@ typedef enum
  ******************************************************************************/
 
 /* Number of 32-bit random numbers stored in internal pool */
-#define CFG_HW_RNG_POOL_SIZE                (32)
+#define CFG_HW_RNG_POOL_SIZE                (192)
 
 /* Threshold of random numbers available before triggering pool refill */
-#define CFG_HW_RNG_POOL_THRESHOLD           (16)
+#define CFG_HW_RNG_POOL_THRESHOLD           (96)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 
@@ -474,7 +446,7 @@ typedef enum
  * PKA configuration
  ******************************************************************************/
 /* PKA IRQ priority of the PKA end of process */
-#define PKA_INTR_PRIO_PROCEND               (7)
+#define PKA_INTR_PRIO_PROCEND               (0)
 
 /******************************************************************************
  * MEMORY MANAGER
@@ -492,6 +464,7 @@ typedef enum
 /* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
+
 #define CFG_BSP_ON_FREERTOS                     (1)
 #define CFG_BSP_ON_NUCLEO                       (1)
 
@@ -527,7 +500,6 @@ typedef enum
     #define CFG_LED_SUPPORTED      (0)
   #endif /* CFG_LED_SUPPORTED */
 #endif /* CFG_LPM_LEVEL */
-
 /* USER CODE END Defines */
 
 /**

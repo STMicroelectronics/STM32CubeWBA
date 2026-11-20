@@ -79,6 +79,7 @@ void MX_ADC4_Init(void);
 
 /* USER CODE BEGIN EFP */
 void ConfigureStandbyWakeupPins(void);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

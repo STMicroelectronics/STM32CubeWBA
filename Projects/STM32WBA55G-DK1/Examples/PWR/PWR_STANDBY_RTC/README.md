@@ -34,6 +34,15 @@ Note: This example can not be used in DEBUG mode due to the fact
       that the Cortex-M33 core is no longer clocked during low power mode
       so debugging features are disabled.
 
+## <b>Measured Current Consumption</b>
+
+| Mode      | Current Consumption |
+|-----------|---------------------|
+| Run       | 6.5 mA              |
+| Standby   | 2.8 µA              |
+
+**Note:** The measured current consumption values are typical values. To measure the current consumption while running in the selected mode, remove jumper JP2 and connect an amperemeter to measure IDD current.
+
 #### <b>Notes</b>
 
  1. Care must be taken when HAL_RCCEx_PeriphCLKConfig() is used to select

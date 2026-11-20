@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -117,27 +117,25 @@ typedef enum
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-/** 
-  * ST Manufacturer ID (2 bytes: least significant and most significant bytes).
-  */
-#define ST_MANUF_ID_LSB         0x30
-#define ST_MANUF_ID_MSB         0x00
+
+/* ST Manufacturer ID */
+#define ST_MANUF_ID  0x30
 
 /* BlueSTSDK Version */
 enum
 {
-  BLUESTSDK_V1 =  0x01,
-  BLUESTSDK_V2 =  0x02
+  BLUESTSDK_V1 = 0x01,
+  BLUESTSDK_V2 = 0x02
 };
 
 /* BOARD ID */
 enum
 {
   BOARD_ID_NUCLEO_WBA5X = 0x8B,
-  BOARD_ID_DK_WBA5X     = 0x8C,
+  BOARD_ID_DK_WBA5X =     0x8C,
   BOARD_ID_B_WBA5M_WPAN = 0x91,
   BOARD_ID_NUCLEO_WBA6X = 0x8E,
-  BOARD_ID_DK_WBA6X     = 0x92,
+  BOARD_ID_DK_WBA6X =     0x92,
   BOARD_ID_B_WBA6M_WPAN = 0x93,
   BOARD_ID_NUCLEO_WBA2X = 0x90
 };
@@ -147,14 +145,24 @@ enum
 {
   FW_ID_P2P_SERVER            = 0x83,
   FW_ID_P2P_ROUTER            = 0x85,
-  FW_ID_DT_SERVER             = 0x88,
+  FW_ID_HID                   = 0x86,
   FW_ID_COC_PERIPH            = 0x87,
+  FW_ID_DT_SERVER             = 0x88,
   FW_ID_HEART_RATE            = 0x89,
   FW_ID_HEALTH_THERMO         = 0x8A,
-  FW_ID_HID                   = 0x8B,
+  FW_ID_WEIGHT_SCALE          = 0x8B,
+  FW_ID_BLOOD_PRESSURE        = 0x8C,
+  FW_ID_SERIALPORT_SERVER     = 0x8D,
+  FW_ID_P2P_SERVER_LONG_RANGE = 0x8E,
+  FW_ID_PHONE_ALERT_STATUS    = 0x8F,
+  FW_ID_FIND_ME               = 0x90,
+  FW_ID_GLUCOSE_MONITORING    = 0x9A,
+  FW_ID_RUNNING_SPEED         = 0x9B,
   FW_ID_SENSOR                = 0x9C,
   FW_ID_GENERIC_HEALTH_SENSOR = 0x9D,
-  FW_ID_SERIALPORT_SERVER     = 0x8B
+  FW_ID_P2P_SERVER_EAD        = 0xE2,
+  FW_ID_SECURITY              = 0xA0,
+  FW_ID_PRIVACY               = 0xA1,
 };
 
 /* USER CODE END EC */
@@ -178,6 +186,7 @@ enum
                     ((hci_le_advertising_report_event_rp0*)(p))-> \
                     Advertising_Report[0].Length_Data))
 /* USER CODE BEGIN EM */
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 
 /* USER CODE END EM */
 

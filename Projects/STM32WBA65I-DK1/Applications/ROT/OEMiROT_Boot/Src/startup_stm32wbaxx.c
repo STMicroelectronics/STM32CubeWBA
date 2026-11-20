@@ -278,6 +278,9 @@ extern RTC_HandleTypeDef RTCHandle;
  *----------------------------------------------------------------------------*/
 void Reset_Handler(void)
 {
+  /* Configure the Vector Table location -------------------------------------*/
+  SCB->VTOR = (uint32_t)&__VECTOR_TABLE[0];
+
   /* Configure DWT to enable cycles counter */
   CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk | CoreDebug_DEMCR_MON_EN_Msk;
   DWT->CYCCNT = 0;

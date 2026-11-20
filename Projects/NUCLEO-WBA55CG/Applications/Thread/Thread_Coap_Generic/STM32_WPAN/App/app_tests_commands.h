@@ -1,8 +1,7 @@
-/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
   * File Name          : app_tests_commands.h
-  * Description        : Header file for CLI COmmands to test Concurrents Modes (BLE/Thread/Zigbee)
+  * Description        : Header file for CLI Commands to test Concurrents Modes (BLE/Thread/Zigbee)
   ******************************************************************************
   * @attention
   *
@@ -15,7 +14,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef APP_TESTS_COMMANDS_H
@@ -25,21 +23,9 @@
 
 /* Exported types ------------------------------------------------------------*/
 
-/* USER CODE BEGIN ET */
-
-/* USER CODE END ET */
-
 /* Exported constants --------------------------------------------------------*/
-
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
 
 /* Exported functions prototypes ---------------------------------------------*/
 bool AppTestCommand_Dispatch(  uint8_t * pRxBuffer, uint16_t iRxBufferSize );
-
-/* USER CODE BEGIN EFP */
-
-/* USER CODE BEGIN EFP */
 
 #endif /* APP_TESTS_COMMANDS_H */

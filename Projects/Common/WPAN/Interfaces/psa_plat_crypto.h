@@ -18,9 +18,12 @@
 #ifndef _PSA_PLAT_CRYPTO_H_
 #define _PSA_PLAT_CRYPTO_H_
 
-#include <stdint.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void PSA_PLAT_CRYPTO_RngGet(uint8_t n, uint32_t* a_Val);
+#include <stdint.h>
+#include "psa/crypto.h"
 
 void PSA_PLAT_CRYPTO_AesEcbEncryt(const uint8_t* a_Key, const uint8_t* a_Input, uint8_t* a_Output);
 
@@ -39,7 +42,7 @@ int PSA_PLAT_CRYPTO_CcmCrypt(uint8_t mode,
                              uint8_t tag_length,
                              uint8_t* tag,
                              uint8_t* output);
-
+#if defined(BLE_LL)
 int PSA_PLAT_CRYPTO_PkaStartP256Key(const uint32_t* a_LocalPrivateKey);
 
 void PSA_PLAT_CRYPTO_PkaReadP256Key(uint32_t* a_LocalPublicKey);
@@ -47,5 +50,13 @@ void PSA_PLAT_CRYPTO_PkaReadP256Key(uint32_t* a_LocalPublicKey);
 int PSA_PLAT_CRYPTO_PkaStartDhKey(const uint32_t* a_LocalPrivateKey, const uint32_t* a_RemotePublicKey);
 
 int PSA_PLAT_CRYPTO_PkaReadDhKey(uint32_t* a_DhKey);
+
+void PSA_PLAT_CRYPTO_PkaNotifier(void);
+
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*_PSA_PLAT_CRYPTO_H_*/

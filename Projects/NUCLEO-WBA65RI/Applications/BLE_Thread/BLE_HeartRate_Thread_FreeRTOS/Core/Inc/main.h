@@ -81,6 +81,7 @@ void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN EFP */
 void ConfigureStandbyWakeupPins(void);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

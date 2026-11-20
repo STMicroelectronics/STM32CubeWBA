@@ -152,7 +152,7 @@ __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     I2C2_EV_IRQHandler         ; I2C2 event interrupt
                 DCD     I2C2_ER_IRQHandler         ; I2c2 error interrupt
                 DCD     SPI2_IRQHandler            ; SPI2 global interrupt
-                DCD     OTG_HS_IRQHandler          ; USB OTG_HS global interrupt
+                DCD     USB_OTG_HS_IRQHandler      ; USB OTG_HS global interrupt
                 DCD     I2C4_EV_IRQHandler         ; I2C4 event global interrupt
                 DCD     I2C4_ER_IRQHandler         ; I2C4 error global interrupt
                 DCD     USART3_IRQHandler          ; USART3 global interrupt
@@ -171,6 +171,8 @@ Reset_Handler   PROC
                 EXPORT  Reset_Handler              [WEAK]
                 IMPORT  SystemInit
                 IMPORT  __main
+                LDR     R0, =Stack_Mem
+                MSR     MSPLIM, R0                 ; Set Stack Pointer Limit
                 LDR     R0, =SystemInit
                 BLX     R0
                 LDR     R0, =__main
@@ -309,7 +311,7 @@ Default_Handler PROC
                 EXPORT  I2C2_EV_IRQHandler         [WEAK]
                 EXPORT  I2C2_ER_IRQHandler         [WEAK]
                 EXPORT  SPI2_IRQHandler            [WEAK]
-                EXPORT  OTG_HS_IRQHandler          [WEAK]
+                EXPORT  USB_OTG_HS_IRQHandler      [WEAK]
                 EXPORT  I2C4_EV_IRQHandler         [WEAK]
                 EXPORT  I2C4_ER_IRQHandler         [WEAK]
                 EXPORT  USART3_IRQHandler          [WEAK]
@@ -392,7 +394,7 @@ TIM4_IRQHandler
 I2C2_EV_IRQHandler
 I2C2_ER_IRQHandler
 SPI2_IRQHandler
-OTG_HS_IRQHandler
+USB_OTG_HS_IRQHandler
 I2C4_EV_IRQHandler
 I2C4_ER_IRQHandler
 USART3_IRQHandler
@@ -408,28 +410,14 @@ EXTI20_RADIO_IO_IRQHandler
 ;*******************************************************************************
 ; User Stack and Heap initialization
 ;*******************************************************************************
-                IF      :DEF:__MICROLIB
+                IF       :LNOT::DEF:__MICROLIB
+                IMPORT   __use_two_region_memory
+                ENDIF
 
-                EXPORT  __initial_sp
-                EXPORT  __heap_base
-                EXPORT  __heap_limit
-
-                ELSE
-
-                IMPORT  __use_two_region_memory
-                EXPORT  __user_initial_stackheap
-
-__user_initial_stackheap PROC
-                LDR     R0, =  Heap_Mem
-                LDR     R1, =(Stack_Mem + Stack_Size)
-                LDR     R2, = (Heap_Mem +  Heap_Size)
-                LDR     R3, = Stack_Mem
-                BX      LR
-                ENDP
-
-                ALIGN
-
+                EXPORT   __initial_sp
+                IF       Heap_Size != 0                      ; Heap is provided
+                EXPORT   __heap_base
+                EXPORT   __heap_limit
                 ENDIF
 
                 END
-

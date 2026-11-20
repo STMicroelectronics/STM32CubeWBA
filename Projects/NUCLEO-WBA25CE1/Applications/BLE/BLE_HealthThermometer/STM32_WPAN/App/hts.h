@@ -35,6 +35,35 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
+
+/** 1 Service for HTS */
+#define HTS_NUM_GATT_SERVICES (1)
+
+/**
+  * Num_Attributes = 0 for HTS (service declaration not counted in attributes)
+  *                + 2 for TEMM
+  *                + 2 for MNbS
+  *                + 2 for INT
+  *                + 2 for MEI
+  *                + 1 for TEMM CCCD
+  *                + 1 for INT CCCD
+  *                + 1 for MEI CCCD
+  *                = 11
+**/
+#define HTS_NUM_GATT_ATTRIBUTES (11)
+
+/**
+  * Size_Attributes = 0 for HTS (service declaration not counted in attributes)
+  *                 + 5 for TEMM declaration + 13 for TEMM size
+  *                 + 5 for MNbS declaration + 1 for MNbS size
+  *                 + 5 for INT declaration + 13 for INT size
+  *                 + 5 for MEI declaration + 2 for MEI size
+  *                 + 2 for TEMM CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for INT CCCD * CFG_BLE_NUM_LINK
+  *                 + 2 for MEI CCCD * CFG_BLE_NUM_LINK
+  *                 = 49 + 6 * CFG_BLE_NUM_LINK
+**/
+#define HTS_ATT_VALUE_ARRAY_SIZE  (49 + 6 * CFG_BLE_NUM_LINK)
 /* USER CODE BEGIN ED */
 #define BLE_CFG_HTS_TEMPERATURE_INTERVAL_MIN_VALUE               1  /**< Min Interval Value supported */
 #define BLE_CFG_HTS_TEMPERATURE_INTERVAL_MAX_VALUE               UINT16_MAX /**< Max Interval Value supported */

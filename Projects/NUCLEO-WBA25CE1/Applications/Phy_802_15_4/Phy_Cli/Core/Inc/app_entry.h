@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -59,6 +59,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void MX_APPE_Config(void);
 uint32_t MX_APPE_Init(void *p_param);
+void MX_APPE_LinkLayerInit(void);
 void MX_APPE_Process(void);
 
 /* USER CODE BEGIN EFP */

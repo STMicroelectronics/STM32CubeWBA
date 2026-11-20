@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -65,12 +65,12 @@ typedef enum
   PWR_CO_GPIO_ON,
   PWR_CO_GPIO_TIM_RESET_ON,
 } PWR_CO_GPIO_Status_t;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 
 /* USER CODE BEGIN EC */
-
 #define ST_LPWR_CO_SERVICE_UUID                                       (0xFF10)
 #define ST_LPWR_CO_WRITE_CHAR_UUID                                    (0xFF11)
 #define ST_LPWR_CO_NOTIFY_CHAR_UUID                                   (0xFF12)

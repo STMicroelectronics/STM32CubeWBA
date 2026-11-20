@@ -69,12 +69,11 @@ typedef enum {
 /* USER CODE BEGIN SCM_3 */
 
 /* USER CODE END SCM_3 */
+
 /******************************************************************************
  * Timer Interface configuration
  ******************************************************************************/
-#define RTC_N_PREDIV_S      (10U)
-#define RTC_PREDIV_S        ( ( 1U << RTC_N_PREDIV_S ) - 1U )
-#define RTC_PREDIV_A        ( ( 1U << ( 15U - RTC_N_PREDIV_S ) ) - 1U )
+#define TIMER_IF_RTCCLK_FREQ_HZ      (LSI_VALUE)
 
 /* USER CODE BEGIN TIF_RTC */
 

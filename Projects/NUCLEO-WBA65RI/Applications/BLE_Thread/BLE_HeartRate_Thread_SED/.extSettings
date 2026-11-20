@@ -3,7 +3,6 @@ HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo;
 
 [Others]
 
-Define=PHY_40nm_3_00_a;
 
 [Groups]
 Application/User/STM32_WPAN/App=../STM32_WPAN/App/app_tests_commands.c;

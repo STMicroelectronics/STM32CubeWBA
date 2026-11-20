@@ -267,11 +267,11 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
   
   while (1)
   {
-    APP_LED_TOGGLE(LD1);
+    APP_BSP_LED_Toggle(LD1);
     HAL_Delay(500U);
-    APP_LED_TOGGLE(LD2);
+    APP_BSP_LED_Toggle(LD2);
     HAL_Delay(500U);
-    APP_LED_TOGGLE(LD3);
+    APP_BSP_LED_Toggle(LD3);
     HAL_Delay(500U);
   }
 

@@ -319,8 +319,8 @@ uint8_t UTIL_LPM_GetMaxMode(void)
 
   /* at least highest mode enabled by default
      (except no driver is registered) */
-  while((UTIL_LPM_ControlTable[index] == UTIL_LPM_NO_BIT_SET) &&
-        (index < UTIL_LPM_Driver_num))
+  while((index < UTIL_LPM_Driver_num) &&
+        (UTIL_LPM_ControlTable[index] == UTIL_LPM_NO_BIT_SET))
   {
     index++;
   }
@@ -350,8 +350,8 @@ void UTIL_LPM_Enter(uint32_t option)
   
   /* look for first enabled mode, from lowest to highest */
   /* at least highest mode is enabled by default */
-  while((UTIL_LPM_ControlTable[index] == UTIL_LPM_NO_BIT_SET) &&
-        (index < UTIL_LPM_Driver_num))
+  while((index < UTIL_LPM_Driver_num) &&
+        (UTIL_LPM_ControlTable[index] == UTIL_LPM_NO_BIT_SET))
   {
     index++;
   }

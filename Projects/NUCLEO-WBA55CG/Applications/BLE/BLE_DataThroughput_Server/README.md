@@ -26,9 +26,7 @@ In order to make the program work:
  - Rebuild all files and load your image into target memory.
  - Run the example.
 
- - Open your preferred toolchain.
- - Rebuild all files and flash the board with the executable file.
- - Two ways for using the application:
+Two ways for using the application:
 
 __1. Use of two nucleo boards__
 
@@ -85,7 +83,7 @@ __2. Use of one nucleo board and a smartphone__
    - <a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android.</a>
    - <a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS.</a>
 
-One STM32WBA65 Nucleo board is used as GATT Server and GAP peripheral (flashed with BLE_DataThroughput_Server).
+One STM32WBAxx Nucleo board is used as GATT Server and GAP peripheral (flashed with BLE_DataThroughput_Server).
 
 This board can be connected with a smartphone supporting ST BLE Toolbox application.
 

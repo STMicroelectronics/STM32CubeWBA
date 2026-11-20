@@ -18,6 +18,10 @@ oem2_password="./Keys/oem2_password.txt"
 # Log files
 ob_flash_log="ob_flash_programming.log"
 provisioning_log="provisioning.log"
+export command_log="command.log"
+
+# Remove all log files (*.log)
+rm -rf *.log
 
 # Environment variable for path project
 appli_dir=../../$oemirot_appli_path_project
@@ -208,6 +212,15 @@ clean_oemurot_cfg()
     $python$applicfg setdefine -a comment -n OEMUROT_ENABLE -v 1 $flash_layout
     ret=$?
     if [ $ret != "0" ]; then step_error; fi
+
+    # Clean TFM_OEMiROT configuration
+    $python$applicfg definevalue --name=tfm_enabled  --value=0 --decimal $img_config
+    ret=$?
+    if [ $ret != "0" ]; then step_error; fi
+
+    $python$applicfg setdefine -a comment -n TFM_COMPATIBILITY -v 1 $flash_layout
+    ret=$?
+    if [ $ret != "0" ]; then step_error; fi
 }
 
 # ================================================== Option Bytes and flash programming ===================================================
@@ -225,7 +238,7 @@ oem2_key_provisioning()
     # Get OEM2 key
     read -r oem2_key < "$oem2_password"
 
-    "$stm32programmercli" $connect_reset -hardRst -lockRDP2 $oem2_key >> $provisioning_log 2>&1
+    log_and_run "$stm32programmercli" $connect_reset -hardRst -lockRDP2 $oem2_key >> $provisioning_log 2>&1
     if [ $? != 0 ]; then step_error; fi
     echo "   * Provisioning of OEM2 key Done"
     echo
@@ -254,7 +267,7 @@ set_rdp_level()
     action="Setting RDP level $RDP_level"
     current_log_file=$provisioning_log
     echo "   * $action"
-    "$stm32programmercli" $connect_no_reset -ob RDP=$rdp_value >> $provisioning_log 2>&1
+    log_and_run "$stm32programmercli" $connect_no_reset -ob RDP=$rdp_value >> $provisioning_log 2>&1
     echo
     if [ $? -ne 0 ]; then step_error; fi
     if [ "$rdp_value" != "0xAA" ]; then
@@ -275,6 +288,13 @@ step_error()
   echo "====="
   if [ "$mode" != "AUTO" ]; then $SHELL; fi
   exit 1
+}
+
+# =============================================== log_and_run <command> [args...] =========================================================
+log_and_run() {
+  echo "$*" >> "$command_log"
+  echo "$*" >> "$provisioning_log"
+  "$@" >> "$provisioning_log"
 }
 
 # ============================================================== Script start =============================================================

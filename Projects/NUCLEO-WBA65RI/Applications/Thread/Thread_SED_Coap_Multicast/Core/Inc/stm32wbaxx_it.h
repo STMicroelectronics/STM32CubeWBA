@@ -6,14 +6,14 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
   * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
- ******************************************************************************
+  ******************************************************************************
   */
 /* USER CODE END Header */
 
@@ -58,9 +58,7 @@ void SysTick_Handler(void);
 void RTC_IRQHandler(void);
 void RCC_IRQHandler(void);
 void GPDMA1_Channel0_IRQHandler(void);
-void GPDMA1_Channel1_IRQHandler(void);
 void USART1_IRQHandler(void);
-void TIM16_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void ADC4_IRQHandler(void);
 /* USER CODE BEGIN EFP */

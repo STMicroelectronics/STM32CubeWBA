@@ -127,7 +127,7 @@ static UTIL_TIMER_Object_t Startup_Timer;
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 
 static uint8_t csip_conf_id = 0;
-static uint8_t app_initialization_done = 0;
+static uint8_t app_initialization_done;
 
 uint8_t num_broadcast_sources = 0;
 Broadcast_Source_t a_broadcast_sources[MAX_NUM_BROADCAST_SOURCE];
@@ -164,6 +164,8 @@ static void Menu_Startup_TimerCallback(void *arg);
  */
 void Menu_Config(void)
 {
+  app_initialization_done = 0;
+
   Menu_Action_t access_config_menu_action = {MENU_ACTION_MENU_PAGE, &access_menu_icon, 0, 0};
   Menu_Action_t clear_db_action = {MENU_ACTION_CALLBACK, &access_menu_icon, &Menu_ClearSecDB, 0};
   Menu_Action_t access_menu_action = {MENU_ACTION_MENU_PAGE, &access_menu_icon, 0, 0};
@@ -523,12 +525,12 @@ void Menu_SetProfilesLinked(audio_profile_t Profiles)
   
   if (Profiles & AUDIO_PROFILE_CCP)
   {
-	snprintf(ccp_string, 5, " CCP");
+    snprintf(ccp_string, 5, " CCP");
   }
   
   if (Profiles & AUDIO_PROFILE_MCP)
   {
-	snprintf(mcp_string, 5, " MCP");
+    snprintf(mcp_string, 5, " MCP");
   }
   
   snprintf(nostream_text.Lines[0], MENU_CONTROL_MAX_LINE_LEN, "Connected%s%s", ccp_string, mcp_string);

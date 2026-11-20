@@ -96,6 +96,7 @@ void DeinitThreadStack(void);
 
 /* USER CODE BEGIN EFP */
 
-/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
 
 #endif /* APP_THREAD_H */

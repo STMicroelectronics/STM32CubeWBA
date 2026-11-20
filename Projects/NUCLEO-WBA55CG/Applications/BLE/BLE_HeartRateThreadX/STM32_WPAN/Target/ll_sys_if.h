@@ -51,6 +51,8 @@ extern "C" {
 
 #define SCHDL_TIME_DEFAULT                      (20)
 /* USER CODE BEGIN EC */
+#define DRIFT_TIME_OPTIMIZED                    (14)
+#define EXEC_TIME_OPTIMIZED                     (24)
 
 /* USER CODE END EC */
 
