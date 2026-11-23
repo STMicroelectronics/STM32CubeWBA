@@ -13,10 +13,10 @@ This repository provides the **STM32CubeWBA** MCU firmware, including **all** so
 
 > [!NOTE]
 > ## Some middleware libraries and projects are unavailable in this repository
-> 
+>
 > In this repository, the middleware libraries listed below **along with** [this](Projects/README.md#list-of-unavailable-projects) list of projects (demos, applications, and examples) using them, are **not available** as they (the middleware libraries) are subject to some restrictive license terms requiring the user's approval via a "click thru" procedure.
 > * `./Middlewares/ST/STM32_Audio`
-> 
+>
 > If needed, they can be found inside the full firmware package available on our website `st.com` and downloadable from [here](https://www.st.com/en/embedded-software/stm32cubewba.html#get-software). You will be prompted to login or to register in case you have no account.
 
 ## How to use
@@ -39,9 +39,12 @@ git pull; git submodule update --init --recursive
 ## Boards available
 
   * STM32WBA
-    * [NUCLEO-WBA52CG](https://www.st.com/en/evaluation-tools/nucleo-wba52cg.html)
     * [NUCLEO-WBA55CG](https://www.st.com/en/evaluation-tools/nucleo-wba55cg.html)
+    * [NUCLEO-WBA65RI](https://www.st.com/en/evaluation-tools/nucleo-wba65ri.html)
+    * [NUCLEO-WBA25CE1](https://www.st.com/en/evaluation-tools/nucleo-wba25ce1.html)
     * [STM32WBA55G-DK1](https://www.st.com/en/evaluation-tools/stm32wba55g-dk1.html)
+    * [STM32WBA65I-DK1](https://www.st.com/en/evaluation-tools/stm32wba65i-dk1.html)
+    * [B-WBA5M-WPAN](https://www.st.com/en/evaluation-tools/b-wba5m-wpan.html)
 
 ## Feedback and contributions
 
